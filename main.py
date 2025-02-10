@@ -114,20 +114,14 @@ while running:
 
     angle = -45
     for card in myHandCard:
-        # if(len(myHandCard) == 1):
-        #     angle = 0
         rotated_image, rect = rotate(card.image, angle, [WIDTH*0.9, HEIGHT*0.9], pygame.math.Vector2(0, -cardDim[1]))
         screen.blit(rotated_image, rect)
-
-        # rotatedImage = pygame.transform.rotate(card.image, angle)
-        # rotatedImageRect = card.image.get_rect(center = (cardDim[0]/2, cardDim[1]) + pygame.math.Vector2(WIDTH*0.9, HEIGHT*0.7))
-        # screen.blit(rotatedImage, rotatedImageRect)
         if(len(myHandCard) > 10):
             angle += 90/(len(myHandCard)-1)
         else:
             angle += 9
 
-    pygame.draw.circle(screen, (255, 0, 0), [WIDTH*0.9, HEIGHT*0.9], 10)
+    #pygame.draw.circle(screen, (255, 0, 0), [WIDTH*0.9, HEIGHT*0.9], 10)
 
 
     #card graphic ai
