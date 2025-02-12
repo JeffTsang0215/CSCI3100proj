@@ -88,9 +88,33 @@ class Sys:
 
     def attack(self, attacker, target, turn = "player"):
         if turn == "player":
-            sys.aiCard[target].hp -= sys.myCard[attacker].atk
-            print(sys.aiCard[target].hp)
-        
+            if target != 99:
+                sys.aiCard[target].hp -= sys.myCard[attacker].atk
+                print(sys.aiCard[target].hp)
+            else:
+                sys.aihp -= sys.myCard[attacker].atk
+        if turn == "ai":
+            if target != 99:
+                sys.myCard[target].hp -= sys.aiCard[attacker].atk
+                print(sys.myCard[target].hp)
+            else:
+                sys.myhp -= sys.aiCard[attacker].atk
+
+    def checkAlive(self):
+        temp = []
+        for i in range(len(self.myCard)):
+            if self.myCard[i].hp <= 0:
+                temp.append(i)
+        for i in reversed(temp):
+            self.myCard.pop(i)
+        temp = []
+        for i in range(len(self.aiCard)):
+            if self.aiCard[i].hp <= 0:
+                temp.append(i)
+        for i in reversed(temp):
+            self.aiCard.pop(i)
+
+
     def draw(self):
         #card graphic me
         left = WIDTH/2 - (len(self.myCard)*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
@@ -148,14 +172,22 @@ class Sys:
             text(screen, str(card.hp), (0, 0, 0), int(WIDTH/128), [left+cardDim[0], top+cardDim[1]], "center")
 
             left += cardDim[0] + WIDTH/80
-        pygame.draw.circle(screen, (238, 255, 48), [WIDTH/2, HEIGHT*0.1], HEIGHT*0.05)  #me
+        pygame.draw.circle(screen, (238, 255, 48), [WIDTH/2, HEIGHT*0.1], HEIGHT*0.05)  #ai
         pygame.draw.circle(screen, (242, 89, 0), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.1+HEIGHT*0.05], HEIGHT*0.025)
         text(screen, str(self.aihp), (0, 0, 0), int(WIDTH/64), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.1+HEIGHT*0.05], "center")
 
+        if (sys.clickedCard != -1 and sys.clickTimer > 0):
+            pointA = (sys.myCard[sys.clickedCard].rect[0]+cardDim[0]/2, sys.myCard[sys.clickedCard].rect[1]+cardDim[1]/2)
+            pointB = pygame.mouse.get_pos()
+            angle_going = math.atan((pointB[1]-pointA[1])/(pointB[0]-pointA[0]+1e-10))
+            if(pointB[0] < pointA[0]):
+                angle_going += math.pi
+            pygame.draw.polygon(screen, (255, 0, 0), [pointA, pointB, (pointB[0]+WIDTH/100*math.cos(angle_going-math.pi+math.pi/6), pointB[1]+WIDTH/100*math.sin(angle_going-math.pi+math.pi/6)), (pointB[0]+WIDTH/100*math.cos(angle_going-math.pi-math.pi/6), pointB[1]+WIDTH/100*math.sin(angle_going-math.pi-math.pi/6)), pointB])
         
 
 
 sys = Sys()
+
 while running:
     mouse_pos = pygame.mouse.get_pos()
     for event in pygame.event.get():
@@ -183,10 +215,12 @@ while running:
                 if sys.aiCard[i].rect.collidepoint(mouse_pos):
                     sys.releasedCard = i
                     break
+            if (mouse_pos[0] - WIDTH/2)**2 + (mouse_pos[1]-HEIGHT*0.1)**2 <= (HEIGHT*0.05)**2:
+                sys.releasedCard = 99
             if (sys.clickedCard != -1 and sys.releasedCard != -1):
                 sys.attack(sys.clickedCard, sys.releasedCard)
-                print([sys.clickedCard, sys.releasedCard])
-                print(sys.aiCard[sys.releasedCard].hp)
+                sys.checkAlive()
+
             sys.clickTimer = 0
 
     screen.fill((105, 77, 0))
