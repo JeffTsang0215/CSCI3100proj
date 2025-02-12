@@ -69,83 +69,129 @@ class Card:
         self.image = image.convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, cardDim)
         
-        self.rect = []
+        self.rect = None
 
-myCard = [Card(5, 2, 2, pygame.image.load(path + "image/cardTemp.png")), Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
-aiCard = [Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
-myHandCard = []
-aiHamdCard = []
-myhp = 30
-aihp = 30
+class Sys:
+    def __init__(self):
+        self.isPlayerTurn = True
 
+        self.clickTimer = 0
+        self.clickedCard = -1
+        self.releasedCard = -1
+
+        self.myCard = [Card(5, 2, 2, pygame.image.load(path + "image/cardTemp.png")), Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
+        self.aiCard = [Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
+        self.myHandCard = []
+        self.aiHamdCard = []
+        self.myhp = 30
+        self.aihp = 30
+
+    def attack(self, attacker, target, turn = "player"):
+        if turn == "player":
+            sys.aiCard[target].hp -= sys.myCard[attacker].atk
+            print(sys.aiCard[target].hp)
+        
+    def draw(self):
+        #card graphic me
+        left = WIDTH/2 - (len(self.myCard)*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
+        top = HEIGHT*0.55
+
+        for card in self.myCard:
+            screen.blit(card.image, [left, top])
+            card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
+            # pygame.draw.rect(screen, (10, 10, 10), [left, top, cardDim[0], cardDim[1]])
+            # text(screen, "Card Tmp", (255, 255, 255), int(WIDTH/96), [left+cardDim[0]/2, top+cardDim[1]/2], "center")
+
+            pygame.draw.circle(screen, (200, 200, 100), [left, top+cardDim[1]], WIDTH/150)  #attack
+            text(screen, str(card.atk), (0, 0, 0), int(WIDTH/128), [left, top+cardDim[1]], "center")
+
+            pygame.draw.circle(screen, (0, 181, 172), [left, top], WIDTH/150)  # cost
+            text(screen, str(card.cost), (0, 0, 0), int(WIDTH/128), [left, top], "center")
+
+            pygame.draw.circle(screen, (242, 89, 0), [left+cardDim[0], top+cardDim[1]], WIDTH/150)  #health
+            text(screen, str(card.hp), (0, 0, 0), int(WIDTH/128), [left+cardDim[0], top+cardDim[1]], "center")
+
+            left += cardDim[0] + WIDTH/80
+        pygame.draw.circle(screen, (238, 255, 48), [WIDTH/2, HEIGHT*0.9], HEIGHT*0.05)  #me
+        pygame.draw.circle(screen, (242, 89, 0), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.9+HEIGHT*0.05], HEIGHT*0.025)
+        text(screen, str(self.myhp), (0, 0, 0), int(WIDTH/64), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.9+HEIGHT*0.05], "center")
+
+        angle = -45
+        for card in self.myHandCard:
+            rotated_image, rect = rotate(card.image, angle, [WIDTH*0.9, HEIGHT*0.9], pygame.math.Vector2(0, -cardDim[1]))
+            screen.blit(rotated_image, rect)
+            if(len(self.myHandCard) > 10):
+                angle += 90/(len(self.myHandCard)-1)
+            else:
+                angle += 9
+
+        #pygame.draw.circle(screen, (255, 0, 0), [WIDTH*0.9, HEIGHT*0.9], 10)
+
+
+        #card graphic ai
+        left = WIDTH/2 - (len(self.aiCard)*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
+        top = HEIGHT*0.30
+
+        for card in self.aiCard:
+            screen.blit(card.image, [left, top])
+            card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
+            # pygame.draw.rect(screen, (10, 10, 10), [left, top, cardDim[0], cardDim[1]])
+            # text(screen, "Card Tmp", (255, 255, 255), int(WIDTH/96), [left+cardDim[0]/2, top+cardDim[1]/2], "center")
+
+            pygame.draw.circle(screen, (200, 200, 100), [left, top+cardDim[1]], WIDTH/150)  #attack
+            text(screen, str(card.atk), (0, 0, 0), int(WIDTH/128), [left, top+cardDim[1]], "center")
+
+            pygame.draw.circle(screen, (0, 181, 172), [left, top], WIDTH/150)  # cost
+            text(screen, str(card.cost), (0, 0, 0), int(WIDTH/128), [left, top], "center")
+
+            pygame.draw.circle(screen, (242, 89, 0), [left+cardDim[0], top+cardDim[1]], WIDTH/150)  #health
+            text(screen, str(card.hp), (0, 0, 0), int(WIDTH/128), [left+cardDim[0], top+cardDim[1]], "center")
+
+            left += cardDim[0] + WIDTH/80
+        pygame.draw.circle(screen, (238, 255, 48), [WIDTH/2, HEIGHT*0.1], HEIGHT*0.05)  #me
+        pygame.draw.circle(screen, (242, 89, 0), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.1+HEIGHT*0.05], HEIGHT*0.025)
+        text(screen, str(self.aihp), (0, 0, 0), int(WIDTH/64), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.1+HEIGHT*0.05], "center")
+
+        
+
+
+sys = Sys()
 while running:
+    mouse_pos = pygame.mouse.get_pos()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
-                myHandCard.append(Card(5, 2, 2, pygame.image.load(path + "image/cardTemp.png")))
+                sys.myHandCard.append(Card(5, 2, 2, pygame.image.load(path + "image/cardTemp.png")))
             if event.key == pygame.K_DOWN:
-                myHandCard.pop()
+                sys.myHandCard.pop()
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            sys.clickTimer += 1
+            #clicking my card
+            sys.clickedCard = -1
+            for i in range(len(sys.myCard)):
+                if sys.myCard[i].rect.collidepoint(mouse_pos):
+                    sys.clickedCard = i
+                    break
+            
+ 
+        if event.type == pygame.MOUSEBUTTONUP:
+            sys.releasedCard = -1
+            for i in range(len(sys.aiCard)):
+                if sys.aiCard[i].rect.collidepoint(mouse_pos):
+                    sys.releasedCard = i
+                    break
+            if (sys.clickedCard != -1 and sys.releasedCard != -1):
+                sys.attack(sys.clickedCard, sys.releasedCard)
+                print([sys.clickedCard, sys.releasedCard])
+                print(sys.aiCard[sys.releasedCard].hp)
+            sys.clickTimer = 0
+
     screen.fill((105, 77, 0))
 
-    #card graphic me
-    left = WIDTH/2 - (len(myCard)*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
-    top = HEIGHT*0.55
-
-    for card in myCard:
-        screen.blit(card.image, [left, top])
-        # pygame.draw.rect(screen, (10, 10, 10), [left, top, cardDim[0], cardDim[1]])
-        # text(screen, "Card Tmp", (255, 255, 255), int(WIDTH/96), [left+cardDim[0]/2, top+cardDim[1]/2], "center")
-
-        pygame.draw.circle(screen, (200, 200, 100), [left, top+cardDim[1]], WIDTH/150)  #attack
-        text(screen, str(card.atk), (0, 0, 0), int(WIDTH/128), [left, top+cardDim[1]], "center")
-
-        pygame.draw.circle(screen, (0, 181, 172), [left, top], WIDTH/150)  # cost
-        text(screen, str(card.cost), (0, 0, 0), int(WIDTH/128), [left, top], "center")
-
-        pygame.draw.circle(screen, (242, 89, 0), [left+cardDim[0], top+cardDim[1]], WIDTH/150)  #health
-        text(screen, str(card.hp), (0, 0, 0), int(WIDTH/128), [left+cardDim[0], top+cardDim[1]], "center")
-
-        left += cardDim[0] + WIDTH/80
-    pygame.draw.circle(screen, (238, 255, 48), [WIDTH/2, HEIGHT*0.9], HEIGHT*0.05)  #me
-    pygame.draw.circle(screen, (242, 89, 0), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.9+HEIGHT*0.05], HEIGHT*0.025)
-    text(screen, str(myhp), (0, 0, 0), int(WIDTH/64), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.9+HEIGHT*0.05], "center")
-
-    angle = -45
-    for card in myHandCard:
-        rotated_image, rect = rotate(card.image, angle, [WIDTH*0.9, HEIGHT*0.9], pygame.math.Vector2(0, -cardDim[1]))
-        screen.blit(rotated_image, rect)
-        if(len(myHandCard) > 10):
-            angle += 90/(len(myHandCard)-1)
-        else:
-            angle += 9
-
-    #pygame.draw.circle(screen, (255, 0, 0), [WIDTH*0.9, HEIGHT*0.9], 10)
-
-
-    #card graphic ai
-    left = WIDTH/2 - (len(aiCard)*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
-    top = HEIGHT*0.30
-
-    for card in aiCard:
-        screen.blit(card.image, [left, top])
-        # pygame.draw.rect(screen, (10, 10, 10), [left, top, cardDim[0], cardDim[1]])
-        # text(screen, "Card Tmp", (255, 255, 255), int(WIDTH/96), [left+cardDim[0]/2, top+cardDim[1]/2], "center")
-
-        pygame.draw.circle(screen, (200, 200, 100), [left, top+cardDim[1]], WIDTH/150)  #attack
-        text(screen, str(card.atk), (0, 0, 0), int(WIDTH/128), [left, top+cardDim[1]], "center")
-
-        pygame.draw.circle(screen, (0, 181, 172), [left, top], WIDTH/150)  # cost
-        text(screen, str(card.cost), (0, 0, 0), int(WIDTH/128), [left, top], "center")
-
-        pygame.draw.circle(screen, (242, 89, 0), [left+cardDim[0], top+cardDim[1]], WIDTH/150)  #health
-        text(screen, str(card.hp), (0, 0, 0), int(WIDTH/128), [left+cardDim[0], top+cardDim[1]], "center")
-
-        left += cardDim[0] + WIDTH/80
-    pygame.draw.circle(screen, (238, 255, 48), [WIDTH/2, HEIGHT*0.1], HEIGHT*0.05)  #me
-    pygame.draw.circle(screen, (242, 89, 0), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.1+HEIGHT*0.05], HEIGHT*0.025)
-    text(screen, str(aihp), (0, 0, 0), int(WIDTH/64), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.1+HEIGHT*0.05], "center")
+    sys.draw()
     
 
     pygame.display.update()
