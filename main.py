@@ -1,10 +1,10 @@
-import pygame, os, math
+import pygame, os, math, random
+import cardList
 pygame.init()
 
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 WIDTH = pygame.display.Info().current_w
 HEIGHT = pygame.display.Info().current_h
-print(WIDTH, HEIGHT)
 if WIDTH > HEIGHT:
     HEIGHT *= 3/4
     WIDTH *= 3/4
@@ -82,51 +82,67 @@ class Sys:
         self.clickTimer = 0
         self.clickedCard = -1
         self.releasedCard = -1
-
-        self.myCard = [Card(5, 2, 2, pygame.image.load(path + "image/cardTemp.png")), Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
-        self.aiCard = [Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
-        self.myHandCard = []
-        self.aiHamdCard = []
+        self.cardSet = {}
+        self.cardSet["myCard"] = [Card(5, 2, 2, pygame.image.load(path + "image/cardTemp.png")), Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
+        self.cardSet["aiCard"] = [Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
+        self.cardSet["myHandCard"] = []
+        self.cardSet["aiHandCard"] = []
+        self.cardSet["mySetCard"] = cardList.card
+        self.cardSet["aiSetCard"] = cardList.card
+        self.myCardOrder = list(range(30))
+        random.shuffle(self.myCardOrder)
+        self.aiCardOrder = list(range(30))
+        random.shuffle(self.aiCardOrder)
         self.myhp = 30
         self.aihp = 30
 
     def attack(self, attacker, target, turn = "player"):
         if turn == "player":
             if target != 99:
-                sys.aiCard[target].hp -= sys.myCard[attacker].atk
-                print(sys.aiCard[target].hp)
+                sys.cardSet["aiCard"][target].hp -= sys.cardSet["myCard"][attacker].atk
             else:
-                sys.aihp -= sys.myCard[attacker].atk
+                sys.aihp -= sys.cardSet["myCard"][attacker].atk
         if turn == "ai":
             if target != 99:
-                sys.myCard[target].hp -= sys.aiCard[attacker].atk
-                print(sys.myCard[target].hp)
+                sys.cardSet["myCard"][target].hp -= sys.cardSet["aiCard"][attacker].atk
             else:
-                sys.myhp -= sys.aiCard[attacker].atk
+                sys.myhp -= sys.cardSet["aiCard"][attacker].atk
 
     def checkAlive(self):
         temp = []
-        for i in range(len(self.myCard)):
-            if self.myCard[i].hp <= 0:
+        for i in range(len(self.cardSet["myCard"])):
+            if self.cardSet["myCard"][i].hp <= 0:
                 temp.append(i)
         for i in reversed(temp):
-            self.myCard.pop(i)
+            self.cardSet["myCard"].pop(i)
         temp = []
-        for i in range(len(self.aiCard)):
-            if self.aiCard[i].hp <= 0:
+        for i in range(len(self.cardSet["aiCard"])):
+            if self.cardSet["aiCard"][i].hp <= 0:
                 temp.append(i)
         for i in reversed(temp):
-            self.aiCard.pop(i)
+            self.cardSet["aiCard"].pop(i)
 
     def switchTurn(self):
         if (self.isPlayerTurn):
             self.isPlayerTurn = False
+            self.giveCard("ai")
         else:
             self.isPlayerTurn = True
-        for card in sys.myCard:
+            self.giveCard("player")
+
+        for card in sys.cardSet["myCard"]:
             card.attacked = False
-        for card in sys.aiCard:
+        for card in sys.cardSet["aiCard"]:
             card.attacked = False
+
+    def giveCard(self, turn = "player"):
+        if(turn == "player"):
+            temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
+            self.cardSet["myHandCard"].append(Card(temp[2], temp[1], temp[0], pygame.image.load(path + "image/cardTemp.png")))
+        if(turn == "ai"):
+            temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
+            self.cardSet["aiHandCard"].append(Card(temp[2], temp[1], temp[0], pygame.image.load(path + "image/cardTemp.png")))
+
 
     def draw(self):
         #middle line
@@ -138,10 +154,10 @@ class Sys:
             pygame.draw.lines(screen, (255, 0, 0), True, [(0, 0),(WIDTH, 0), (WIDTH, HEIGHT/2), (0, HEIGHT/2)], 5)
 
         #card graphic me
-        left = WIDTH/2 - (len(self.myCard)*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
+        left = WIDTH/2 - (len(self.cardSet["myCard"])*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
         top = HEIGHT*0.55
 
-        for card in self.myCard:
+        for card in self.cardSet["myCard"]:
             screen.blit(card.image, [left, top])
             card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
             # pygame.draw.rect(screen, (10, 10, 10), [left, top, cardDim[0], cardDim[1]])
@@ -161,22 +177,23 @@ class Sys:
         pygame.draw.circle(screen, (242, 89, 0), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.9+HEIGHT*0.05], HEIGHT*0.025)
         text(screen, str(self.myhp), (0, 0, 0), int(WIDTH/64), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.9+HEIGHT*0.05], "center")
 
+        #my hand card
         angle = -45
-        for card in self.myHandCard:
+        for card in self.cardSet["myHandCard"]:
             rotated_image, rect = rotate(card.image, angle, [WIDTH*0.9, HEIGHT*0.9], pygame.math.Vector2(0, -cardDim[1]))
             screen.blit(rotated_image, rect)
-            if(len(self.myHandCard) > 10):
-                angle += 90/(len(self.myHandCard)-1)
+            if(len(self.cardSet["myHandCard"]) > 10):
+                angle += 90/(len(self.cardSet["myHandCard"])-1)
             else:
                 angle += 9
 
 
 
         #card graphic ai
-        left = WIDTH/2 - (len(self.aiCard)*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
+        left = WIDTH/2 - (len(self.cardSet["aiCard"])*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
         top = HEIGHT*0.30
 
-        for card in self.aiCard:
+        for card in self.cardSet["aiCard"]:
             screen.blit(card.image, [left, top])
             card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
             # pygame.draw.rect(screen, (10, 10, 10), [left, top, cardDim[0], cardDim[1]])
@@ -196,9 +213,19 @@ class Sys:
         pygame.draw.circle(screen, (242, 89, 0), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.1+HEIGHT*0.05], HEIGHT*0.025)
         text(screen, str(self.aihp), (0, 0, 0), int(WIDTH/64), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.1+HEIGHT*0.05], "center")
 
+        #ai hand card
+        angle = -45
+        for card in self.cardSet["aiHandCard"]:
+            rotated_image, rect = rotate(card.image, angle, [WIDTH*0.1, HEIGHT*0.25], pygame.math.Vector2(0, -cardDim[1]))
+            screen.blit(rotated_image, rect)
+            if(len(self.cardSet["aiHandCard"]) > 10):
+                angle += 90/(len(self.cardSet["aiHandCard"])-1)
+            else:
+                angle += 9
+
         # draw arrow
         if (sys.clickedCard != -1 and sys.clickTimer > 0):
-            pointA = (sys.myCard[sys.clickedCard].rect[0]+cardDim[0]/2, sys.myCard[sys.clickedCard].rect[1]+cardDim[1]/2)
+            pointA = (sys.cardSet["myCard"][sys.clickedCard].rect[0]+cardDim[0]/2, sys.cardSet["myCard"][sys.clickedCard].rect[1]+cardDim[1]/2)
             pointB = pygame.mouse.get_pos()
             angle_going = math.atan((pointB[1]-pointA[1])/(pointB[0]-pointA[0]+1e-10))
             if(pointB[0] < pointA[0]):
@@ -211,7 +238,7 @@ class Sys:
         pygame.draw.circle(screen, (255, 255, 255), [WIDTH*0.95, HEIGHT/2], WIDTH/25)
         pygame.draw.rect(screen, (255, 255, 255), [WIDTH*0.95, HEIGHT/2-WIDTH/25, 2*WIDTH/25, 2*WIDTH/25])
         text(screen, "End Turn", (0, 0, 0), int(WIDTH/55), [WIDTH*0.96, HEIGHT/2], "center")
-        
+    
 
 
 sys = Sys()
@@ -233,8 +260,8 @@ while running:
             #clicking my card
             sys.clickedCard = -1
             if(sys.isPlayerTurn):
-                for i in range(len(sys.myCard)):
-                    if sys.myCard[i].rect.collidepoint(mouse_pos) and sys.myCard[i].attacked == False:
+                for i in range(len(sys.cardSet["myCard"])):
+                    if sys.cardSet["myCard"][i].rect.collidepoint(mouse_pos) and sys.cardSet["myCard"][i].attacked == False:
                         sys.clickedCard = i
                         break
             
@@ -246,8 +273,8 @@ while running:
         if event.type == pygame.MOUSEBUTTONUP:
             sys.releasedCard = -1
             if(sys.isPlayerTurn):
-                for i in range(len(sys.aiCard)):
-                    if sys.aiCard[i].rect.collidepoint(mouse_pos):
+                for i in range(len(sys.cardSet["aiCard"])):
+                    if sys.cardSet["aiCard"][i].rect.collidepoint(mouse_pos):
                         sys.releasedCard = i
                         break
             if click_circle(mouse_pos, [WIDTH/2, HEIGHT*0.1], HEIGHT*0.05):
@@ -255,7 +282,7 @@ while running:
             #attack
             if (sys.clickedCard != -1 and sys.releasedCard != -1):
                 sys.attack(sys.clickedCard, sys.releasedCard)
-                sys.myCard[sys.clickedCard].attacked = True
+                sys.cardSet["myCard"][sys.clickedCard].attacked = True
                 sys.checkAlive()
 
             sys.clickTimer = 0
