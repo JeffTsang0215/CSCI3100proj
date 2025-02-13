@@ -50,7 +50,7 @@ fps = 60
 running = True
 
 cardDim = [WIDTH/20, WIDTH/20*4/3] # x:y = 3:4
-
+cardDimEnlarged = [WIDTH/10, WIDTH/10*4/3]
 #ext:
 #  type:
 #    skill
@@ -78,6 +78,7 @@ class Card:
 class Sys:
     def __init__(self):
         self.isPlayerTurn = True
+        self.checking = False
 
         self.clickTimer = 0
         self.clickedCard = -1
@@ -142,7 +143,6 @@ class Sys:
         if(turn == "ai"):
             temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
             self.cardSet["aiHandCard"].append(Card(temp[2], temp[1], temp[0], pygame.image.load(path + "image/cardTemp.png")))
-
 
     def draw(self):
         #middle line
@@ -238,36 +238,71 @@ class Sys:
         pygame.draw.circle(screen, (255, 255, 255), [WIDTH*0.95, HEIGHT/2], WIDTH/25)
         pygame.draw.rect(screen, (255, 255, 255), [WIDTH*0.95, HEIGHT/2-WIDTH/25, 2*WIDTH/25, 2*WIDTH/25])
         text(screen, "End Turn", (0, 0, 0), int(WIDTH/55), [WIDTH*0.96, HEIGHT/2], "center")
-    
 
+        #after I clicked my hand card
+        if(sys.checking):
+            my_surface = pygame.Surface((WIDTH, HEIGHT))
+            my_surface = my_surface.convert_alpha()
+            my_surface.fill((0, 0, 0, 64))
+            screen.blit(my_surface, [0, 0])
 
+            left = WIDTH/2 - (len(self.cardSet["myHandCard"])*(cardDimEnlarged[0] + WIDTH/40) - WIDTH/40)/2
+            top = HEIGHT*0.35
+            for card in self.cardSet["myHandCard"]:
+                screen.blit(pygame.transform.smoothscale(card.image, cardDimEnlarged), [left, top])
+                card.rect = pygame.Rect(left, top, cardDimEnlarged[0], cardDimEnlarged[1])
+
+                pygame.draw.circle(screen, (200, 200, 100), [left, top+cardDimEnlarged[1]], WIDTH/75)  #attack
+                text(screen, str(card.atk), (0, 0, 0), int(WIDTH/64), [left, top+cardDimEnlarged[1]], "center")
+
+                pygame.draw.circle(screen, (0, 181, 172), [left, top], WIDTH/75)  # cost
+                text(screen, str(card.cost), (0, 0, 0), int(WIDTH/64), [left, top], "center")
+
+                pygame.draw.circle(screen, (242, 89, 0), [left+cardDimEnlarged[0], top+cardDimEnlarged[1]], WIDTH/75)  #health
+                text(screen, str(card.hp), (0, 0, 0), int(WIDTH/64), [left+cardDimEnlarged[0], top+cardDimEnlarged[1]], "center")
+
+                left += cardDimEnlarged[0] + WIDTH/40
+
+    def checkHandCard(self):
+        sys.checking = True
 sys = Sys()
 
 while running:
     mouse_pos = pygame.mouse.get_pos()
+    # print([round(100*mouse_pos[0]/WIDTH), round(100*mouse_pos[1]/HEIGHT)])
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                sys.myHandCard.append(Card(5, 2, 2, pygame.image.load(path + "image/cardTemp.png")))
-            if event.key == pygame.K_DOWN:
-                sys.myHandCard.pop()
+            pass
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             sys.clickTimer += 1
-            
+
+            # exit checking !!!!!!!!!put in keyup
+            if (sys.checking):
+                if 0 <= mouse_pos[1] <= HEIGHT*0.3 or HEIGHT*0.7 <= mouse_pos[1] <= HEIGHT:
+                    sys.checking = False
+
             #clicking my card
             sys.clickedCard = -1
-            if(sys.isPlayerTurn):
+            if(sys.isPlayerTurn and not(sys.checking)):
+                # user clicked hand card !!!!!!!!!put in keyup
+                if(WIDTH*0.8 <= mouse_pos[0] <= WIDTH and HEIGHT*0.7 <= mouse_pos[1] <= HEIGHT*0.9):
+                    sys.checkHandCard()
+
+                # user clicked game board card
                 for i in range(len(sys.cardSet["myCard"])):
                     if sys.cardSet["myCard"][i].rect.collidepoint(mouse_pos) and sys.cardSet["myCard"][i].attacked == False:
                         sys.clickedCard = i
                         break
+
+            # switchTurn (!!!!!!!!!!!!!!need put inside player turn after ai is done!!!!!!!!!!)
+            if not(sys.checking):
+                if click_circle(mouse_pos, [WIDTH*0.95, HEIGHT/2], WIDTH/24) or (WIDTH*0.94 <= mouse_pos[0] <= WIDTH*0.94+2*WIDTH/24  and HEIGHT/2-WIDTH/24 <= mouse_pos[1] <= HEIGHT/2-WIDTH/24+2*WIDTH/24):
+                    sys.switchTurn()
+
             
-            # switchTurn
-            if click_circle(mouse_pos, [WIDTH*0.95, HEIGHT/2], WIDTH/24) or (WIDTH*0.94 <= mouse_pos[0] <= WIDTH*0.94+2*WIDTH/24  and HEIGHT/2-WIDTH/24 <= mouse_pos[1] <= HEIGHT/2-WIDTH/24+2*WIDTH/24):
-                sys.switchTurn()
             
  
         if event.type == pygame.MOUSEBUTTONUP:
@@ -294,4 +329,3 @@ while running:
 
     pygame.display.update()
     clock.tick(fps)
-
