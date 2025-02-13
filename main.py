@@ -64,7 +64,7 @@ cardDimEnlarged = [WIDTH/10, WIDTH/10*4/3]
 #  n: int
 #  atk: int
 class Card:
-    def __init__(self, hp, atk, cost,image = None, ext=[]):
+    def __init__(self, cost, atk, hp, image = None, ext=[]):
         self.hp = hp
         self.atk = atk
         self.cost = cost
@@ -84,8 +84,8 @@ class Sys:
         self.clickedCard = -1
         self.releasedCard = -1
         self.cardSet = {}
-        self.cardSet["myCard"] = [Card(5, 2, 2, pygame.image.load(path + "image/cardTemp.png")), Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
-        self.cardSet["aiCard"] = [Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
+        self.cardSet["myCard"] = [Card(1, 2, 5, pygame.image.load(path + "image/cardTemp.png")), Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
+        self.cardSet["aiCard"] = [Card(1, 1, 6, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
         self.cardSet["myHandCard"] = []
         self.cardSet["aiHandCard"] = []
         self.cardSet["mySetCard"] = cardList.card
@@ -139,10 +139,10 @@ class Sys:
     def giveCard(self, turn = "player"):
         if(turn == "player"):
             temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
-            self.cardSet["myHandCard"].append(Card(temp[2], temp[1], temp[0], pygame.image.load(path + "image/cardTemp.png")))
+            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(path + "image/cardTemp.png")))
         if(turn == "ai"):
             temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
-            self.cardSet["aiHandCard"].append(Card(temp[2], temp[1], temp[0], pygame.image.load(path + "image/cardTemp.png")))
+            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(path + "image/cardTemp.png")))
 
     def draw(self):
         #middle line
@@ -196,8 +196,6 @@ class Sys:
         for card in self.cardSet["aiCard"]:
             screen.blit(card.image, [left, top])
             card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
-            # pygame.draw.rect(screen, (10, 10, 10), [left, top, cardDim[0], cardDim[1]])
-            # text(screen, "Card Tmp", (255, 255, 255), int(WIDTH/96), [left+cardDim[0]/2, top+cardDim[1]/2], "center")
 
             pygame.draw.circle(screen, (200, 200, 100), [left, top+cardDim[1]], WIDTH/150)  #attack
             text(screen, str(card.atk), (0, 0, 0), int(WIDTH/128), [left, top+cardDim[1]], "center")
@@ -267,65 +265,117 @@ class Sys:
         sys.checking = True
 sys = Sys()
 
+game_state = "playing"
+
 while running:
     mouse_pos = pygame.mouse.get_pos()
     # print([round(100*mouse_pos[0]/WIDTH), round(100*mouse_pos[1]/HEIGHT)])
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            pass
+    if game_state == "playing":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                pass
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            sys.clickTimer += 1
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                sys.clickTimer += 1
 
-            # exit checking !!!!!!!!!put in keyup
-            if (sys.checking):
-                if 0 <= mouse_pos[1] <= HEIGHT*0.3 or HEIGHT*0.7 <= mouse_pos[1] <= HEIGHT:
-                    sys.checking = False
+                # exit checking !!!!!!!!!put in keyup
+                if (sys.checking):
+                    if 0 <= mouse_pos[1] <= HEIGHT*0.3 or HEIGHT*0.7 <= mouse_pos[1] <= HEIGHT:
+                        sys.checking = False
 
-            #clicking my card
-            sys.clickedCard = -1
-            if(sys.isPlayerTurn and not(sys.checking)):
-                # user clicked hand card !!!!!!!!!put in keyup
-                if(WIDTH*0.8 <= mouse_pos[0] <= WIDTH and HEIGHT*0.7 <= mouse_pos[1] <= HEIGHT*0.9):
-                    sys.checkHandCard()
+                #clicking my card
+                sys.clickedCard = -1
+                if(sys.isPlayerTurn and not(sys.checking)):
+                    # user clicked hand card !!!!!!!!!put in keyup
+                    if(WIDTH*0.8 <= mouse_pos[0] <= WIDTH and HEIGHT*0.7 <= mouse_pos[1] <= HEIGHT*0.9):
+                        sys.checkHandCard()
 
-                # user clicked game board card
-                for i in range(len(sys.cardSet["myCard"])):
-                    if sys.cardSet["myCard"][i].rect.collidepoint(mouse_pos) and sys.cardSet["myCard"][i].attacked == False:
-                        sys.clickedCard = i
-                        break
+                    # user clicked game board card
+                    for i in range(len(sys.cardSet["myCard"])):
+                        if sys.cardSet["myCard"][i].rect.collidepoint(mouse_pos) and sys.cardSet["myCard"][i].attacked == False:
+                            sys.clickedCard = i
+                            break
 
-            # switchTurn (!!!!!!!!!!!!!!need put inside player turn after ai is done!!!!!!!!!!)
-            if not(sys.checking):
-                if click_circle(mouse_pos, [WIDTH*0.95, HEIGHT/2], WIDTH/24) or (WIDTH*0.94 <= mouse_pos[0] <= WIDTH*0.94+2*WIDTH/24  and HEIGHT/2-WIDTH/24 <= mouse_pos[1] <= HEIGHT/2-WIDTH/24+2*WIDTH/24):
-                    sys.switchTurn()
+                # switchTurn (!!!!!!!!!!!!!!need put inside player turn after ai is done!!!!!!!!!!)
+                if not(sys.checking):
+                    if click_circle(mouse_pos, [WIDTH*0.95, HEIGHT/2], WIDTH/24) or (WIDTH*0.94 <= mouse_pos[0] <= WIDTH*0.94+2*WIDTH/24  and HEIGHT/2-WIDTH/24 <= mouse_pos[1] <= HEIGHT/2-WIDTH/24+2*WIDTH/24):
+                        sys.switchTurn()
 
-            
-            
- 
-        if event.type == pygame.MOUSEBUTTONUP:
-            sys.releasedCard = -1
-            if(sys.isPlayerTurn):
-                for i in range(len(sys.cardSet["aiCard"])):
-                    if sys.cardSet["aiCard"][i].rect.collidepoint(mouse_pos):
-                        sys.releasedCard = i
-                        break
-            if click_circle(mouse_pos, [WIDTH/2, HEIGHT*0.1], HEIGHT*0.05):
-                sys.releasedCard = 99
-            #attack
-            if (sys.clickedCard != -1 and sys.releasedCard != -1):
-                sys.attack(sys.clickedCard, sys.releasedCard)
-                sys.cardSet["myCard"][sys.clickedCard].attacked = True
-                sys.checkAlive()
-
-            sys.clickTimer = 0
-
-    screen.fill((105, 77, 0))
-
-    sys.draw()
+                
+                
     
+            if event.type == pygame.MOUSEBUTTONUP:
+                sys.releasedCard = -1
+                if(sys.isPlayerTurn):
+                    for i in range(len(sys.cardSet["aiCard"])):
+                        if sys.cardSet["aiCard"][i].rect.collidepoint(mouse_pos):
+                            sys.releasedCard = i
+                            break
+                if click_circle(mouse_pos, [WIDTH/2, HEIGHT*0.1], HEIGHT*0.05):
+                    sys.releasedCard = 99
+                #attack
+                if (sys.clickedCard != -1 and sys.releasedCard != -1):
+                    sys.attack(sys.clickedCard, sys.releasedCard)
+                    sys.cardSet["myCard"][sys.clickedCard].attacked = True
+                    sys.checkAlive()
 
-    pygame.display.update()
-    clock.tick(fps)
+                sys.clickTimer = 0
+
+        screen.fill((105, 77, 0))
+
+        sys.draw()
+        
+
+        pygame.display.update()
+        clock.tick(fps)
+    elif game_state == "menu":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        screen.fill((105, 77, 0))
+        ## Your code
+
+        pygame.display.update()
+        clock.tick(fps)
+    
+    elif game_state == "inventory":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        screen.fill((105, 77, 0))
+        ## Your code
+
+        pygame.display.update()
+        clock.tick(fps)
+    
+    elif game_state == "option":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        screen.fill((105, 77, 0))
+        ## Your code
+
+        pygame.display.update()
+        clock.tick(fps)
+
+    elif game_state == "win":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        screen.fill((105, 77, 0))
+        ## Your code
+
+        pygame.display.update()
+        clock.tick(fps)
+
+    elif game_state == "lost":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        screen.fill((105, 77, 0))
+        ## Your code
+
+        pygame.display.update()
+        clock.tick(fps)
