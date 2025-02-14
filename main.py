@@ -274,7 +274,7 @@ game_state = "menu"
 
 while running:
     mouse_pos = pygame.mouse.get_pos()
-    print([round(100*mouse_pos[0]/WIDTH), round(100*mouse_pos[1]/HEIGHT)])
+    #print([round(100*mouse_pos[0]/WIDTH), round(100*mouse_pos[1]/HEIGHT)])
     if game_state == "playing":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
