@@ -5,6 +5,9 @@ pygame.init()
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 WIDTH = pygame.display.Info().current_w
 HEIGHT = pygame.display.Info().current_h
+
+
+
 if WIDTH > HEIGHT:
     HEIGHT *= 3/4
     WIDTH *= 3/4
@@ -12,7 +15,8 @@ else:
     HEIGHT = HEIGHT/WIDTH
     WIDTH *= 3/4
     HEIGHT = WIDTH/HEIGHT
-
+menu_bg = pygame.image.load(path + "image\hearthstone background.png")
+menu_bg = pygame.transform.scale(menu_bg, (WIDTH, HEIGHT))
 def text(screen, text, color, size, pos, align="left"):
     text = text.encode("utf-8").decode("utf-8")
     try:
@@ -265,11 +269,12 @@ class Sys:
         sys.checking = True
 sys = Sys()
 
-game_state = "playing"
+# game_state = "playing"
+game_state = "menu"
 
 while running:
     mouse_pos = pygame.mouse.get_pos()
-    # print([round(100*mouse_pos[0]/WIDTH), round(100*mouse_pos[1]/HEIGHT)])
+    print([round(100*mouse_pos[0]/WIDTH), round(100*mouse_pos[1]/HEIGHT)])
     if game_state == "playing":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -334,7 +339,7 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.fill((105, 77, 0))
+        screen.blit(menu_bg,(0,0))
         ## Your code
 
         pygame.display.update()
