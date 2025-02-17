@@ -1,34 +1,10 @@
 import pygame, os, math, random
 import cardList
-pygame.init()
-
-path = os.path.dirname(os.path.abspath(__file__)) + '/'
-WIDTH = pygame.display.Info().current_w
-HEIGHT = pygame.display.Info().current_h
+import shared
 
 
-
-if WIDTH > HEIGHT:
-    HEIGHT *= 3/4
-    WIDTH *= 3/4
-else:
-    HEIGHT = HEIGHT/WIDTH
-    WIDTH *= 3/4
-    HEIGHT = WIDTH/HEIGHT
-menu_bg = pygame.image.load(path + "image\hearthstone background.png")
-menu_bg = pygame.transform.scale(menu_bg, (WIDTH, HEIGHT))
-def text(screen, text, color, size, pos, align="left"):
-    text = text.encode("utf-8").decode("utf-8")
-    try:
-        my_font = pygame.font.SysFont(pygame.font.get_fonts()[2], size)
-    except Exception:
-        my_font = pygame.font.Font(pygame.font.get_default_font(), size)
-    text_surface = my_font.render(text, True, color)
-    if align == "left":
-        screen.blit(text_surface, pos)
-    elif align == "center" or align == "centre":
-        text_rect = text_surface.get_rect(center=pos)
-        screen.blit(text_surface, text_rect)
+menu_bg = pygame.image.load(shared.path + "image\hearthstone background.png")
+menu_bg = pygame.transform.scale(menu_bg, (shared.WIDTH, shared.HEIGHT))
 
 def rotate(surface, angle, pivot, offset):
     """Rotate the surface around the pivot point.
@@ -48,13 +24,11 @@ def rotate(surface, angle, pivot, offset):
 def click_circle(mouse_pos, center, radius):
     return(mouse_pos[0] - center[0])**2 + (mouse_pos[1] - center[1])**2 <= radius**2
 
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-clock = pygame.time.Clock()
-fps = 60
+
 running = True
 
-cardDim = [WIDTH/20, WIDTH/20*4/3] # x:y = 3:4
-cardDimEnlarged = [WIDTH/10, WIDTH/10*4/3]
+cardDim = [shared.WIDTH/20, shared.WIDTH/20*4/3] # x:y = 3:4
+cardDimEnlarged = [shared.WIDTH/10, shared.WIDTH/10*4/3]
 #ext:
 #  type:
 #    skill
@@ -88,8 +62,8 @@ class Sys:
         self.clickedCard = -1
         self.releasedCard = -1
         self.cardSet = {}
-        self.cardSet["myCard"] = [Card(1, 2, 5, pygame.image.load(path + "image/cardTemp.png")), Card(6, 1, 1, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
-        self.cardSet["aiCard"] = [Card(1, 1, 6, pygame.image.load(path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(path + "image/cardTemp.png"))]
+        self.cardSet["myCard"] = [Card(1, 2, 5, pygame.image.load(shared.path + "image/cardTemp.png")), Card(6, 1, 1, pygame.image.load(shared.path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(shared.path + "image/cardTemp.png"))]
+        self.cardSet["aiCard"] = [Card(1, 1, 6, pygame.image.load(shared.path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(shared.path + "image/cardTemp.png"))]
         self.cardSet["myHandCard"] = []
         self.cardSet["aiHandCard"] = []
         self.cardSet["mySetCard"] = cardList.card
@@ -143,49 +117,49 @@ class Sys:
     def giveCard(self, turn = "player"):
         if(turn == "player"):
             temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
-            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(path + "image/cardTemp.png")))
+            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardTemp.png")))
         if(turn == "ai"):
             temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
-            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(path + "image/cardTemp.png")))
+            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardTemp.png")))
 
     def draw(self):
         #middle line
 
         #box indicate turn
         if self.isPlayerTurn:
-            pygame.draw.lines(screen, (0, 0, 255), True, [(0, HEIGHT/2),(WIDTH, HEIGHT/2), (WIDTH, HEIGHT), (0, HEIGHT)], 5)
+            pygame.draw.lines(shared.screen, (0, 0, 255), True, [(0, shared.HEIGHT/2),(shared.WIDTH, shared.HEIGHT/2), (shared.WIDTH, shared.HEIGHT), (0, shared.HEIGHT)], 5)
         else:
-            pygame.draw.lines(screen, (255, 0, 0), True, [(0, 0),(WIDTH, 0), (WIDTH, HEIGHT/2), (0, HEIGHT/2)], 5)
+            pygame.draw.lines(shared.screen, (255, 0, 0), True, [(0, 0),(shared.WIDTH, 0), (shared.WIDTH, shared.HEIGHT/2), (0, shared.HEIGHT/2)], 5)
 
         #card graphic me
-        left = WIDTH/2 - (len(self.cardSet["myCard"])*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
-        top = HEIGHT*0.55
+        left = shared.WIDTH/2 - (len(self.cardSet["myCard"])*(cardDim[0] + shared.WIDTH/80) - shared.WIDTH/80)/2
+        top = shared.HEIGHT*0.55
 
         for card in self.cardSet["myCard"]:
-            screen.blit(card.image, [left, top])
+            shared.screen.blit(card.image, [left, top])
             card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
-            # pygame.draw.rect(screen, (10, 10, 10), [left, top, cardDim[0], cardDim[1]])
-            # text(screen, "Card Tmp", (255, 255, 255), int(WIDTH/96), [left+cardDim[0]/2, top+cardDim[1]/2], "center")
+            # pygame.draw.rect(shared.screen, (10, 10, 10), [left, top, cardDim[0], cardDim[1]])
+            # shared.text(shared.screen, "Card Tmp", (255, 255, 255), int(shared.WIDTH/96), [left+cardDim[0]/2, top+cardDim[1]/2], "center")
 
-            pygame.draw.circle(screen, (200, 200, 100), [left, top+cardDim[1]], WIDTH/150)  #attack
-            text(screen, str(card.atk), (0, 0, 0), int(WIDTH/128), [left, top+cardDim[1]], "center")
+            pygame.draw.circle(shared.screen, (200, 200, 100), [left, top+cardDim[1]], shared.WIDTH/150)  #attack
+            shared.text(shared.screen, str(card.atk), (0, 0, 0), int(shared.WIDTH/128), [left, top+cardDim[1]], "center")
 
-            pygame.draw.circle(screen, (0, 181, 172), [left, top], WIDTH/150)  # cost
-            text(screen, str(card.cost), (0, 0, 0), int(WIDTH/128), [left, top], "center")
+            pygame.draw.circle(shared.screen, (0, 181, 172), [left, top], shared.WIDTH/150)  # cost
+            shared.text(shared.screen, str(card.cost), (0, 0, 0), int(shared.WIDTH/128), [left, top], "center")
 
-            pygame.draw.circle(screen, (242, 89, 0), [left+cardDim[0], top+cardDim[1]], WIDTH/150)  #health
-            text(screen, str(card.hp), (0, 0, 0), int(WIDTH/128), [left+cardDim[0], top+cardDim[1]], "center")
+            pygame.draw.circle(shared.screen, (242, 89, 0), [left+cardDim[0], top+cardDim[1]], shared.WIDTH/150)  #health
+            shared.text(shared.screen, str(card.hp), (0, 0, 0), int(shared.WIDTH/128), [left+cardDim[0], top+cardDim[1]], "center")
 
-            left += cardDim[0] + WIDTH/80
-        pygame.draw.circle(screen, (238, 255, 48), [WIDTH/2, HEIGHT*0.9], HEIGHT*0.05)  #me
-        pygame.draw.circle(screen, (242, 89, 0), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.9+HEIGHT*0.05], HEIGHT*0.025)
-        text(screen, str(self.myhp), (0, 0, 0), int(WIDTH/64), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.9+HEIGHT*0.05], "center")
+            left += cardDim[0] + shared.WIDTH/80
+        pygame.draw.circle(shared.screen, (238, 255, 48), [shared.WIDTH/2, shared.HEIGHT*0.9], shared.HEIGHT*0.05)  #me
+        pygame.draw.circle(shared.screen, (242, 89, 0), [shared.WIDTH/2+shared.HEIGHT*0.05, shared.HEIGHT*0.9+shared.HEIGHT*0.05], shared.HEIGHT*0.025)
+        shared.text(shared.screen, str(self.myhp), (0, 0, 0), int(shared.WIDTH/64), [shared.WIDTH/2+shared.HEIGHT*0.05, shared.HEIGHT*0.9+shared.HEIGHT*0.05], "center")
 
         #my hand card
         angle = -45
         for card in self.cardSet["myHandCard"]:
-            rotated_image, rect = rotate(card.image, angle, [WIDTH*0.9, HEIGHT*0.9], pygame.math.Vector2(0, -cardDim[1]))
-            screen.blit(rotated_image, rect)
+            rotated_image, rect = rotate(card.image, angle, [shared.WIDTH*0.9, shared.HEIGHT*0.9], pygame.math.Vector2(0, -cardDim[1]))
+            shared.screen.blit(rotated_image, rect)
             if(len(self.cardSet["myHandCard"]) > 10):
                 angle += 90/(len(self.cardSet["myHandCard"])-1)
             else:
@@ -194,32 +168,32 @@ class Sys:
 
 
         #card graphic ai
-        left = WIDTH/2 - (len(self.cardSet["aiCard"])*(cardDim[0] + WIDTH/80) - WIDTH/80)/2
-        top = HEIGHT*0.30
+        left = shared.WIDTH/2 - (len(self.cardSet["aiCard"])*(cardDim[0] + shared.WIDTH/80) - shared.WIDTH/80)/2
+        top = shared.HEIGHT*0.30
 
         for card in self.cardSet["aiCard"]:
-            screen.blit(card.image, [left, top])
+            shared.screen.blit(card.image, [left, top])
             card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
 
-            pygame.draw.circle(screen, (200, 200, 100), [left, top+cardDim[1]], WIDTH/150)  #attack
-            text(screen, str(card.atk), (0, 0, 0), int(WIDTH/128), [left, top+cardDim[1]], "center")
+            pygame.draw.circle(shared.screen, (200, 200, 100), [left, top+cardDim[1]], shared.WIDTH/150)  #attack
+            shared.text(shared.screen, str(card.atk), (0, 0, 0), int(shared.WIDTH/128), [left, top+cardDim[1]], "center")
 
-            pygame.draw.circle(screen, (0, 181, 172), [left, top], WIDTH/150)  # cost
-            text(screen, str(card.cost), (0, 0, 0), int(WIDTH/128), [left, top], "center")
+            pygame.draw.circle(shared.screen, (0, 181, 172), [left, top], shared.WIDTH/150)  # cost
+            shared.text(shared.screen, str(card.cost), (0, 0, 0), int(shared.WIDTH/128), [left, top], "center")
 
-            pygame.draw.circle(screen, (242, 89, 0), [left+cardDim[0], top+cardDim[1]], WIDTH/150)  #health
-            text(screen, str(card.hp), (0, 0, 0), int(WIDTH/128), [left+cardDim[0], top+cardDim[1]], "center")
+            pygame.draw.circle(shared.screen, (242, 89, 0), [left+cardDim[0], top+cardDim[1]], shared.WIDTH/150)  #health
+            shared.text(shared.screen, str(card.hp), (0, 0, 0), int(shared.WIDTH/128), [left+cardDim[0], top+cardDim[1]], "center")
 
-            left += cardDim[0] + WIDTH/80
-        pygame.draw.circle(screen, (238, 255, 48), [WIDTH/2, HEIGHT*0.1], HEIGHT*0.05)  #ai
-        pygame.draw.circle(screen, (242, 89, 0), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.1+HEIGHT*0.05], HEIGHT*0.025)
-        text(screen, str(self.aihp), (0, 0, 0), int(WIDTH/64), [WIDTH/2+HEIGHT*0.05, HEIGHT*0.1+HEIGHT*0.05], "center")
+            left += cardDim[0] + shared.WIDTH/80
+        pygame.draw.circle(shared.screen, (238, 255, 48), [shared.WIDTH/2, shared.HEIGHT*0.1], shared.HEIGHT*0.05)  #ai
+        pygame.draw.circle(shared.screen, (242, 89, 0), [shared.WIDTH/2+shared.HEIGHT*0.05, shared.HEIGHT*0.1+shared.HEIGHT*0.05], shared.HEIGHT*0.025)
+        shared.text(shared.screen, str(self.aihp), (0, 0, 0), int(shared.WIDTH/64), [shared.WIDTH/2+shared.HEIGHT*0.05, shared.HEIGHT*0.1+shared.HEIGHT*0.05], "center")
 
         #ai hand card
         angle = -45
         for card in self.cardSet["aiHandCard"]:
-            rotated_image, rect = rotate(card.image, angle, [WIDTH*0.1, HEIGHT*0.25], pygame.math.Vector2(0, -cardDim[1]))
-            screen.blit(rotated_image, rect)
+            rotated_image, rect = rotate(card.image, angle, [shared.WIDTH*0.1, shared.HEIGHT*0.25], pygame.math.Vector2(0, -cardDim[1]))
+            shared.screen.blit(rotated_image, rect)
             if(len(self.cardSet["aiHandCard"]) > 10):
                 angle += 90/(len(self.cardSet["aiHandCard"])-1)
             else:
@@ -232,50 +206,49 @@ class Sys:
             angle_going = math.atan((pointB[1]-pointA[1])/(pointB[0]-pointA[0]+1e-10))
             if(pointB[0] < pointA[0]):
                 angle_going += math.pi
-            pygame.draw.polygon(screen, (255, 0, 0), [pointA, pointB, (pointB[0]+WIDTH/100*math.cos(angle_going-math.pi+math.pi/6), pointB[1]+WIDTH/100*math.sin(angle_going-math.pi+math.pi/6)), (pointB[0]+WIDTH/100*math.cos(angle_going-math.pi-math.pi/6), pointB[1]+WIDTH/100*math.sin(angle_going-math.pi-math.pi/6)), pointB], 5)
+            pygame.draw.polygon(shared.screen, (255, 0, 0), [pointA, pointB, (pointB[0]+shared.WIDTH/100*math.cos(angle_going-math.pi+math.pi/6), pointB[1]+shared.WIDTH/100*math.sin(angle_going-math.pi+math.pi/6)), (pointB[0]+shared.WIDTH/100*math.cos(angle_going-math.pi-math.pi/6), pointB[1]+shared.WIDTH/100*math.sin(angle_going-math.pi-math.pi/6)), pointB], 5)
         
         # end turn button
-        pygame.draw.circle(screen, (0, 0, 0), [WIDTH*0.95, HEIGHT/2], WIDTH/24)
-        pygame.draw.rect(screen, (0, 0, 0), [WIDTH*0.94, HEIGHT/2-WIDTH/24, 2*WIDTH/24, 2*WIDTH/24])
-        pygame.draw.circle(screen, (255, 255, 255), [WIDTH*0.95, HEIGHT/2], WIDTH/25)
-        pygame.draw.rect(screen, (255, 255, 255), [WIDTH*0.95, HEIGHT/2-WIDTH/25, 2*WIDTH/25, 2*WIDTH/25])
-        text(screen, "End Turn", (0, 0, 0), int(WIDTH/55), [WIDTH*0.96, HEIGHT/2], "center")
+        pygame.draw.circle(shared.screen, (0, 0, 0), [shared.WIDTH*0.95, shared.HEIGHT/2], shared.WIDTH/24)
+        pygame.draw.rect(shared.screen, (0, 0, 0), [shared.WIDTH*0.94, shared.HEIGHT/2-shared.WIDTH/24, 2*shared.WIDTH/24, 2*shared.WIDTH/24])
+        pygame.draw.circle(shared.screen, (255, 255, 255), [shared.WIDTH*0.95, shared.HEIGHT/2], shared.WIDTH/25)
+        pygame.draw.rect(shared.screen, (255, 255, 255), [shared.WIDTH*0.95, shared.HEIGHT/2-shared.WIDTH/25, 2*shared.WIDTH/25, 2*shared.WIDTH/25])
+        shared.text(shared.screen, "End Turn", (0, 0, 0), int(shared.WIDTH/55), [shared.WIDTH*0.96, shared.HEIGHT/2], "center")
 
         #after I clicked my hand card
         if(sys.checking):
-            my_surface = pygame.Surface((WIDTH, HEIGHT))
+            my_surface = pygame.Surface((shared.WIDTH, shared.HEIGHT))
             my_surface = my_surface.convert_alpha()
             my_surface.fill((0, 0, 0, 64))
-            screen.blit(my_surface, [0, 0])
+            shared.screen.blit(my_surface, [0, 0])
 
-            left = WIDTH/2 - (len(self.cardSet["myHandCard"])*(cardDimEnlarged[0] + WIDTH/40) - WIDTH/40)/2
-            top = HEIGHT*0.35
+            left = shared.WIDTH/2 - (len(self.cardSet["myHandCard"])*(cardDimEnlarged[0] + shared.WIDTH/40) - shared.WIDTH/40)/2
+            top = shared.HEIGHT*0.35
             for card in self.cardSet["myHandCard"]:
-                screen.blit(pygame.transform.smoothscale(card.image, cardDimEnlarged), [left, top])
+                shared.screen.blit(pygame.transform.smoothscale(card.image, cardDimEnlarged), [left, top])
                 card.rect = pygame.Rect(left, top, cardDimEnlarged[0], cardDimEnlarged[1])
 
-                pygame.draw.circle(screen, (200, 200, 100), [left, top+cardDimEnlarged[1]], WIDTH/75)  #attack
-                text(screen, str(card.atk), (0, 0, 0), int(WIDTH/64), [left, top+cardDimEnlarged[1]], "center")
+                pygame.draw.circle(shared.screen, (200, 200, 100), [left, top+cardDimEnlarged[1]], shared.WIDTH/75)  #attack
+                shared.text(shared.screen, str(card.atk), (0, 0, 0), int(shared.WIDTH/64), [left, top+cardDimEnlarged[1]], "center")
 
-                pygame.draw.circle(screen, (0, 181, 172), [left, top], WIDTH/75)  # cost
-                text(screen, str(card.cost), (0, 0, 0), int(WIDTH/64), [left, top], "center")
+                pygame.draw.circle(shared.screen, (0, 181, 172), [left, top], shared.WIDTH/75)  # cost
+                shared.text(shared.screen, str(card.cost), (0, 0, 0), int(shared.WIDTH/64), [left, top], "center")
 
-                pygame.draw.circle(screen, (242, 89, 0), [left+cardDimEnlarged[0], top+cardDimEnlarged[1]], WIDTH/75)  #health
-                text(screen, str(card.hp), (0, 0, 0), int(WIDTH/64), [left+cardDimEnlarged[0], top+cardDimEnlarged[1]], "center")
+                pygame.draw.circle(shared.screen, (242, 89, 0), [left+cardDimEnlarged[0], top+cardDimEnlarged[1]], shared.WIDTH/75)  #health
+                shared.text(shared.screen, str(card.hp), (0, 0, 0), int(shared.WIDTH/64), [left+cardDimEnlarged[0], top+cardDimEnlarged[1]], "center")
 
-                left += cardDimEnlarged[0] + WIDTH/40
+                left += cardDimEnlarged[0] + shared.WIDTH/40
 
     def checkHandCard(self):
         sys.checking = True
 sys = Sys()
 
-# game_state = "playing"
-game_state = "menu"
+
 
 while running:
     mouse_pos = pygame.mouse.get_pos()
-    #print([round(100*mouse_pos[0]/WIDTH), round(100*mouse_pos[1]/HEIGHT)])
-    if game_state == "playing":
+    #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    if shared.game_state == "playing":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -287,14 +260,14 @@ while running:
 
                 # exit checking !!!!!!!!!put in keyup
                 if (sys.checking):
-                    if 0 <= mouse_pos[1] <= HEIGHT*0.3 or HEIGHT*0.7 <= mouse_pos[1] <= HEIGHT:
+                    if 0 <= mouse_pos[1] <= shared.HEIGHT*0.3 or shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT:
                         sys.checking = False
 
                 #clicking my card
                 sys.clickedCard = -1
                 if(sys.isPlayerTurn and not(sys.checking)):
                     # user clicked hand card !!!!!!!!!put in keyup
-                    if(WIDTH*0.8 <= mouse_pos[0] <= WIDTH and HEIGHT*0.7 <= mouse_pos[1] <= HEIGHT*0.9):
+                    if(shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                         sys.checkHandCard()
 
                     # user clicked game board card
@@ -305,7 +278,7 @@ while running:
 
                 # switchTurn (!!!!!!!!!!!!!!need put inside player turn after ai is done!!!!!!!!!!)
                 if not(sys.checking):
-                    if click_circle(mouse_pos, [WIDTH*0.95, HEIGHT/2], WIDTH/24) or (WIDTH*0.94 <= mouse_pos[0] <= WIDTH*0.94+2*WIDTH/24  and HEIGHT/2-WIDTH/24 <= mouse_pos[1] <= HEIGHT/2-WIDTH/24+2*WIDTH/24):
+                    if click_circle(mouse_pos, [shared.WIDTH*0.95, shared.HEIGHT/2], shared.WIDTH/24) or (shared.WIDTH*0.94 <= mouse_pos[0] <= shared.WIDTH*0.94+2*shared.WIDTH/24  and shared.HEIGHT/2-shared.WIDTH/24 <= mouse_pos[1] <= shared.HEIGHT/2-shared.WIDTH/24+2*shared.WIDTH/24):
                         sys.switchTurn()
 
                 
@@ -318,7 +291,7 @@ while running:
                         if sys.cardSet["aiCard"][i].rect.collidepoint(mouse_pos):
                             sys.releasedCard = i
                             break
-                if click_circle(mouse_pos, [WIDTH/2, HEIGHT*0.1], HEIGHT*0.05):
+                if click_circle(mouse_pos, [shared.WIDTH/2, shared.HEIGHT*0.1], shared.HEIGHT*0.05):
                     sys.releasedCard = 99
                 #attack
                 if (sys.clickedCard != -1 and sys.releasedCard != -1):
@@ -328,59 +301,59 @@ while running:
 
                 sys.clickTimer = 0
 
-        screen.fill((105, 77, 0))
+        shared.screen.fill((105, 77, 0))
 
         sys.draw()
         
 
         pygame.display.update()
-        clock.tick(fps)
-    elif game_state == "menu":
+        shared.clock.tick(shared.fps)
+    elif shared.game_state == "menu":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.blit(menu_bg,(0,0))
+        shared.screen.blit(menu_bg,(0,0))
         ## Your code
 
         pygame.display.update()
-        clock.tick(fps)
+        shared.clock.tick(shared.fps)
     
-    elif game_state == "inventory":
+    elif shared.game_state == "inventory":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.fill((105, 77, 0))
+        shared.screen.fill((105, 77, 0))
         ## Your code
 
         pygame.display.update()
-        clock.tick(fps)
+        shared.clock.tick(shared.fps)
     
-    elif game_state == "option":
+    elif shared.game_state == "option":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.fill((105, 77, 0))
+        shared.screen.fill((105, 77, 0))
         ## Your code
 
         pygame.display.update()
-        clock.tick(fps)
+        shared.clock.tick(shared.fps)
 
-    elif game_state == "win":
+    elif shared.game_state == "win":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.fill((105, 77, 0))
+        shared.screen.fill((105, 77, 0))
         ## Your code
 
         pygame.display.update()
-        clock.tick(fps)
+        shared.clock.tick(shared.fps)
 
-    elif game_state == "lost":
+    elif shared.game_state == "lost":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.fill((105, 77, 0))
+        shared.screen.fill((105, 77, 0))
         ## Your code
 
         pygame.display.update()
-        clock.tick(fps)
+        shared.clock.tick(shared.fps)
