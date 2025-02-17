@@ -1,10 +1,10 @@
 import pygame, os, math, random
 import cardList
 import shared
+import menu
 
 
-menu_bg = pygame.image.load(shared.path + "image\hearthstone background.png")
-menu_bg = pygame.transform.scale(menu_bg, (shared.WIDTH, shared.HEIGHT))
+#pygame.init handled by shared.py
 
 def rotate(surface, angle, pivot, offset):
     """Rotate the surface around the pivot point.
@@ -246,8 +246,12 @@ sys = Sys()
 
 
 while running:
+
     mouse_pos = pygame.mouse.get_pos()
+    mouse_click = pygame.mouse.get_pressed()
+    #Use to track mouse position
     #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    ###
     if shared.game_state == "playing":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -312,9 +316,8 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        shared.screen.blit(menu_bg,(0,0))
-        ## Your code
-
+        
+        menu.menu_main(mouse_pos, mouse_click)
         pygame.display.update()
         shared.clock.tick(shared.fps)
     

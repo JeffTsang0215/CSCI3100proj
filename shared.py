@@ -2,6 +2,8 @@ import pygame, os, math, random
 
 pygame.init()
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
+
+
 WIDTH = pygame.display.Info().current_w
 HEIGHT = pygame.display.Info().current_h
 
@@ -17,8 +19,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 fps = 60
 
-game_state = "playing"
-#game_state = "menu"
+#game_state = "playing"
+game_state = "menu"
 
 def text(screen, text, color, size, pos, align="left"):
     text = text.encode("utf-8").decode("utf-8")
@@ -32,3 +34,5 @@ def text(screen, text, color, size, pos, align="left"):
     elif align == "center" or align == "centre":
         text_rect = text_surface.get_rect(center=pos)
         screen.blit(text_surface, text_rect)
+
+
