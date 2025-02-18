@@ -63,6 +63,8 @@ class Sys:
         self.clickTimer = 0
         self.clickedCard = -1
         self.releasedCard = -1
+        self.placingIndex = -1
+        self.pointing = [0, 0]
         self.cardSet = {}
         self.cardSet["myCard"] = [Card(1, 2, 5, pygame.image.load(shared.path + "image/cardTemp.png")), Card(6, 1, 1, pygame.image.load(shared.path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(shared.path + "image/cardTemp.png"))]
         self.cardSet["aiCard"] = [Card(1, 1, 6, pygame.image.load(shared.path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(shared.path + "image/cardTemp.png"))]
@@ -140,8 +142,6 @@ class Sys:
         for card in self.cardSet["myCard"]:
             shared.screen.blit(card.image, [left, top])
             card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
-            # pygame.draw.rect(shared.screen, (10, 10, 10), [left, top, cardDim[0], cardDim[1]])
-            # shared.text(shared.screen, "Card Tmp", (255, 255, 255), int(shared.WIDTH/96), [left+cardDim[0]/2, top+cardDim[1]/2], "center")
 
             pygame.draw.circle(shared.screen, (200, 200, 100), [left, top+cardDim[1]], shared.WIDTH/150)  #attack
             shared.text(shared.screen, str(card.atk), (0, 0, 0), int(shared.WIDTH/128), [left, top+cardDim[1]], "center")
@@ -241,31 +241,49 @@ class Sys:
 
                 left += cardDimEnlarged[0] + shared.WIDTH/40
 
+        # draw arrow when placing card
+            
         if(self.placingCard):
+            self.pointing = [0, 0]
             arrowSideLen = shared.HEIGHT/50
             mouse_pos = pygame.mouse.get_pos()
-            pointing = [0, 0]
-            if (shared.HEIGHT*0.3 <= mouse_pos[1] <= shared.HEIGHT*0.7):
-                pass
+            if (shared.HEIGHT*0.55 <= mouse_pos[1] <= shared.HEIGHT*0.55+cardDim[1]):
+                for i in range(len(self.cardSet["myCard"])):
+                    if self.cardSet["myCard"][i].rect.left-cardDim[0]/2-shared.WIDTH/80 <=  mouse_pos[0] < self.cardSet["myCard"][i].rect.left+cardDim[0]/2:
+                        self.pointing = [self.cardSet["myCard"][i].rect.left-shared.WIDTH/160, self.cardSet["myCard"][i].rect.bottom+shared.HEIGHT/50]
+                        break
+                if self.cardSet["myCard"][-1].rect.left+cardDim[0]/2 <=  mouse_pos[0] < self.cardSet["myCard"][-1].rect.right+shared.WIDTH/80+cardDim[0]/2:
+                    self.pointing = [self.cardSet["myCard"][-1].rect.left+cardDim[0] + shared.WIDTH/160, self.cardSet["myCard"][-1].rect.bottom+shared.HEIGHT/50]
             elif (shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
-                pointing = [shared.WIDTH*0.9, shared.HEIGHT*0.9]
-
-            if pointing != [0, 0]:
-                print("test")
-                pygame.draw.polygon(shared.screen, (255, 0, 0), [
-                    pointing, 
-                    [pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2-math.pi/6))), pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2-math.pi/6)))], 
-                    [pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2+math.pi/6))), pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2+math.pi/6)))]
-                     ])
+                self.pointing = [shared.WIDTH*0.9, shared.HEIGHT*0.9]
+            pygame.draw.polygon(shared.screen, (255, 0, 0), [
+                self.pointing, 
+                [self.pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2-math.pi/6))), self.pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2-math.pi/6)))], 
+                [self.pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2+math.pi/6))), self.pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2+math.pi/6)))]
+                    ])
 
     def ckeckingf(self):
         self.placingCard = False
         self.checking = True
 
-    def placingCardf(self):
+    def placingCardf(self, i):
         self.checking = False
         self.placingCard = True
+        self.placingIndex = i
 
+    def placeCardTo(self, cardid, targetpos):
+        if self.isPlayerTurn:
+            temp = self.cardSet["myHandCard"].pop(cardid)
+            if targetpos < len(self.cardSet["myCard"]):
+                self.cardSet["myCard"] = self.cardSet["myCard"][:targetpos] + [temp] + self.cardSet["myCard"][targetpos:]
+            else:
+                self.cardSet["myCard"].append(temp)
+        else:
+            temp = self.cardSet["aiHandCard"][cardid]
+            if targetpos < len(self.cardSet["aiCard"]):
+                self.cardSet["aiCard"] = self.cardSet["aiCard"][:targetpos] + [temp] + self.cardSet["aiCard"][targetpos:]
+            else:
+                self.cardSet["aiCard"].append(temp)
 sys = Sys()
 
 
@@ -275,7 +293,7 @@ while running:
     mouse_pos = pygame.mouse.get_pos()
     mouse_click = pygame.mouse.get_pressed()
     #Use to track mouse position
-    print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    # print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     ###
     if shared.game_state == "playing":
         for event in pygame.event.get():
@@ -289,7 +307,7 @@ while running:
 
                 #clicking my card
                 sys.clickedCard = -1
-                if(sys.isPlayerTurn and not(sys.checking)):
+                if(sys.isPlayerTurn and not(sys.checking or sys.placingCard)):
                     # user clicked game board card
                     for i in range(len(sys.cardSet["myCard"])):
                         if sys.cardSet["myCard"][i].rect.collidepoint(mouse_pos) and sys.cardSet["myCard"][i].attacked == False:
@@ -309,12 +327,23 @@ while running:
                         sys.checking = False
                 elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking) and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                     sys.ckeckingf()
-
-                if (sys.placingCard and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
-                    sys.placingCard = False 
+                                    
+                # place card to desk
+                if (sys.placingCard):
+                    if (shared.HEIGHT*0.55 <= mouse_pos[1] <= shared.HEIGHT*0.55+cardDim[1]):
+                        for i in range(len(sys.cardSet["myCard"])):
+                            if (sys.cardSet["myCard"][i].rect.left-cardDim[0]/2-shared.WIDTH/80 <=  mouse_pos[0] < sys.cardSet["myCard"][i].rect.left+cardDim[0]/2):
+                                sys.placingCard = False
+                                sys.placeCardTo(sys.placingIndex, i)
+                                break
+                        if (sys.cardSet["myCard"][-1].rect.left+cardDim[0]/2 <=  mouse_pos[0] < sys.cardSet["myCard"][-1].rect.right+shared.WIDTH/80+cardDim[0]/2):
+                                sys.placingCard = False
+                                sys.placeCardTo(sys.placingIndex, len(sys.cardSet["myCard"]))
+                    elif (shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
+                        sys.placingCard = False
 
                 # to determine user want to attack who
-                if(sys.isPlayerTurn and not(sys.checking)):
+                if(sys.isPlayerTurn and not(sys.checking or sys.placingCard)):
                     for i in range(len(sys.cardSet["aiCard"])):
                         if sys.cardSet["aiCard"][i].rect.collidepoint(mouse_pos):
                             sys.releasedCard = i
@@ -325,7 +354,7 @@ while running:
                 #attack
                 if (sys.clickedCard != -1 and sys.releasedCard != -1):
                     sys.attack(sys.clickedCard, sys.releasedCard)
-                    sys.cardSet["myCard"][sys.clickedCard].attacked = True
+                    sys.cardSet["myCard"][sys.clickedCard].attacked     = True
                     sys.checkAlive()
                 
                 # selecting card to place in checking mode
@@ -333,7 +362,7 @@ while running:
                     if(sys.isPlayerTurn and sys.checking):
                         for i in range(len(sys.cardSet["myHandCard"])):
                             if sys.cardSet["myHandCard"][i].rectEnlarged.collidepoint(mouse_pos):
-                                sys.placingCardf()
+                                sys.placingCardf(i)
                                 break
                 except:
                     pass
