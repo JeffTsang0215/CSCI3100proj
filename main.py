@@ -275,7 +275,7 @@ while running:
     mouse_pos = pygame.mouse.get_pos()
     mouse_click = pygame.mouse.get_pressed()
     #Use to track mouse position
-    #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     ###
     if shared.game_state == "playing":
         for event in pygame.event.get():
@@ -355,7 +355,7 @@ while running:
         pygame.display.update()
         shared.clock.tick(shared.fps)
     
-    elif shared.game_state == "inventory":
+    elif shared.game_state == "card_collection":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -365,7 +365,17 @@ while running:
         pygame.display.update()
         shared.clock.tick(shared.fps)
     
-    elif shared.game_state == "option":
+    elif shared.game_state == "settings":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        shared.screen.fill((105, 77, 0))
+        ## Your code
+
+        pygame.display.update()
+        shared.clock.tick(shared.fps)
+
+    elif shared.game_state == "login":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
