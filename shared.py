@@ -6,21 +6,23 @@ path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
 WIDTH = pygame.display.Info().current_w
 HEIGHT = pygame.display.Info().current_h
-
-if WIDTH > HEIGHT:
-    HEIGHT *= 3/4
-    WIDTH *= 3/4
+fullscreen = True
+if not(fullscreen):
+    if WIDTH > HEIGHT:
+        HEIGHT *= 3/4
+        WIDTH *= 3/4
+    else:
+        HEIGHT = HEIGHT/WIDTH
+        WIDTH *= 3/4
+        HEIGHT = WIDTH/HEIGHT
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
 else:
-    HEIGHT = HEIGHT/WIDTH
-    WIDTH *= 3/4
-    HEIGHT = WIDTH/HEIGHT
-
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 fps = 60
 
-#game_state = "playing"
-game_state = "menu"
+game_state = "playing"
+# game_state = "menu"
 
 def text(screen, text, color, size, pos, align="left"):
     text = text.encode("utf-8").decode("utf-8")
