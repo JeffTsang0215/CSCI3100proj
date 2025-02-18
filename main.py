@@ -355,7 +355,7 @@ while running:
         pygame.display.update()
         shared.clock.tick(shared.fps)
     
-    elif shared.game_state == "inventory":
+    elif shared.game_state == "card_collection":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -365,7 +365,17 @@ while running:
         pygame.display.update()
         shared.clock.tick(shared.fps)
     
-    elif shared.game_state == "option":
+    elif shared.game_state == "settings":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        shared.screen.fill((105, 77, 0))
+        ## Your code
+
+        pygame.display.update()
+        shared.clock.tick(shared.fps)
+
+    elif shared.game_state == "login":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
