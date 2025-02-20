@@ -66,8 +66,8 @@ class Sys:
         self.placingIndex = -1
         self.pointing = [0, 0]
         self.cardSet = {}
-        self.cardSet["myCard"] = [Card(1, 2, 5, pygame.image.load(shared.path + "image/cardTemp.png")), Card(6, 1, 1, pygame.image.load(shared.path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(shared.path + "image/cardTemp.png"))]
-        self.cardSet["aiCard"] = [Card(1, 1, 6, pygame.image.load(shared.path + "image/cardTemp.png")), Card(6, 6, 5, pygame.image.load(shared.path + "image/cardTemp.png"))]
+        self.cardSet["myCard"] = []
+        self.cardSet["aiCard"] = []
         self.cardSet["myHandCard"] = []
         self.cardSet["aiHandCard"] = []
         self.cardSet["mySetCard"] = cardList.card
@@ -243,17 +243,21 @@ class Sys:
 
         # draw arrow when placing card
             
-        if(self.placingCard):
+        if(self.placingCard and sys.isPlayerTurn):
+            pygame.draw.rect(shared.screen, (255, 0, 0), [shared.WIDTH/2 - (shared.WIDTH/80*8 + cardDim[0]*7)/2, shared.HEIGHT*0.55, (shared.WIDTH/80*8 + cardDim[0]*7), cardDim[1]], width = int(shared.WIDTH/100))
             self.pointing = [0, 0]
             arrowSideLen = shared.HEIGHT/50
             mouse_pos = pygame.mouse.get_pos()
             if (shared.HEIGHT*0.55 <= mouse_pos[1] <= shared.HEIGHT*0.55+cardDim[1]):
-                for i in range(len(self.cardSet["myCard"])):
-                    if self.cardSet["myCard"][i].rect.left-cardDim[0]/2-shared.WIDTH/80 <=  mouse_pos[0] < self.cardSet["myCard"][i].rect.left+cardDim[0]/2:
-                        self.pointing = [self.cardSet["myCard"][i].rect.left-shared.WIDTH/160, self.cardSet["myCard"][i].rect.bottom+shared.HEIGHT/50]
-                        break
-                if self.cardSet["myCard"][-1].rect.left+cardDim[0]/2 <=  mouse_pos[0] < self.cardSet["myCard"][-1].rect.right+shared.WIDTH/80+cardDim[0]/2:
-                    self.pointing = [self.cardSet["myCard"][-1].rect.left+cardDim[0] + shared.WIDTH/160, self.cardSet["myCard"][-1].rect.bottom+shared.HEIGHT/50]
+                if len(sys.cardSet["myCard"]) == 0:
+                    self.pointing = [shared.WIDTH/2, shared.HEIGHT*0.55 + cardDim[1] +shared.HEIGHT/50]
+                else:
+                    for i in range(len(self.cardSet["myCard"])):
+                        if self.cardSet["myCard"][i].rect.left-cardDim[0]/2-shared.WIDTH/80 <=  mouse_pos[0] < self.cardSet["myCard"][i].rect.left+cardDim[0]/2:
+                            self.pointing = [self.cardSet["myCard"][i].rect.left-shared.WIDTH/160, self.cardSet["myCard"][i].rect.bottom+shared.HEIGHT/50]
+                            break
+                    if self.cardSet["myCard"][-1].rect.left+cardDim[0]/2 <=  mouse_pos[0] < self.cardSet["myCard"][-1].rect.right+shared.WIDTH/80+cardDim[0]/2:
+                        self.pointing = [self.cardSet["myCard"][-1].rect.left+cardDim[0] + shared.WIDTH/160, self.cardSet["myCard"][-1].rect.bottom+shared.HEIGHT/50]
             elif (shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                 self.pointing = [shared.WIDTH*0.9, shared.HEIGHT*0.9]
             pygame.draw.polygon(shared.screen, (255, 0, 0), [
@@ -331,14 +335,18 @@ while running:
                 # place card to desk
                 if (sys.placingCard):
                     if (shared.HEIGHT*0.55 <= mouse_pos[1] <= shared.HEIGHT*0.55+cardDim[1]):
-                        for i in range(len(sys.cardSet["myCard"])):
-                            if (sys.cardSet["myCard"][i].rect.left-cardDim[0]/2-shared.WIDTH/80 <=  mouse_pos[0] < sys.cardSet["myCard"][i].rect.left+cardDim[0]/2):
-                                sys.placingCard = False
-                                sys.placeCardTo(sys.placingIndex, i)
-                                break
-                        if (sys.cardSet["myCard"][-1].rect.left+cardDim[0]/2 <=  mouse_pos[0] < sys.cardSet["myCard"][-1].rect.right+shared.WIDTH/80+cardDim[0]/2):
-                                sys.placingCard = False
-                                sys.placeCardTo(sys.placingIndex, len(sys.cardSet["myCard"]))
+                        if len(sys.cardSet["myCard"]) == 0:
+                            sys.placingCard = False
+                            sys.placeCardTo(sys.placingIndex, 0)
+                        else:
+                            for i in range(len(sys.cardSet["myCard"])):
+                                if (sys.cardSet["myCard"][i].rect.left-cardDim[0]/2-shared.WIDTH/80 <=  mouse_pos[0] < sys.cardSet["myCard"][i].rect.left+cardDim[0]/2):
+                                    sys.placingCard = False
+                                    sys.placeCardTo(sys.placingIndex, i)
+                                    break
+                            if (sys.cardSet["myCard"][-1].rect.left+cardDim[0]/2 <=  mouse_pos[0] < sys.cardSet["myCard"][-1].rect.right+shared.WIDTH/80+cardDim[0]/2):
+                                    sys.placingCard = False
+                                    sys.placeCardTo(sys.placingIndex, len(sys.cardSet["myCard"]))
                     elif (shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                         sys.placingCard = False
 
