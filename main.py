@@ -31,8 +31,8 @@ cardDim = [shared.WIDTH/20, shared.WIDTH/20*4/3] # x:y = 3:4
 cardDimEnlarged = [shared.WIDTH/10, shared.WIDTH/10*4/3]
 #ext:
 #  type:
-#    skill
-#    soldier
+#    minion
+#    spell
 #  skill:
 #    summon n
 #    fullAtk
@@ -42,12 +42,13 @@ cardDimEnlarged = [shared.WIDTH/10, shared.WIDTH/10*4/3]
 #  n: int
 #  atk: int
 class Card:
-    def __init__(self, cost, atk, hp, image = None, ext=[]):
+    def __init__(self, cost, atk, hp, image = None, ext={}):
         self.hp = hp
         self.atk = atk
         self.cost = cost
         self.ext = ext
         self.attacked = False
+        self.round = 0
         self.image = image.convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, cardDim)
         
@@ -106,28 +107,34 @@ class Sys:
             self.cardSet["aiCard"].pop(i)
 
     def switchTurn(self):
+        # player to ai
         if (self.isPlayerTurn):
             self.isPlayerTurn = False
             self.giveCard("ai")
+            for card in sys.cardSet["aiCard"]:
+                card.attacked = False
+        # ai to player
         else:
             self.isPlayerTurn = True
             self.giveCard("player")
+            for card in sys.cardSet["myCard"]:
+                card.attacked = False
+                card.round += 1
 
-        for card in sys.cardSet["myCard"]:
-            card.attacked = False
-        for card in sys.cardSet["aiCard"]:
-            card.attacked = False
+        
+        
 
     def giveCard(self, turn = "player"):
         if(turn == "player"):
             temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
-            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardTemp.png")))
+            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardTemp.png") if temp[3] == None else pygame.image.load(shared.path + temp[3]), temp[4]))
         if(turn == "ai"):
             temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
-            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardTemp.png")))
+            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardTemp.png") if temp[3] == None else pygame.image.load(shared.path + temp[3]), temp[4]))
 
     def draw(self):
-        #middle line
+        #bg
+        shared.screen.blit(pygame.transform.scale(pygame.image.load(shared.path + "image/gameBoard_v2.jpg"), (shared.WIDTH, shared.HEIGHT)), (0, 0))
 
         #box indicate turn
         if self.isPlayerTurn:
