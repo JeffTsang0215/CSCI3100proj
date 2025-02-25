@@ -1,8 +1,8 @@
 import pygame, os, math, random
 import cardList
+import cardcollection
 import shared
 import menu
-
 
 #pygame.init handled by shared.py
 
@@ -304,7 +304,7 @@ while running:
     mouse_pos = pygame.mouse.get_pos()
     mouse_click = pygame.mouse.get_pressed()
     #Use to track mouse position
-    # print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     ###
     if shared.game_state == "playing":
         for event in pygame.event.get():
@@ -403,8 +403,11 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        shared.screen.fill((105, 77, 0))
-        ## Your code
+
+        cardcollection.cardcollection_main(mouse_pos, mouse_click)
+        pygame.display.update()
+        shared.clock.tick(shared.fps)
+        
 
         pygame.display.update()
         shared.clock.tick(shared.fps)
