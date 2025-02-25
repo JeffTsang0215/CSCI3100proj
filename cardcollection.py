@@ -36,24 +36,24 @@ cards_per_row = 4  # Number of cards per row
 
 # Create a list of cards dynamically from a database (Example data)
 card_data = [
-    (2, 3, 5, "common"),
-    (4, 5, 6, "rare"),
-    (6, 7, 8, "epic"),
-    (8, 9, 10, "legendary"),
-    (3, 4, 6, "common"),
-    (5, 6, 7, "rare"),
-    (7, 8, 9, "epic"),
-    (9, 10, 11, "legendary"),
+    (2, 3, 5, "common", 0.8),
+    (4, 5, 6, "rare", 1),
+    (6, 7, 8, "epic", 1),
+    (8, 9, 10, "legendary", 1),
+    (3, 4, 6, "common", 1),
+    (5, 6, 7, "rare", 1),
+    (7, 8, 9, "epic", 1),
+    (9, 10, 11, "legendary", 1),
 ]
 
 # Create CardTemplate objects dynamically
 cards = []
-for i, (cost, atk, hp, rarity) in enumerate(card_data):
+for i, (cost, atk, hp, rarity, scale_factor) in enumerate(card_data):
     row = i // cards_per_row  # Determines the row (0 or 1)
     col = i % cards_per_row   # Determines the column (0 to 3)
     x = start_x + col * card_spacing_x
     y = start_y + row * card_spacing_y
-    cards.append(CardTemplate(cost, atk, hp, rarity, x, y))
+    cards.append(CardTemplate(cost, atk, hp, rarity, x, y, scale_factor))
 
 def cardcollection_main(mouse_pos, mouse_click):
     shared.screen.blit(cardcollection_bg, (0, 0))  # Draw background
