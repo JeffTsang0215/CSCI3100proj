@@ -4,10 +4,11 @@ import shared
 class CardTemplate:
     BASE_SIZE = (140, 196)  # Base card size
 
-    def __init__(self, cost, atk, hp, rarity, x, y, scale_factor=1.0, image=None, ext=None):
+    def __init__(self, cost, atk, hp, name, rarity, x, y, scale_factor=1.0, image=None, ext=None):
         self.cost = cost
         self.atk = atk
         self.hp = hp
+        self.name = name
         self.rarity = rarity
         self.scale_factor = scale_factor
         self.ext = ext or {}  
@@ -38,14 +39,19 @@ class CardTemplate:
 
         # Define text properties
         font_size = int(20 * self.scale_factor)  # Scale text size
-        text_color = (255, 255, 255)  
+        text_color = (255, 255, 255)
+        name_font_size = int(10 * self.scale_factor)  
+        name_color = (0,0,0)
 
         # Scale positions relative to the card
         cost_pos = (self.x + int(21 * self.scale_factor), self.y + int(31 * self.scale_factor))
         atk_pos = (self.x + int(22 * self.scale_factor), self.y + self.card_height - int(16 * self.scale_factor))
         hp_pos = (self.x + self.card_width - int(19 * self.scale_factor), self.y + self.card_height - int(15 * self.scale_factor))
-
+        name_pos = (self.x + self.card_width // 2, self.y + int(107 * self.scale_factor))
+    
         # Draw the scaled text positions
         shared.text(shared.screen, str(self.cost), text_color, font_size, cost_pos, "center")
         shared.text(shared.screen, str(self.atk), text_color, font_size, atk_pos, "center")
         shared.text(shared.screen, str(self.hp), text_color, font_size, hp_pos, "center")
+        shared.text(shared.screen, str(self.name), name_color, name_font_size, name_pos, "center")
+

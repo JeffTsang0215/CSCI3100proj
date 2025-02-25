@@ -87,5 +87,5 @@ def cardcollection_main(mouse_pos, mouse_click):
         col = i % cards_per_row  
         x = start_x + col * card_spacing_x
         y = start_y + row * card_spacing_y
-        cost, atk, hp, rarity, scale_factor, image, ext = card_info
-        CardTemplate(cost, atk, hp, rarity, x, y, scale_factor, image, ext).draw()
+        cost, atk, hp, name, rarity, scale_factor, image, ext = card_info
+        CardTemplate(cost, atk, hp, name, rarity, x, y, scale_factor, image, ext).draw()
