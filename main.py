@@ -41,8 +41,12 @@ cardDimEnlarged = [shared.WIDTH/10, shared.WIDTH/10*4/3]
 #    cure n 
 #  n: int
 #  atk: int
+
+
+
 class Card:
     def __init__(self, cost, atk, hp, image = None, ext={}):
+        
         self.hp = hp
         self.atk = atk
         self.cost = cost
@@ -127,10 +131,10 @@ class Sys:
     def giveCard(self, turn = "player"):
         if(turn == "player"):
             temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
-            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardTemp.png") if temp[3] == None else pygame.image.load(shared.path + temp[3]), temp[4]))
+            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/Back of Card.jpeg") if temp[3] == None else pygame.image.load(shared.path + temp[3]), temp[4]))
         if(turn == "ai"):
             temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
-            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardTemp.png") if temp[3] == None else pygame.image.load(shared.path + temp[3]), temp[4]))
+            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/Back of Card.jpeg") if temp[3] == None else pygame.image.load(shared.path + temp[3]), temp[4]))
 
     def draw(self):
         #bg
@@ -304,7 +308,7 @@ while running:
     mouse_pos = pygame.mouse.get_pos()
     mouse_click = pygame.mouse.get_pressed()
     #Use to track mouse position
-    #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     ###
     if shared.game_state == "playing":
         for event in pygame.event.get():
