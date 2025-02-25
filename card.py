@@ -41,7 +41,6 @@ class CardTemplate:
         font_size = int(20 * self.scale_factor)  # Scale text size
         text_color = (255, 255, 255)
         name_font_size = int(10 * self.scale_factor)  
-        name_color = (0,0,0)
 
         # Scale positions relative to the card
         cost_pos = (self.x + int(21 * self.scale_factor), self.y + int(31 * self.scale_factor))
@@ -53,5 +52,5 @@ class CardTemplate:
         shared.text(shared.screen, str(self.cost), text_color, font_size, cost_pos, "center")
         shared.text(shared.screen, str(self.atk), text_color, font_size, atk_pos, "center")
         shared.text(shared.screen, str(self.hp), text_color, font_size, hp_pos, "center")
-        shared.text(shared.screen, str(self.name), name_color, name_font_size, name_pos, "center")
+        shared.text(shared.screen, str(self.name), text_color, name_font_size, name_pos, "center")
 
