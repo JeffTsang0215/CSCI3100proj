@@ -104,7 +104,6 @@ error_message = ""
 error_color = RED
 prev_mouse_click = (False, False, False)
 
-
 def login_user(username, password):
     global error_message, error_color
     if not username or not password:
@@ -162,31 +161,37 @@ def register_user(username, password):
         error_color = RED
 
 # Initialize input boxes and buttons
-username_box = InputBox(shared.WIDTH / 2 - 250, shared.HEIGHT / 2, 500, 40, max_length = 16, is_username=True)
-password_box = InputBox(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 50, 500, 40, max_length = 32)
-login_button = pygame.Rect(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 100, 500, 40)
-register_button = pygame.Rect(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 150, 500, 40)
-
-menu_bg = pygame.image.load(shared.path + "image/hearthstone background.png")
-menu_bg = pygame.transform.scale(menu_bg, (shared.WIDTH, shared.HEIGHT))
+username_box = InputBox(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 - 70, 500, 40, max_length = 16, is_username=True)
+password_box = InputBox(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 - 20, 500, 40, max_length = 32)
+login_button = pygame.Rect(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 30, 500, 40)
+register_button = pygame.Rect(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 80, 500, 40)
 
 def loginSystem_main(mouse_pos, mouse_click):
     global prev_mouse_click, error_message
     current_time = pygame.time.get_ticks()
-
-    # Handle mouse clicks
     current_mouse_pressed = mouse_click[0]
     previous_mouse_pressed = prev_mouse_click[0]
 
+    if previous_mouse_pressed and not current_mouse_pressed:
+        # Check if mouse was released over a button
+        if login_button.collidepoint(mouse_pos):
+            login_user(username_box.text, password_box.text)
+            # If login successful, clear inputs immediately
+            if shared.game_state == "menu":
+                username_box.text = ""
+                password_box.text = ""
+                username_box.txt_surface = font.render("", True, BLACK)
+                password_box.txt_surface = font.render("", True, BLACK)
+                return  # Exit early to prevent further processing
+
+        elif register_button.collidepoint(mouse_pos):
+            register_user(username_box.text, password_box.text)
+
+        # Handle input box clicks on press
     if current_mouse_pressed and not previous_mouse_pressed:
         username_box.handle_mouse_click(mouse_pos)
         password_box.handle_mouse_click(mouse_pos)
-        error_message = ""  # Clear previous error on new action
-
-        if login_button.collidepoint(mouse_pos):
-            login_user(username_box.text, password_box.text)
-        elif register_button.collidepoint(mouse_pos):
-            register_user(username_box.text, password_box.text)
+        error_message = ""
 
     # Update input boxes
     username_box.update(current_time)
@@ -197,7 +202,6 @@ def loginSystem_main(mouse_pos, mouse_click):
     # Only draw login screen if we're still in login state
     if shared.game_state == "login":
         # Draw everything
-        shared.screen.blit(menu_bg, (0, 0))
         shared.screen.fill(BACKGROUNDCOLOR)
         username_box.draw(shared.screen)
         password_box.draw(shared.screen)
@@ -210,6 +214,6 @@ def loginSystem_main(mouse_pos, mouse_click):
 
         # Draw error message
         if error_message:
-            error_y = shared.HEIGHT / 2 + 220
+            error_y = shared.HEIGHT / 2 + 140
             shared.text(shared.screen, error_message, error_color, 30,
                         (shared.WIDTH / 2, error_y), "center")
