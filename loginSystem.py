@@ -162,10 +162,13 @@ def register_user(username, password):
         error_color = RED
 
 # Initialize input boxes and buttons
-username_box = InputBox(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 - 70, 500, 40, max_length = 16, is_username=True)
-password_box = InputBox(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 - 20, 500, 40, max_length = 32)
-login_button = pygame.Rect(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 30, 500, 40)
-register_button = pygame.Rect(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 80, 500, 40)
+username_box = InputBox(shared.WIDTH / 2 - 250, shared.HEIGHT / 2, 500, 40, max_length = 16, is_username=True)
+password_box = InputBox(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 50, 500, 40, max_length = 32)
+login_button = pygame.Rect(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 100, 500, 40)
+register_button = pygame.Rect(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 150, 500, 40)
+
+menu_bg = pygame.image.load(shared.path + "image/hearthstone background.png")
+menu_bg = pygame.transform.scale(menu_bg, (shared.WIDTH, shared.HEIGHT))
 
 def loginSystem_main(mouse_pos, mouse_click):
     global prev_mouse_click, error_message
@@ -194,6 +197,7 @@ def loginSystem_main(mouse_pos, mouse_click):
     # Only draw login screen if we're still in login state
     if shared.game_state == "login":
         # Draw everything
+        shared.screen.blit(menu_bg, (0, 0))
         shared.screen.fill(BACKGROUNDCOLOR)
         username_box.draw(shared.screen)
         password_box.draw(shared.screen)
@@ -206,6 +210,6 @@ def loginSystem_main(mouse_pos, mouse_click):
 
         # Draw error message
         if error_message:
-            error_y = shared.HEIGHT / 2 + 140
+            error_y = shared.HEIGHT / 2 + 220
             shared.text(shared.screen, error_message, error_color, 30,
                         (shared.WIDTH / 2, error_y), "center")
