@@ -1,6 +1,7 @@
 import pygame, os, math, random
 import cardList
 import cardcollection
+import loginSystem
 import shared
 import menu
 
@@ -38,7 +39,7 @@ cardDimEnlarged = [shared.WIDTH/10, shared.WIDTH/10*4/3]
 #    fullAtk
 #    freeze n
 #    draw n
-#    cure n 
+#    cure n
 #  n: int
 #  atk: int
 
@@ -46,7 +47,7 @@ cardDimEnlarged = [shared.WIDTH/10, shared.WIDTH/10*4/3]
 
 class Card:
     def __init__(self, cost, atk, hp, image = None, ext={}):
-        
+
         self.hp = hp
         self.atk = atk
         self.cost = cost
@@ -55,7 +56,7 @@ class Card:
         self.round = 0
         self.image = image.convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, cardDim)
-        
+
         self.rect = None
         self.rectEnlarged = None
 
@@ -125,8 +126,8 @@ class Sys:
                 card.attacked = False
                 card.round += 1
 
-        
-        
+
+
 
     def giveCard(self, turn = "player"):
         if(turn == "player"):
@@ -220,7 +221,7 @@ class Sys:
             if(pointB[0] < pointA[0]):
                 angle_going += math.pi
             pygame.draw.polygon(shared.screen, (255, 0, 0), [pointA, pointB, (pointB[0]+shared.WIDTH/100*math.cos(angle_going-math.pi+math.pi/6), pointB[1]+shared.WIDTH/100*math.sin(angle_going-math.pi+math.pi/6)), (pointB[0]+shared.WIDTH/100*math.cos(angle_going-math.pi-math.pi/6), pointB[1]+shared.WIDTH/100*math.sin(angle_going-math.pi-math.pi/6)), pointB], 5)
-        
+
         # end turn button
         pygame.draw.circle(shared.screen, (0, 0, 0), [shared.WIDTH*0.95, shared.HEIGHT/2], shared.WIDTH/24)
         pygame.draw.rect(shared.screen, (0, 0, 0), [shared.WIDTH*0.94, shared.HEIGHT/2-shared.WIDTH/24, 2*shared.WIDTH/24, 2*shared.WIDTH/24])
@@ -253,7 +254,7 @@ class Sys:
                 left += cardDimEnlarged[0] + shared.WIDTH/40
 
         # draw arrow when placing card
-            
+
         if(self.placingCard and sys.isPlayerTurn):
             pygame.draw.rect(shared.screen, (255, 0, 0), [shared.WIDTH/2 - (shared.WIDTH/80*8 + cardDim[0]*7)/2, shared.HEIGHT*0.55, (shared.WIDTH/80*8 + cardDim[0]*7), cardDim[1]], width = int(shared.WIDTH/100))
             self.pointing = [0, 0]
@@ -272,8 +273,8 @@ class Sys:
             elif (shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                 self.pointing = [shared.WIDTH*0.9, shared.HEIGHT*0.9]
             pygame.draw.polygon(shared.screen, (255, 0, 0), [
-                self.pointing, 
-                [self.pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2-math.pi/6))), self.pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2-math.pi/6)))], 
+                self.pointing,
+                [self.pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2-math.pi/6))), self.pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2-math.pi/6)))],
                 [self.pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2+math.pi/6))), self.pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2+math.pi/6)))]
                     ])
 
@@ -342,7 +343,7 @@ while running:
                         sys.checking = False
                 elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking) and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                     sys.ckeckingf()
-                                    
+
                 # place card to desk
                 if (sys.placingCard):
                     if (shared.HEIGHT*0.55 <= mouse_pos[1] <= shared.HEIGHT*0.55+cardDim[1]):
@@ -369,13 +370,13 @@ while running:
                             break
                 if click_circle(mouse_pos, [shared.WIDTH/2, shared.HEIGHT*0.1], shared.HEIGHT*0.05):
                     sys.releasedCard = 99
-                
+
                 #attack
                 if (sys.clickedCard != -1 and sys.releasedCard != -1):
                     sys.attack(sys.clickedCard, sys.releasedCard)
                     sys.cardSet["myCard"][sys.clickedCard].attacked     = True
                     sys.checkAlive()
-                
+
                 # selecting card to place in checking mode
                 try:
                     if(sys.isPlayerTurn and sys.checking):
@@ -390,7 +391,7 @@ while running:
         shared.screen.fill((105, 77, 0))
 
         sys.draw()
-        
+
 
         pygame.display.update()
         shared.clock.tick(shared.fps)
@@ -398,11 +399,11 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        
+
         menu.menu_main(mouse_pos, mouse_click)
         pygame.display.update()
         shared.clock.tick(shared.fps)
-    
+
     elif shared.game_state == "card_collection":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -411,11 +412,11 @@ while running:
         cardcollection.cardcollection_main(mouse_pos, mouse_click)
         pygame.display.update()
         shared.clock.tick(shared.fps)
-        
+
 
         pygame.display.update()
         shared.clock.tick(shared.fps)
-    
+
     elif shared.game_state == "settings":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -430,9 +431,8 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        shared.screen.fill((105, 77, 0))
-        ## Your code
 
+        loginSystem.loginSystem_main(mouse_pos, mouse_click)
         pygame.display.update()
         shared.clock.tick(shared.fps)
 
