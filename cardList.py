@@ -15,7 +15,7 @@
 card = []
 
 # COMMON CARDS
-card.append([0, 1, 3, "Goblin Scout", "common", 1, "description", "bob the undying.png", {"type": "minion"}])
+card.append([0, 1, 3, "Goblin Scout", "common", 1, "description", "Bob the undying.png", {"type": "minion"}])
 card.append([1, 2, 4, "Elven Archer", "common", 1, "description", "ninja.png", {"type": "minion"}])
 card.append([1, 1, 5, "Skeletal Minion", "common", 1, "description", "cardTemp.png", {"type": "minion"}])
 card.append([1, 1, 6, "Frost Mage", "common", 1, "description", "cardTemp.png", {"type": "minion", "skill": "freeze", "n": 1}])
