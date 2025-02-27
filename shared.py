@@ -7,10 +7,14 @@ path = os.path.dirname(os.path.abspath(__file__)) + '/'
 WIDTH = pygame.display.Info().current_w
 HEIGHT = pygame.display.Info().current_h
 fullscreen = False
+
 if not(fullscreen):
     if WIDTH > HEIGHT:
-        HEIGHT *= 3/5
-        WIDTH *= 3/5
+        HEIGHT *= 3/4
+        WIDTH = HEIGHT * 16 / 9
+        if WIDTH > pygame.display.Info().current_w:
+            WIDTH = pygame.display.Info().current_w
+            HEIGHT = WIDTH * 9 /16
     else:
         HEIGHT = HEIGHT/WIDTH
         WIDTH *= 3/4

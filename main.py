@@ -66,6 +66,13 @@ class Sys:
         self.checking = False
         self.placingCard = False
 
+        self.myMaxMana = 1
+        self.myMana = 1
+        self.aiMaxMana = 0
+        self.aiMana = 0
+        self.manaFImg = pygame.transform.scale(pygame.image.load(shared.path + "image/ManaF.png").convert_alpha(), (int(shared.WIDTH*0.016), int(shared.WIDTH*0.016)))
+        self.manaTImg = pygame.transform.scale(pygame.image.load(shared.path + "image/ManaT.png").convert_alpha(), (int(shared.WIDTH*0.016), int(shared.WIDTH*0.016)))
+
         self.clickTimer = 0
         self.clickedCard = -1
         self.releasedCard = -1
@@ -118,13 +125,22 @@ class Sys:
             self.giveCard("ai")
             for card in sys.cardSet["aiCard"]:
                 card.attacked = False
+            for card in sys.cardSet["myCard"]:
+                card.round += 1
+            if self.aiMaxMana < 10:
+                self.aiMaxMana += 1
+            self.aiMana = self.aiMaxMana
         # ai to player
         else:
             self.isPlayerTurn = True
             self.giveCard("player")
             for card in sys.cardSet["myCard"]:
                 card.attacked = False
+            for card in sys.cardSet["aiCard"]:
                 card.round += 1
+            if self.myMaxMana < 10:
+                self.myMaxMana += 1
+            self.myMana = self.myMaxMana
 
 
 
@@ -232,6 +248,22 @@ class Sys:
         pygame.draw.rect(shared.screen, (255, 255, 255), [shared.WIDTH*0.95, shared.HEIGHT/2-shared.WIDTH/25, 2*shared.WIDTH/25, 2*shared.WIDTH/25])
         shared.text(shared.screen, "End Turn", (0, 0, 0), int(shared.WIDTH/55), [shared.WIDTH*0.96, shared.HEIGHT/2], "center")
 
+        # draw mana crystal
+        for i in range(self.myMaxMana):
+            shared.screen.blit(self.manaFImg, (int(shared.WIDTH*0.68+i*shared.WIDTH*0.016), shared.HEIGHT*0.96))
+        for i in range(self.myMana):
+            shared.screen.blit(self.manaTImg, (int(shared.WIDTH*0.68+i*shared.WIDTH*0.016), shared.HEIGHT*0.96))
+        shared.text(shared.screen, str(self.myMana) + "/" + str(self.myMaxMana), (255, 255, 255), int(shared.WIDTH*0.016), (int(shared.WIDTH*0.65), int(shared.HEIGHT*0.96+shared.WIDTH*0.016/2)), "center")
+
+        for i in range(self.aiMaxMana):
+            shared.screen.blit(self.manaFImg, (int(shared.WIDTH*0.66+i*shared.WIDTH*0.016), shared.HEIGHT*0.08))
+        for i in range(self.aiMana):
+            shared.screen.blit(self.manaTImg, (int(shared.WIDTH*0.66+i*shared.WIDTH*0.016), shared.HEIGHT*0.08))
+        shared.text(shared.screen, str(self.aiMana) + "/" + str(self.aiMaxMana), (255, 255, 255), int(shared.WIDTH*0.016), (int(shared.WIDTH*0.63), int(shared.HEIGHT*0.08+shared.WIDTH*0.016/2)), "center")
+
+        shared.screen.blit(pygame.transform.scale(pygame.image.load(shared.path + "image/gameBoard_v2_up.png"), (shared.WIDTH, shared.HEIGHT)), (0, 0))
+
+
         #after I clicked my hand card
         if(self.checking):
             my_surface = pygame.Surface((shared.WIDTH, shared.HEIGHT))
@@ -297,12 +329,14 @@ class Sys:
                 self.cardSet["myCard"] = self.cardSet["myCard"][:targetpos] + [temp] + self.cardSet["myCard"][targetpos:]
             else:
                 self.cardSet["myCard"].append(temp)
+            self.myMana -= temp.cost
         else:
-            temp = self.cardSet["aiHandCard"][cardid]
+            temp = self.cardSet["aiHandCard"].pop(cardid)
             if targetpos < len(self.cardSet["aiCard"]):
                 self.cardSet["aiCard"] = self.cardSet["aiCard"][:targetpos] + [temp] + self.cardSet["aiCard"][targetpos:]
             else:
                 self.cardSet["aiCard"].append(temp)
+            self.aiMana -= temp.cost
 sys = Sys()
 
 
@@ -386,7 +420,8 @@ while running:
                     if(sys.isPlayerTurn and sys.checking):
                         for i in range(len(sys.cardSet["myHandCard"])):
                             if sys.cardSet["myHandCard"][i].rectEnlarged.collidepoint(mouse_pos):
-                                sys.placingCardf(i)
+                                if(sys.cardSet["myHandCard"][i].cost <= sys.myMana):
+                                    sys.placingCardf(i)
                                 break
                 except:
                     pass

@@ -4,6 +4,7 @@ from card import CardTemplate
 from cardList import card  # Import card data
 
 scale1 = shared.WIDTH / 1080
+scale2 = shared.HEIGHT / 675
 
 # Load background
 cardcollection_bg = pygame.image.load(shared.path + "image/cardcollection.png")
@@ -33,17 +34,17 @@ total_pages = (len(card) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE  # Total number
 page_button_size = (25 * scale1 , 45 * scale1)
 next_button_image = pygame.image.load(shared.path + "image/rightarrow.png")
 next_button_image = pygame.transform.scale(next_button_image, page_button_size)
-next_button = next_button_image.get_rect(topright=(0.65 * shared.WIDTH, 0.42 * shared.HEIGHT))
+next_button = next_button_image.get_rect(topright=(0.65 * shared.WIDTH, 0.435 * shared.HEIGHT))
 
 back_button_image = pygame.image.load(shared.path + "image/leftarrow.png")
 back_button_image = pygame.transform.scale(back_button_image, page_button_size)
-back_button = back_button_image.get_rect(topright=(0.17 * shared.WIDTH, 0.42 * shared.HEIGHT))
+back_button = back_button_image.get_rect(topright=(0.17 * shared.WIDTH, 0.435 * shared.HEIGHT))
 
 # Define grid layout positions
 start_x = 150 * scale1
-start_y = 70  * scale1
+start_y = 70  * scale2
 card_spacing_x = 140  * scale1
-card_spacing_y = 260  * scale1
+card_spacing_y = 260  * scale2
 cards_per_row = 4  
 
 def cardcollection_main(mouse_pos, mouse_click):
@@ -92,9 +93,9 @@ def cardcollection_main(mouse_pos, mouse_click):
         cost, atk, hp, name, rarity, scale_factor,description, image, ext = card_info
         CardTemplate(cost, atk, hp, name, rarity, x, y, description, scale_factor, image, ext).draw()
 
-    shared.text(shared.screen, "My Decks", (0, 0, 0), 12, [shared.WIDTH - 242, 22], "center")
+    shared.text(shared.screen, "My Decks", (0, 0, 0), int(12 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center")
 
     # Display page number at the bottom center
     page_number = f"Page {current_page + 1}"
-    shared.text(shared.screen, page_number, (70, 70, 70), 16, [shared.WIDTH - 650, shared.HEIGHT - 120], "center")
+    shared.text(shared.screen, page_number, (70, 70, 70), int(16 * scale2), [shared.WIDTH - 650 * scale1, shared.HEIGHT - 110 * scale2], "center")
 
