@@ -59,4 +59,3 @@ card.append([4, 5, 9, "Fire Golem", "legendary", 1, "description", "image/cardTe
 card.append([4, 4, 9, "Mystic Phoenix", "legendary", 1, "description", "image/cardTemp.png", {"type": "minion"}])
 card.append([5, 5, 9, "Void Lord", "legendary", 1, "description", "image/cardTemp.png", {"type": "minion"}])
 #card.append([4, 0, 0, "Divine Protection", "legendary", 1, "description", "image/cardTemp.png", {"type": "spell"}])
-#card.append([5, 0, 0, "Time Warp", "legendary", 1, "description", "image/cardTemp.png", {"type": "spell"}])
