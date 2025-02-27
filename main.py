@@ -312,6 +312,7 @@ while running:
     mouse_click = pygame.mouse.get_pressed()
     #Use to track mouse position
     #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    #print(shared.WIDTH,shared.HEIGHT)
     ###
     if shared.game_state == "playing":
         for event in pygame.event.get():

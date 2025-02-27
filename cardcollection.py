@@ -3,6 +3,8 @@ import shared
 from card import CardTemplate
 from cardList import card  # Import card data
 
+scale1 = shared.WIDTH / 1080
+
 # Load background
 cardcollection_bg = pygame.image.load(shared.path + "image/cardcollection.png")
 cardcollection_bg = pygame.transform.scale(cardcollection_bg, (shared.WIDTH, shared.HEIGHT))
@@ -13,7 +15,7 @@ hover_button_image = pygame.image.load(shared.path + "image/returnarrow_hover.pn
 click_button_image = pygame.image.load(shared.path + "image/returnarrow_click.png")
 
 # Scale return button
-return_button_size = (50, 35)
+return_button_size = (50 * scale1, 35 * scale1)
 return_button_image = pygame.transform.scale(return_button_image, return_button_size)
 hover_button_image = pygame.transform.scale(hover_button_image, return_button_size)
 click_button_image = pygame.transform.scale(click_button_image, return_button_size)
@@ -28,7 +30,7 @@ last_button_press = 0  # Prevents multiple quick clicks
 total_pages = (len(card) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE  # Total number of pages
 
 # Navigation buttons
-page_button_size = (25, 45)
+page_button_size = (25 * scale1 , 45 * scale1)
 next_button_image = pygame.image.load(shared.path + "image/rightarrow.png")
 next_button_image = pygame.transform.scale(next_button_image, page_button_size)
 next_button = next_button_image.get_rect(topright=(0.65 * shared.WIDTH, 0.42 * shared.HEIGHT))
@@ -38,10 +40,10 @@ back_button_image = pygame.transform.scale(back_button_image, page_button_size)
 back_button = back_button_image.get_rect(topright=(0.17 * shared.WIDTH, 0.42 * shared.HEIGHT))
 
 # Define grid layout positions
-start_x = 150  
-start_y = 70   
-card_spacing_x = 140  
-card_spacing_y = 260  
+start_x = 150 * scale1
+start_y = 70  * scale1
+card_spacing_x = 140  * scale1
+card_spacing_y = 260  * scale1
 cards_per_row = 4  
 
 def cardcollection_main(mouse_pos, mouse_click):
