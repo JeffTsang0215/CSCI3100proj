@@ -131,10 +131,11 @@ class Sys:
     def giveCard(self, turn = "player"):
         if(turn == "player"):
             temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
-            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + temp[7]), temp[8]))
+            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
         if(turn == "ai"):
             temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
-            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + temp[7]), temp[8]))
+            print (temp[7])
+            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
 
     def draw(self):
         #bg
