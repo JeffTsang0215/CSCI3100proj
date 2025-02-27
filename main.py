@@ -51,7 +51,7 @@ class Card:
         self.atk = atk
         self.cost = cost
         self.ext = ext
-        self.attacked = False
+        self.attacked = True
         self.round = 0
         self.image = image.convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, cardDim)
