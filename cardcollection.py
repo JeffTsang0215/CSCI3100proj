@@ -94,5 +94,5 @@ def cardcollection_main(mouse_pos, mouse_click):
 
     # Display page number at the bottom center
     page_number = f"Page {current_page + 1}"
-    shared.text(shared.screen, page_number, (70, 70, 70), 18, [shared.WIDTH - 650, shared.HEIGHT - 120], "center")
+    shared.text(shared.screen, page_number, (70, 70, 70), 16, [shared.WIDTH - 650, shared.HEIGHT - 120], "center")
 
