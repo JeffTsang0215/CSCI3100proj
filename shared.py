@@ -12,6 +12,9 @@ if not(fullscreen):
     if WIDTH > HEIGHT:
         HEIGHT *= 3/4
         WIDTH = HEIGHT * 16 / 9
+        if WIDTH > pygame.display.Info().current_w:
+            WIDTH = pygame.display.Info().current_w
+            HEIGHT = WIDTH * 9 /16
     else:
         HEIGHT = HEIGHT/WIDTH
         WIDTH *= 3/4
