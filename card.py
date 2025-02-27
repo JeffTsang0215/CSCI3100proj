@@ -4,7 +4,7 @@ import shared
 class CardTemplate:
     BASE_SIZE = (140, 196)  # Base card size
 
-    def __init__(self, cost, atk, hp, name, rarity, description, x, y, scale_factor=1.0, image=None, ext=None):
+    def __init__(self, cost, atk, hp, name, rarity, x, y,description, scale_factor=1.0, image=None, ext=None):
         self.cost = cost
         self.atk = atk
         self.hp = hp
@@ -33,7 +33,31 @@ class CardTemplate:
         self.card_bg = pygame.image.load(shared.path + f"image/{image_path}")
         self.card_bg = pygame.transform.scale(self.card_bg, (self.card_width, self.card_height))
 
+        self.card_image = None
+        if image:
+            # Resize image based on scale factor
+            raw_image = pygame.image.load(shared.path + f"image/{image}")
+            image_width = int(self.card_width * 0.65) 
+            image_height = int(self.card_height * 0.6)
+            raw_image = pygame.transform.scale(raw_image, (image_width, image_height))
+
+            # Create an oval mask
+            mask = pygame.Surface((image_width, image_height), pygame.SRCALPHA)
+            pygame.draw.ellipse(mask, (255, 255, 255, 255), (0, 0, image_width, image_height))
+
+            # Apply the mask to the image
+            self.card_image = raw_image.copy()
+            self.card_image.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+            # Position image on the card (centered horizontally, placed near the top)
+            self.image_x = self.x + (self.card_width - image_width) // 2 + 3
+            self.image_y = self.y + int(13 * self.scale_factor)
+
     def draw(self):
+
+        if self.card_image:
+           shared.screen.blit(self.card_image, (self.image_x, self.image_y))
+
         """Draws the card on the screen with cost, attack, and health indicators."""
         if self.card_bg:
             shared.screen.blit(self.card_bg, (self.x, self.y))  

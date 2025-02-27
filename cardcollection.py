@@ -62,7 +62,7 @@ def cardcollection_main(mouse_pos, mouse_click):
     if current_page < total_pages - 1:
         if next_button.collidepoint(mouse_pos):
             shared.screen.blit(next_button_image, (next_button.left + 3, next_button.top))  # Hover effect
-            if mouse_click[0] and (pygame.time.get_ticks() - last_button_press > 200):  
+            if mouse_click[0] and (pygame.time.get_ticks() - last_button_press > 50):  
                 current_page += 1  
                 last_button_press = pygame.time.get_ticks()
         else:
@@ -72,7 +72,7 @@ def cardcollection_main(mouse_pos, mouse_click):
     if current_page > 0:
         if back_button.collidepoint(mouse_pos):
             shared.screen.blit(back_button_image, (back_button.left - 3, back_button.top))  # Hover effect
-            if mouse_click[0] and (pygame.time.get_ticks() - last_button_press > 200):  
+            if mouse_click[0] and (pygame.time.get_ticks() - last_button_press > 50):  
                 current_page -= 1  
                 last_button_press = pygame.time.get_ticks()
         else:
@@ -87,7 +87,12 @@ def cardcollection_main(mouse_pos, mouse_click):
         col = i % cards_per_row  
         x = start_x + col * card_spacing_x
         y = start_y + row * card_spacing_y
-        cost, atk, hp, name, rarity, description, scale_factor, image, ext = card_info
-        CardTemplate(cost, atk, hp, name, rarity, description, x, y, scale_factor, image, ext).draw()
+        cost, atk, hp, name, rarity, scale_factor,description, image, ext = card_info
+        CardTemplate(cost, atk, hp, name, rarity, x, y, description, scale_factor, image, ext).draw()
 
     shared.text(shared.screen, "My Decks", (0, 0, 0), 12, [shared.WIDTH - 242, 22], "center")
+
+    # Display page number at the bottom center
+    page_number = f"Page {current_page + 1}"
+    shared.text(shared.screen, page_number, (70, 70, 70), 18, [shared.WIDTH - 650, shared.HEIGHT - 120], "center")
+
