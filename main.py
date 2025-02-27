@@ -131,10 +131,10 @@ class Sys:
     def giveCard(self, turn = "player"):
         if(turn == "player"):
             temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
-            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/Back of Card.jpeg") if temp[3] == None else pygame.image.load(shared.path + temp[3]), temp[4]))
+            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + temp[7]), temp[8]))
         if(turn == "ai"):
             temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
-            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/Back of Card.jpeg") if temp[3] == None else pygame.image.load(shared.path + temp[3]), temp[4]))
+            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + temp[7]), temp[8]))
 
     def draw(self):
         #bg
@@ -205,7 +205,9 @@ class Sys:
         #ai hand card
         angle = -45
         for card in self.cardSet["aiHandCard"]:
-            rotated_image, rect = rotate(card.image, angle, [shared.WIDTH*0.1, shared.HEIGHT*0.25], pygame.math.Vector2(0, -cardDim[1]))
+            tempImg = pygame.image.load(shared.path + "image/cardBack.png")
+
+            rotated_image, rect = rotate(pygame.transform.scale(pygame.image.load(shared.path + "image/cardBack.png"), cardDim), angle, [shared.WIDTH*0.1, shared.HEIGHT*0.25-cardDim[1]], pygame.math.Vector2(0, cardDim[1]))
             shared.screen.blit(rotated_image, rect)
             if(len(self.cardSet["aiHandCard"]) > 10):
                 angle += 90/(len(self.cardSet["aiHandCard"])-1)
