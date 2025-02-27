@@ -1,21 +1,29 @@
 import pygame
-from prompt_toolkit.output.win32 import BACKGROUND_COLOR
 
 import shared
 import sqlite3
 import bcrypt
+
+#scale
+scale = shared.HEIGHT / 1080
 
 # Colors
 BACKGROUNDCOLOR = (105, 77, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
+DARK_GRAY = (100, 100, 100)
 ACTIVE_COLOR = (204, 119, 34)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+ORANGE = (178, 86, 13)
+HOVER_COLOR = (141, 64, 4)
 
 # Fonts
-font = pygame.font.Font(None, 36)
+font = pygame.font.Font(None, int(round(48 * scale)))
+
+login_bg = pygame.image.load(shared.path + "image/loginBackground.png")
+login_bg = pygame.transform.scale(login_bg, (shared.WIDTH, shared.HEIGHT))
 
 # Define shifted characters mapping
 shifted_characters = {
@@ -43,14 +51,17 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS users
 conn.commit()
 
 class InputBox:
-    def __init__(self, x, y, w, h, text='', max_length = 16, is_username = False):
+    def __init__(self, x, y, w, h, text = '', empty_text = '', outline = BLACK, alpha = 255, max_length = 16, is_username = False):
         self.rect = pygame.Rect(x, y, w, h)
-        self.color = GRAY
+        self.color = WHITE
+        self.outline = outline
+        self.alpha = alpha
         self.text = text
+        self.empty_text = empty_text
         self.max_length = max_length
         self.is_username = is_username
         self.active = False
-        self.txt_surface = font.render(self.text, True, BLACK)
+        self.txt_surface = font.render(self.text, True, WHITE)
         self.last_key_time = 0
 
     def handle_mouse_click(self, mouse_pos):
@@ -59,7 +70,7 @@ class InputBox:
             self.color = ACTIVE_COLOR
         else:
             self.active = False
-            self.color = GRAY
+            self.color = WHITE
 
     def update(self, current_time):
         if self.active:
@@ -67,7 +78,7 @@ class InputBox:
             if keys[pygame.K_BACKSPACE]:
                 if current_time - self.last_key_time > 150:
                     self.text = self.text[:-1]
-                    self.txt_surface = font.render(self.text, True, BLACK)
+                    self.txt_surface = font.render(self.text, True, WHITE)
                     self.last_key_time = current_time
             else:
                 # Add length check before adding new characters
@@ -92,12 +103,17 @@ class InputBox:
                                     continue  # Skip invalid characters
 
                             self.text += char
-                            self.txt_surface = font.render(self.text, True, BLACK)
+                            self.txt_surface = font.render(self.text, True, WHITE)
                             self.last_key_time = current_time
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect, 2)
-        screen.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))
+        box_surface = pygame.Surface((self.rect.w, self.rect.h), pygame.SRCALPHA)
+        box_surface.fill((*self.color, self.alpha))
+        screen.blit(box_surface, (self.rect.x, self.rect.y))
+        pygame.draw.rect(screen, self.outline, self.rect, 2)
+        if self.text == '':
+            self.txt_surface = font.render(self.empty_text, True, DARK_GRAY)
+        screen.blit(self.txt_surface, (self.rect.x + (15 * scale), self.rect.y + (15 * scale)))
 
 # Error message variables
 error_message = ""
@@ -161,10 +177,10 @@ def register_user(username, password):
         error_color = RED
 
 # Initialize input boxes and buttons
-username_box = InputBox(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 - 70, 500, 40, max_length = 16, is_username=True)
-password_box = InputBox(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 - 20, 500, 40, max_length = 32)
-login_button = pygame.Rect(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 30, 500, 40)
-register_button = pygame.Rect(shared.WIDTH / 2 - 250, shared.HEIGHT / 2 + 80, 500, 40)
+username_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (160 * scale), 800 * scale, 60 * scale, empty_text = '<USERNAME>', alpha = 130, max_length = 16, is_username=True)
+password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (20 * scale), 800 * scale, 60 * scale, empty_text = '<PASSWORD>', alpha = 130, max_length = 32)
+login_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (260 * scale), (800 * scale), (60 * scale))
+register_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (340 * scale), (800 * scale), (60 * scale))
 
 def loginSystem_main(mouse_pos, mouse_click):
     global prev_mouse_click, error_message
@@ -172,9 +188,23 @@ def loginSystem_main(mouse_pos, mouse_click):
     current_mouse_pressed = mouse_click[0]
     previous_mouse_pressed = prev_mouse_click[0]
 
-    if previous_mouse_pressed and not current_mouse_pressed:
+    # Draw window and input boxes
+    shared.screen.blit(login_bg, (0, 0))
+    username_box.draw(shared.screen)
+    password_box.draw(shared.screen)
+
+    # Draw buttons
+    pygame.draw.rect(shared.screen, ORANGE, login_button)
+    pygame.draw.rect(shared.screen, ORANGE, register_button)
+
+    # Draw error message
+    if error_message:
+        shared.text(shared.screen, error_message, error_color, 26, (shared.WIDTH / 2, shared.HEIGHT / 2 + (220 * scale)), "center")
+
+    if login_button.collidepoint(mouse_pos):
+        pygame.draw.rect(shared.screen, HOVER_COLOR, login_button) # Hover effect
+        if previous_mouse_pressed and not current_mouse_pressed:
         # Check if mouse was released over a button
-        if login_button.collidepoint(mouse_pos):
             login_user(username_box.text, password_box.text)
             # If login successful, clear inputs immediately
             if shared.game_state == "menu":
@@ -184,10 +214,13 @@ def loginSystem_main(mouse_pos, mouse_click):
                 password_box.txt_surface = font.render("", True, BLACK)
                 return  # Exit early to prevent further processing
 
-        elif register_button.collidepoint(mouse_pos):
+    if register_button.collidepoint(mouse_pos):
+        pygame.draw.rect(shared.screen, HOVER_COLOR, register_button) # Hover effect
+        if previous_mouse_pressed and not current_mouse_pressed:
+        # Check if mouse was released over a button
             register_user(username_box.text, password_box.text)
 
-        # Handle input box clicks on press
+    # Handle input box clicks on press
     if current_mouse_pressed and not previous_mouse_pressed:
         username_box.handle_mouse_click(mouse_pos)
         password_box.handle_mouse_click(mouse_pos)
@@ -197,23 +230,14 @@ def loginSystem_main(mouse_pos, mouse_click):
     username_box.update(current_time)
     password_box.update(current_time)
 
+    # Guidelines for username and password
+    shared.text(shared.screen, "-Username must contain 3-16 characters", WHITE, int(round(28 * scale)), (shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (100 * scale)), "left")
+    shared.text(shared.screen, "-Username can include letters, numbers, and underscores(_)", WHITE, int(round(28 * scale)), (shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (70 * scale)), "left")
+    shared.text(shared.screen, "-Password must contain 8-32 characters", WHITE, int(round(28 * scale)), (shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (40 * scale)), "left")
+    shared.text(shared.screen, "-Password can include letters, numbers, and special characters", WHITE, int(round(28 * scale)), (shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (70 * scale)), "left")
+    shared.text(shared.screen, " (e.g. !, @, <, /, [, ...)", WHITE, int(round(28 * scale)), (shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (100 * scale)), "left")
+
+    shared.text(shared.screen, "Login", WHITE, int(round(36 * scale)), login_button.center, "center")
+    shared.text(shared.screen, "Register", WHITE, int(round(36 * scale)), register_button.center, "center")
     prev_mouse_click = mouse_click
 
-    # Only draw login screen if we're still in login state
-    if shared.game_state == "login":
-        # Draw everything
-        shared.screen.fill(BACKGROUNDCOLOR)
-        username_box.draw(shared.screen)
-        password_box.draw(shared.screen)
-
-        # Draw buttons
-        pygame.draw.rect(shared.screen, GRAY, login_button)
-        shared.text(shared.screen, "Login", BLACK, 36, login_button.center, "center")
-        pygame.draw.rect(shared.screen, GRAY, register_button)
-        shared.text(shared.screen, "Register", BLACK, 36, register_button.center, "center")
-
-        # Draw error message
-        if error_message:
-            error_y = shared.HEIGHT / 2 + 140
-            shared.text(shared.screen, error_message, error_color, 30,
-                        (shared.WIDTH / 2, error_y), "center")
