@@ -1,6 +1,5 @@
 import pygame, os, random
 import shared
-import math
 
 class CardTemplate:
     BASE_SIZE = (140, 196)  # Base card size
@@ -25,10 +24,10 @@ class CardTemplate:
 
         # Load and scale card background based on rarity
         rarity_images = {
-            "common": "Common Card.png",
-            "rare": "Rare Card.png",
-            "epic": "Epic Card.png",
-            "legendary": "Legendary Card.png",
+            "common": "CommonCard.png",
+            "rare": "RareCard.png",
+            "epic": "EpicCard.png",
+            "legendary": "LegendaryCard.png",
         }
         image_path = rarity_images.get(rarity, "Default Card.png")
         self.card_bg = pygame.image.load(shared.path + f"image/{image_path}")
