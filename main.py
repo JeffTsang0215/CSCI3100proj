@@ -1,7 +1,7 @@
 import pygame, os, math, random
 import cardList
 import cardcollection
-import loginSystem
+import userSystem
 import shared
 import menu
 
@@ -471,7 +471,16 @@ while running:
             if event.type == pygame.QUIT:
                 running = False
 
-        loginSystem.loginSystem_main(mouse_pos, mouse_click)
+        userSystem.loginSystem_main(mouse_pos, mouse_click)
+        pygame.display.update()
+        shared.clock.tick(shared.fps)
+
+    elif shared.game_state == "register":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        userSystem.registerSystem_main(mouse_pos, mouse_click)
         pygame.display.update()
         shared.clock.tick(shared.fps)
 
