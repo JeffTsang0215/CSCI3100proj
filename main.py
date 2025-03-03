@@ -142,6 +142,7 @@ class Sys:
             self.cardSet["aiCard"].pop(i)
 
     def switchTurn(self):
+        self.draw()
         # player to ai
         if (self.isPlayerTurn):
             self.isPlayerTurn = False
@@ -432,6 +433,8 @@ while running:
                 # to determine user want to attack who
                 if(sys.isPlayerTurn and not(sys.checking or sys.placingCard)):
                     print("AI Cards:", sys.cardSet["aiCard"])
+                    for i in range(len(sys.cardSet["aiCard"])):
+                        print("AI Cards rect:", sys.cardSet["aiCard"][i].rect)
                     for i in range(len(sys.cardSet["aiCard"])):
                         if sys.cardSet["aiCard"][i].rect.collidepoint(mouse_pos):
                             sys.releasedCard = i

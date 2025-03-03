@@ -92,22 +92,52 @@ class AISystem:
         # Sort play_moves by highest mana usage first
         play_moves.sort(key=lambda m: sum(card.cost for card in m[1]), reverse=True)
 
-        print(f"The current attack moves are {attack_moves}")
         # Generate all possible interleaved combinations of play and attack moves
         move_combinations = []
-
+        emergency = False
         if play_moves:
             for play_combo in play_moves:
                 for attack_combo in itertools.permutations(attack_moves):
-                    for i in range(len(attack_combo) + 1):
-                        combined_moves = list(attack_combo[:i]) + [play_combo] + list(attack_combo[i:])
+                    used_minions = set()
+                    valid_attack_combo = []
+                    for attack in attack_combo:
+                        if attack[1] not in used_minions:
+                            valid_attack_combo.append(attack)
+                            used_minions.add(attack[1])
+                    for i in range(len(valid_attack_combo) + 1):
+                        combined_moves = list(valid_attack_combo[:i]) + [play_combo] + list(valid_attack_combo[i:])
                         move_combinations.append(combined_moves)
+                        if len(move_combinations) > 10000:
+                            emergency = True
+                            break
+                if len(move_combinations) > 10000:
+                    emergency = True
+                    break
         else:
-            # If no play_moves, just store attack permutations
+            # If no play_moves, just store attack permutations with unique minion attacks
             for attack_combo in itertools.permutations(attack_moves):
-                move_combinations.append(list(attack_combo))
+                used_minions = set()
+                valid_attack_combo = []
+                for attack in attack_combo:
+                    if attack[1] not in used_minions:
+                        valid_attack_combo.append(attack)
+                        used_minions.add(attack[1])
+                move_combinations.append(valid_attack_combo)
+                if len(move_combinations) > 10000:
+                    break
         
-        # Shuffle move combinations to explore different orders
+        # Handle excessive move combinations
+        if emergency == True:
+            # Force all minions to attack the player hero
+            emergency_moves = [("attack", i, 99) for i in range(len(self.sys.cardSet["aiCard"]))]
+            
+            # Place the highest mana card AI has
+            if play_moves:
+                highest_mana_play = max(play_moves, key=lambda m: sum(card.cost for card in m[1]))
+                emergency_moves.append(highest_mana_play)
+            
+            move_combinations = [emergency_moves]
+        
         random.shuffle(move_combinations)
         
         for move_sequence in move_combinations:
@@ -118,7 +148,6 @@ class AISystem:
             self.sys.myhp = original_player_hp
             
             # Execute all moves in the sequence
-            print(f"The move sequence is {move_sequence}")
             for move in move_sequence:
                 if move[0] == "play_combo":
                     for card in move[1]:
