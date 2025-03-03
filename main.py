@@ -3,6 +3,8 @@ import cardList
 import cardcollection
 import shared
 import menu
+import copy
+from ai_system import AISystem
 
 #pygame.init handled by shared.py
 
@@ -53,14 +55,30 @@ class Card:
         self.ext = ext
         self.attacked = True
         self.round = 0
-        self.image = image.convert_alpha()
-        self.image = pygame.transform.smoothscale(self.image, cardDim)
+
+        if (image): 
+            self.image = image.convert_alpha()
+            self.image = pygame.transform.smoothscale(self.image, cardDim)
+        else:
+            self.image = None
         
         self.rect = None
         self.rectEnlarged = None
 
+    #for printing card objects during development
+    def __repr__(self):
+        return f"Card({self.cost}/{self.atk}/{self.hp})"
+    
+    def __deepcopy__(self, memo):
+        # Create a copy WITHOUT copying the pygame.Surface
+        new_card = Card(self.cost, self.atk, self.hp, self.image.copy() if self.image else None, copy.deepcopy(self.ext, memo))
+        new_card.attacked = self.attacked
+        new_card.round = self.round
+        return new_card
+
 class Sys:
     def __init__(self):
+        self.ai = AISystem(self)
         self.isPlayerTurn = True
         self.checking = False
         self.placingCard = False
@@ -95,13 +113,19 @@ class Sys:
         if turn == "player":
             if target != 99:
                 sys.cardSet["aiCard"][target].hp -= sys.cardSet["myCard"][attacker].atk
+                sys.cardSet["myCard"][attacker].hp -= sys.cardSet["aiCard"][target].atk
             else:
                 sys.aihp -= sys.cardSet["myCard"][attacker].atk
+            
+            self.cardSet["myCard"][attacker].attacked = True
         if turn == "ai":
             if target != 99:
                 sys.cardSet["myCard"][target].hp -= sys.cardSet["aiCard"][attacker].atk
+                sys.cardSet["aiCard"][attacker].hp -= sys.cardSet["myCard"][target].atk
             else:
                 sys.myhp -= sys.cardSet["aiCard"][attacker].atk
+
+            self.cardSet["aiCard"][attacker].attacked = True       
 
     def checkAlive(self):
         temp = []
@@ -129,6 +153,11 @@ class Sys:
             if self.aiMaxMana < 10:
                 self.aiMaxMana += 1
             self.aiMana = self.aiMaxMana
+            #Creating AI system here:
+            print(f"The current AI hand is {sys.cardSet["aiHandCard"]}")
+            self.ai.execute_best_move()
+
+
         # ai to player
         else:
             self.isPlayerTurn = True
@@ -150,7 +179,6 @@ class Sys:
             self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
         if(turn == "ai"):
             temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
-            print (temp[7])
             self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
 
     def draw(self):
@@ -336,6 +364,8 @@ class Sys:
             else:
                 self.cardSet["aiCard"].append(temp)
             self.aiMana -= temp.cost
+
+
 sys = Sys()
 
 
@@ -401,6 +431,7 @@ while running:
 
                 # to determine user want to attack who
                 if(sys.isPlayerTurn and not(sys.checking or sys.placingCard)):
+                    print("AI Cards:", sys.cardSet["aiCard"])
                     for i in range(len(sys.cardSet["aiCard"])):
                         if sys.cardSet["aiCard"][i].rect.collidepoint(mouse_pos):
                             sys.releasedCard = i
@@ -411,7 +442,6 @@ while running:
                 #attack
                 if (sys.clickedCard != -1 and sys.releasedCard != -1):
                     sys.attack(sys.clickedCard, sys.releasedCard)
-                    sys.cardSet["myCard"][sys.clickedCard].attacked     = True
                     sys.checkAlive()
                 
                 # selecting card to place in checking mode
