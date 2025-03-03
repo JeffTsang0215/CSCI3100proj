@@ -140,6 +140,10 @@ class Sys:
                 temp.append(i)
         for i in reversed(temp):
             self.cardSet["aiCard"].pop(i)
+        if self.aihp <= 0:
+            shared.game_state = "win"
+        if self.myhp <= 0:
+            shared.game_state = "lost"
 
     def switchTurn(self):
         self.draw()
@@ -155,7 +159,7 @@ class Sys:
                 self.aiMaxMana += 1
             self.aiMana = self.aiMaxMana
             #Creating AI system here:
-            print(f"The current AI hand is {sys.cardSet["aiHandCard"]}")
+            print(f"The current AI hand is {sys.cardSet['aiHandCard']}")
             self.ai.execute_best_move()
 
 
@@ -176,11 +180,20 @@ class Sys:
 
     def giveCard(self, turn = "player"):
         if(turn == "player"):
-            temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
-            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
+            if len(self.cardSet["mySetCard"]) > 0:
+                temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
+                if len(self.cardSet["myHandCard"]) <= 6:
+                    temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
+                self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
+            else:
+                self.myhp -= 1
         if(turn == "ai"):
-            temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
-            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
+            if len(self.cardSet["aiSetCard"]) > 0:
+                temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
+                if len(self.cardSet["aiHandCard"]) <= 6:
+                    self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
+            else:
+                self.aihp -= 1
 
     def draw(self):
         #bg
@@ -366,8 +379,8 @@ class Sys:
                 self.cardSet["aiCard"].append(temp)
             self.aiMana -= temp.cost
 
-
 sys = Sys()
+
 
 
 
@@ -379,6 +392,11 @@ while running:
     #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     #print(shared.WIDTH,shared.HEIGHT)
     ###
+
+    if shared.renewed == False:
+        sys = Sys()
+        shared.renewed = True
+
     if shared.game_state == "playing":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -409,7 +427,7 @@ while running:
                 if (sys.checking):
                     if (0 <= mouse_pos[1] <= shared.HEIGHT*0.3 or shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT):
                         sys.checking = False
-                elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking) and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
+                elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking) and len(sys.cardSet["myCard"]) < 7 and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                     sys.ckeckingf()
                                     
                 # place card to desk
@@ -513,6 +531,8 @@ while running:
             if event.type == pygame.QUIT:
                 running = False
         shared.screen.fill((105, 77, 0))
+
+        shared.text(shared.screen, "YOU WIN!!", (0, 0, 0), int(shared.HEIGHT/10), (shared.WIDTH/2, shared.HEIGHT/2), "center")
         ## Your code
 
         pygame.display.update()
@@ -524,6 +544,7 @@ while running:
                 running = False
         shared.screen.fill((105, 77, 0))
         ## Your code
+        shared.text(shared.screen, "YOU LOST", (0, 0, 0), int(shared.HEIGHT/10), (shared.WIDTH/2, shared.HEIGHT/2), "center")
 
         pygame.display.update()
         shared.clock.tick(shared.fps)

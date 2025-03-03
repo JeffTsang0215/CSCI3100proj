@@ -26,6 +26,7 @@ def menu_main(mouse_pos, mouse_click):
             if mouse_click[0]:  # Left mouse button clicked
                 pygame.draw.polygon(shared.screen, border_color, button, border_thickness)  # Click effect
                 if (i==0):
+                    shared.renewed = False
                     shared.game_state = "playing"
                 elif (i==1):
                     shared.game_state = "card_collection"
