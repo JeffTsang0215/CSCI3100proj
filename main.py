@@ -4,6 +4,8 @@ import cardcollection
 import userSystem
 import shared
 import menu
+import copy
+from ai_system import AISystem
 
 #pygame.init handled by shared.py
 
@@ -39,7 +41,7 @@ cardDimEnlarged = [shared.WIDTH/10, shared.WIDTH/10*4/3]
 #    fullAtk
 #    freeze n
 #    draw n
-#    cure n
+#    cure n 
 #  n: int
 #  atk: int
 
@@ -47,18 +49,33 @@ cardDimEnlarged = [shared.WIDTH/10, shared.WIDTH/10*4/3]
 
 class Card:
     def __init__(self, cost, atk, hp, image = None, ext={}):
-
+        
         self.hp = hp
         self.atk = atk
         self.cost = cost
         self.ext = ext
         self.attacked = True
         self.round = 0
-        self.image = image.convert_alpha()
-        self.image = pygame.transform.smoothscale(self.image, cardDim)
 
+        if (image):
+            self.image = image.convert_alpha()
+            self.image = pygame.transform.smoothscale(self.image, cardDim)
+        else:
+            self.image = None
+        
         self.rect = None
         self.rectEnlarged = None
+
+    #for printing card objects during development
+    def __repr__(self):
+        return f"Card({self.cost}/{self.atk}/{self.hp})"
+
+    def __deepcopy__(self, memo):
+        # Create a copy WITHOUT copying the pygame.Surface
+        new_card = Card(self.cost, self.atk, self.hp, self.image.copy() if self.image else None, copy.deepcopy(self.ext, memo))
+        new_card.attacked = self.attacked
+        new_card.round = self.round
+        return new_card
 
 class Sys:
     def __init__(self):
@@ -96,13 +113,19 @@ class Sys:
         if turn == "player":
             if target != 99:
                 sys.cardSet["aiCard"][target].hp -= sys.cardSet["myCard"][attacker].atk
+                sys.cardSet["myCard"][attacker].hp -= sys.cardSet["aiCard"][target].atk
             else:
                 sys.aihp -= sys.cardSet["myCard"][attacker].atk
+
+            self.cardSet["myCard"][attacker].attacked = True
         if turn == "ai":
             if target != 99:
                 sys.cardSet["myCard"][target].hp -= sys.cardSet["aiCard"][attacker].atk
+                sys.cardSet["aiCard"][attacker].hp -= sys.cardSet["myCard"][target].atk
             else:
                 sys.myhp -= sys.cardSet["aiCard"][attacker].atk
+
+            self.cardSet["aiCard"][attacker].attacked = True
 
     def checkAlive(self):
         temp = []
@@ -117,8 +140,13 @@ class Sys:
                 temp.append(i)
         for i in reversed(temp):
             self.cardSet["aiCard"].pop(i)
+        if self.aihp <= 0:
+            shared.game_state = "win"
+        if self.myhp <= 0:
+            shared.game_state = "lost"
 
     def switchTurn(self):
+        self.draw()
         # player to ai
         if (self.isPlayerTurn):
             self.isPlayerTurn = False
@@ -130,6 +158,11 @@ class Sys:
             if self.aiMaxMana < 10:
                 self.aiMaxMana += 1
             self.aiMana = self.aiMaxMana
+            #Creating AI system here:
+            print(f"The current AI hand is {sys.cardSet['aiHandCard']}")
+            self.ai.execute_best_move()
+
+
         # ai to player
         else:
             self.isPlayerTurn = True
@@ -142,17 +175,25 @@ class Sys:
                 self.myMaxMana += 1
             self.myMana = self.myMaxMana
 
-
-
+        
+        
 
     def giveCard(self, turn = "player"):
         if(turn == "player"):
-            temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
-            self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
+            if len(self.cardSet["mySetCard"]) > 0:
+                temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
+                if len(self.cardSet["myHandCard"]) <= 6:
+                    temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
+                self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
+            else:
+                self.myhp -= 1
         if(turn == "ai"):
-            temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
-            print (temp[7])
-            self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
+            if len(self.cardSet["aiSetCard"]) > 0:
+                temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
+                if len(self.cardSet["aiHandCard"]) <= 6:
+                    self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
+            else:
+                self.aihp -= 1
 
     def draw(self):
         #bg
@@ -240,7 +281,7 @@ class Sys:
             if(pointB[0] < pointA[0]):
                 angle_going += math.pi
             pygame.draw.polygon(shared.screen, (255, 0, 0), [pointA, pointB, (pointB[0]+shared.WIDTH/100*math.cos(angle_going-math.pi+math.pi/6), pointB[1]+shared.WIDTH/100*math.sin(angle_going-math.pi+math.pi/6)), (pointB[0]+shared.WIDTH/100*math.cos(angle_going-math.pi-math.pi/6), pointB[1]+shared.WIDTH/100*math.sin(angle_going-math.pi-math.pi/6)), pointB], 5)
-
+        
         # end turn button
         pygame.draw.circle(shared.screen, (0, 0, 0), [shared.WIDTH*0.95, shared.HEIGHT/2], shared.WIDTH/24)
         pygame.draw.rect(shared.screen, (0, 0, 0), [shared.WIDTH*0.94, shared.HEIGHT/2-shared.WIDTH/24, 2*shared.WIDTH/24, 2*shared.WIDTH/24])
@@ -289,7 +330,7 @@ class Sys:
                 left += cardDimEnlarged[0] + shared.WIDTH/40
 
         # draw arrow when placing card
-
+            
         if(self.placingCard and sys.isPlayerTurn):
             pygame.draw.rect(shared.screen, (255, 0, 0), [shared.WIDTH/2 - (shared.WIDTH/80*8 + cardDim[0]*7)/2, shared.HEIGHT*0.55, (shared.WIDTH/80*8 + cardDim[0]*7), cardDim[1]], width = int(shared.WIDTH/100))
             self.pointing = [0, 0]
@@ -308,8 +349,8 @@ class Sys:
             elif (shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                 self.pointing = [shared.WIDTH*0.9, shared.HEIGHT*0.9]
             pygame.draw.polygon(shared.screen, (255, 0, 0), [
-                self.pointing,
-                [self.pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2-math.pi/6))), self.pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2-math.pi/6)))],
+                self.pointing, 
+                [self.pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2-math.pi/6))), self.pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2-math.pi/6)))], 
                 [self.pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2+math.pi/6))), self.pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2+math.pi/6)))]
                     ])
 
@@ -337,7 +378,9 @@ class Sys:
             else:
                 self.cardSet["aiCard"].append(temp)
             self.aiMana -= temp.cost
+
 sys = Sys()
+
 
 
 
@@ -349,6 +392,11 @@ while running:
     #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     #print(shared.WIDTH,shared.HEIGHT)
     ###
+
+    if shared.renewed == False:
+        sys = Sys()
+        shared.renewed = True
+
     if shared.game_state == "playing":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -379,9 +427,9 @@ while running:
                 if (sys.checking):
                     if (0 <= mouse_pos[1] <= shared.HEIGHT*0.3 or shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT):
                         sys.checking = False
-                elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking) and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
+                elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking) and len(sys.cardSet["myCard"]) < 7 and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                     sys.ckeckingf()
-
+                                    
                 # place card to desk
                 if (sys.placingCard):
                     if (shared.HEIGHT*0.55 <= mouse_pos[1] <= shared.HEIGHT*0.55+cardDim[1]):
@@ -402,19 +450,21 @@ while running:
 
                 # to determine user want to attack who
                 if(sys.isPlayerTurn and not(sys.checking or sys.placingCard)):
+                    print("AI Cards:", sys.cardSet["aiCard"])
+                    for i in range(len(sys.cardSet["aiCard"])):
+                        print("AI Cards rect:", sys.cardSet["aiCard"][i].rect)
                     for i in range(len(sys.cardSet["aiCard"])):
                         if sys.cardSet["aiCard"][i].rect.collidepoint(mouse_pos):
                             sys.releasedCard = i
                             break
                 if click_circle(mouse_pos, [shared.WIDTH/2, shared.HEIGHT*0.1], shared.HEIGHT*0.05):
                     sys.releasedCard = 99
-
+                
                 #attack
                 if (sys.clickedCard != -1 and sys.releasedCard != -1):
                     sys.attack(sys.clickedCard, sys.releasedCard)
-                    sys.cardSet["myCard"][sys.clickedCard].attacked     = True
                     sys.checkAlive()
-
+                
                 # selecting card to place in checking mode
                 try:
                     if(sys.isPlayerTurn and sys.checking):
@@ -430,7 +480,7 @@ while running:
         shared.screen.fill((105, 77, 0))
 
         sys.draw()
-
+        
 
         pygame.display.update()
         shared.clock.tick(shared.fps)
@@ -438,11 +488,11 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
+        
         menu.menu_main(mouse_pos, mouse_click)
         pygame.display.update()
         shared.clock.tick(shared.fps)
-
+    
     elif shared.game_state == "card_collection":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -451,11 +501,11 @@ while running:
         cardcollection.cardcollection_main(mouse_pos, mouse_click)
         pygame.display.update()
         shared.clock.tick(shared.fps)
-
+        
 
         pygame.display.update()
         shared.clock.tick(shared.fps)
-
+    
     elif shared.game_state == "settings":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -489,6 +539,8 @@ while running:
             if event.type == pygame.QUIT:
                 running = False
         shared.screen.fill((105, 77, 0))
+
+        shared.text(shared.screen, "YOU WIN!!", (0, 0, 0), int(shared.HEIGHT/10), (shared.WIDTH/2, shared.HEIGHT/2), "center")
         ## Your code
 
         pygame.display.update()
@@ -500,6 +552,7 @@ while running:
                 running = False
         shared.screen.fill((105, 77, 0))
         ## Your code
+        shared.text(shared.screen, "YOU LOST", (0, 0, 0), int(shared.HEIGHT/10), (shared.WIDTH/2, shared.HEIGHT/2), "center")
 
         pygame.display.update()
         shared.clock.tick(shared.fps)

@@ -3,6 +3,7 @@ import pygame, os, math, random
 pygame.init()
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
+renewed = False
 
 WIDTH = pygame.display.Info().current_w
 HEIGHT = pygame.display.Info().current_h
