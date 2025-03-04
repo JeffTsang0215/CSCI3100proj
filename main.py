@@ -112,18 +112,18 @@ class Sys:
     def attack(self, attacker, target, turn = "player"):
         if turn == "player":
             if target != 99:
-                sys.cardSet["aiCard"][target].hp -= sys.cardSet["myCard"][attacker].atk
-                sys.cardSet["myCard"][attacker].hp -= sys.cardSet["aiCard"][target].atk
+                self.cardSet["aiCard"][target].hp -= self.cardSet["myCard"][attacker].atk
+                self.cardSet["myCard"][attacker].hp -= self.cardSet["aiCard"][target].atk
             else:
-                sys.aihp -= sys.cardSet["myCard"][attacker].atk
+                self.aihp -= self.cardSet["myCard"][attacker].atk
             
             self.cardSet["myCard"][attacker].attacked = True
         if turn == "ai":
             if target != 99:
-                sys.cardSet["myCard"][target].hp -= sys.cardSet["aiCard"][attacker].atk
-                sys.cardSet["aiCard"][attacker].hp -= sys.cardSet["myCard"][target].atk
+                self.cardSet["myCard"][target].hp -= self.cardSet["aiCard"][attacker].atk
+                self.cardSet["aiCard"][attacker].hp -= self.cardSet["myCard"][target].atk
             else:
-                sys.myhp -= sys.cardSet["aiCard"][attacker].atk
+                self.myhp -= self.cardSet["aiCard"][attacker].atk
 
             self.cardSet["aiCard"][attacker].attacked = True       
 
@@ -151,9 +151,9 @@ class Sys:
         if (self.isPlayerTurn):
             self.isPlayerTurn = False
             self.giveCard("ai")
-            for card in sys.cardSet["aiCard"]:
+            for card in self.cardSet["aiCard"]:
                 card.attacked = False
-            for card in sys.cardSet["myCard"]:
+            for card in self.cardSet["myCard"]:
                 card.round += 1
             if self.aiMaxMana < 10:
                 self.aiMaxMana += 1
@@ -166,9 +166,9 @@ class Sys:
         else:
             self.isPlayerTurn = True
             self.giveCard("player")
-            for card in sys.cardSet["myCard"]:
+            for card in self.cardSet["myCard"]:
                 card.attacked = False
-            for card in sys.cardSet["aiCard"]:
+            for card in self.cardSet["aiCard"]:
                 card.round += 1
             if self.myMaxMana < 10:
                 self.myMaxMana += 1
@@ -180,15 +180,15 @@ class Sys:
     def giveCard(self, turn = "player"):
         if(turn == "player"):
             if len(self.cardSet["mySetCard"]) > 0:
-                temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
+                temp = self.cardSet["mySetCard"][self.myCardOrder.pop(0)]
                 if len(self.cardSet["myHandCard"]) <= 6:
-                    temp = self.cardSet["mySetCard"][sys.myCardOrder.pop(0)]
+                    temp = self.cardSet["mySetCard"][self.myCardOrder.pop(0)]
                 self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
             else:
                 self.myhp -= 1
         if(turn == "ai"):
             if len(self.cardSet["aiSetCard"]) > 0:
-                temp = self.cardSet["aiSetCard"][sys.aiCardOrder.pop(0)]
+                temp = self.cardSet["aiSetCard"][self.aiCardOrder.pop(0)]
                 if len(self.cardSet["aiHandCard"]) <= 6:
                     self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
             else:
@@ -330,13 +330,13 @@ class Sys:
 
         # draw arrow when placing card
             
-        if(self.placingCard and sys.isPlayerTurn):
+        if(self.placingCard and self.isPlayerTurn):
             pygame.draw.rect(shared.screen, (255, 0, 0), [shared.WIDTH/2 - (shared.WIDTH/80*8 + cardDim[0]*7)/2, shared.HEIGHT*0.55, (shared.WIDTH/80*8 + cardDim[0]*7), cardDim[1]], width = int(shared.WIDTH/100))
             self.pointing = [0, 0]
             arrowSideLen = shared.HEIGHT/50
             mouse_pos = pygame.mouse.get_pos()
             if (shared.HEIGHT*0.55 <= mouse_pos[1] <= shared.HEIGHT*0.55+cardDim[1]):
-                if len(sys.cardSet["myCard"]) == 0:
+                if len(self.cardSet["myCard"]) == 0:
                     self.pointing = [shared.WIDTH/2, shared.HEIGHT*0.55 + cardDim[1] +shared.HEIGHT/50]
                 else:
                     for i in range(len(self.cardSet["myCard"])):
