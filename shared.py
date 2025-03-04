@@ -29,17 +29,25 @@ fps = 60
 # game_state = "playing"
 game_state = "menu"
 
-def text(screen, text, color, size, pos, align="left"):
+def text(screen, text, color, size, pos, align="left", font=None):
     text = text.encode("utf-8").decode("utf-8")
-    try:
-        my_font = pygame.font.SysFont(pygame.font.get_fonts()[2], size)
-    except Exception:
-        my_font = pygame.font.Font(pygame.font.get_default_font(), size)
+    
+    # Use custom font if provided; otherwise, use system/default font
+    if font is None:
+        try:
+            my_font = pygame.font.SysFont(pygame.font.get_fonts()[2], size)
+        except Exception:
+            my_font = pygame.font.Font(pygame.font.get_default_font(), size)
+    else:
+        my_font = font  # Use the provided custom font
+
     text_surface = my_font.render(text, True, color)
+    
     if align == "left":
         screen.blit(text_surface, pos)
-    elif align == "center" or align == "centre":
+    elif align in ["center", "centre"]:
         text_rect = text_surface.get_rect(center=pos)
         screen.blit(text_surface, text_rect)
+
 
 

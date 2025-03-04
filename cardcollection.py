@@ -11,6 +11,9 @@ scale2 = shared.HEIGHT / 675
 cardcollection_bg = pygame.image.load(shared.path + "image/cardcollection.png")
 cardcollection_bg = pygame.transform.scale(cardcollection_bg, (shared.WIDTH, shared.HEIGHT))
 
+custom_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(16 * scale2))
+
+
 # Load button images
 return_button_image = pygame.image.load(shared.path + "image/returnarrow.png")
 hover_button_image = pygame.image.load(shared.path + "image/returnarrow_hover.png")
@@ -62,16 +65,20 @@ deck_start_x = shared.WIDTH - 305 * scale1
 deck_start_y = 60 * scale2
 cancel_button_size = (30 * scale1, 30 * scale2)
 
+
 def draw_deck_list(mouse_pos, mouse_click):
-    global deck_rects
+    global deck_rects, cancel_buttons
     deck_rects.clear()
+    cancel_buttons.clear()
 
     # Define colors
-    deck_color = (137, 84, 39)  # Default deck color (blue)
-    hover_color = (204, 134, 76)  # Hover color (light blue)
-    text_color = (255, 255, 255)  # White text
-    plus_color = (100, 200, 100)  # Green "+" button
-    plus_hover_color = (180, 220, 180)  # Lighter green for hover
+    deck_color = (137, 84, 39)  
+    hover_color = (204, 134, 76)  
+    text_color = (255, 255, 255)  
+    plus_color = (100, 200, 100)  
+    plus_hover_color = (180, 220, 180)  
+    default_cancel_color = (255, 255, 255)  # White "-"
+    hover_cancel_color = (255, 0, 0)  # Red "-"
 
     # Draw existing decks
     for i, deck in enumerate(decks.decks):
@@ -80,52 +87,63 @@ def draw_deck_list(mouse_pos, mouse_click):
         rect = pygame.Rect(deck_x, deck_y, deck_width, deck_height)
         deck_rects.append(rect)
         
-        # Cancel button position (right of the deck)
+        # Cancel button position
         cancel_x = deck_x + deck_width 
-        cancel_y = deck_y + (deck_height - cancel_button_size[1]) // 2 * scale2
+        cancel_y = deck_y + (deck_height - cancel_button_size[1]) // 2
         cancel_rect = pygame.Rect(cancel_x, cancel_y, *cancel_button_size)
+        cancel_buttons.append(cancel_rect)
 
-        # Change color on hover
-        pygame.draw.rect(shared.screen, deck_color, rect)  # Default color
-        if rect.collidepoint(mouse_pos):
-            pygame.draw.rect(shared.screen, hover_color, rect)  # Hover effect
+        # Draw deck rectangle
+        pygame.draw.rect(shared.screen, deck_color, rect)
 
-            #if mouse_click[0]:  
-               # print(f"Selected {deck['name']}")  # Placeholder for selection
-
-        # Draw the cancel button (rectangle)
-        pygame.draw.rect(shared.screen, (200, 0, 0), (cancel_x, cancel_y, cancel_button_size[0], cancel_button_size[1]), 0)
-        # Draw only the "-" text (no background)
-        shared.text(shared.screen, "-", (255, 255, 255), int(20 * scale1), [cancel_x + cancel_button_size[0] // 2, cancel_y + cancel_button_size[1] // 2], "center")
-
-            
+        # Apply deck hover effect **ONLY if NOT hovering over the cancel button**
+        if rect.collidepoint(mouse_pos) and not cancel_rect.collidepoint(mouse_pos):
+            pygame.draw.rect(shared.screen, hover_color, rect)
 
         # Draw deck name
-        shared.text(shared.screen, deck['name'], text_color, int(16 * scale1), [deck_x + deck_width / 2, deck_y + deck_height / 2], "center")
+        shared.text(shared.screen, deck['name'], text_color, int(16 * scale1), 
+                    [deck_x + deck_width / 2, deck_y + deck_height / 2], "center", font=custom_font)
 
-    # Draw "+" button (only if below max_decks)
+        #Delete deck button hover effect
+        cancel_text_color = default_cancel_color  # Default White
+        if cancel_rect.collidepoint(mouse_pos):
+            cancel_text_color = hover_cancel_color  # Change to Red when hovered
+
+        # Draw only the "-" text (NO background)
+        shared.text(shared.screen, "-", cancel_text_color, int(20 * scale1), 
+                    [cancel_x + cancel_button_size[0] // 2, cancel_y + cancel_button_size[1] // 2], "center")
+
+    # Handle cancel button click
+    if mouse_click[0]:  
+        for i, cancel_rect in enumerate(cancel_buttons):
+            if cancel_rect.collidepoint(mouse_pos):
+                del decks.decks[i]  # Remove deck
+                decks.save_decks()  # Save updated decks
+                return  
+
+    # Draw "+" button
     if len(decks.decks) < max_decks:
         plus_x = deck_start_x
         plus_y = deck_start_y + len(decks.decks) * (deck_height + deck_spacing)
         plus_rect = pygame.Rect(plus_x, plus_y, deck_width, deck_height)
 
-        # Change "+" button color on hover
         if plus_rect.collidepoint(mouse_pos):
-            pygame.draw.rect(shared.screen, plus_hover_color, plus_rect)  # Hover effect
+            pygame.draw.rect(shared.screen, plus_hover_color, plus_rect)
             if mouse_click[0]:  
-                new_deck_name = f"Deck {len(decks.decks) + 1}"
+                new_deck_name = f"New Deck"
                 decks.decks.append({"name": new_deck_name, "cards": []})
-                print(f"Added {new_deck_name}")
+                decks.save_decks()  # Save new deck
         else:
-            pygame.draw.rect(shared.screen, plus_color, plus_rect)  # Default green
+            pygame.draw.rect(shared.screen, plus_color, plus_rect)
 
         # Draw "+" button text
-        shared.text(shared.screen, "+", text_color, int(16 * scale1), [plus_x + deck_width / 2, plus_y + deck_height / 2], "center")
+        shared.text(shared.screen, "+", text_color, int(16 * scale1), 
+                    [plus_x + deck_width / 2, plus_y + deck_height / 2], "center", font=custom_font)
 
-        # Display the total number of decks
-        deck_count_text = f"{len(decks.decks)}/{max_decks}"
-        shared.text(shared.screen, deck_count_text, (255, 255, 255), int(14 * scale1), [shared.WIDTH - 296 * scale1, 617 * scale2], "left")
-
+    # Display total number of decks
+    deck_count_text = f"{len(decks.decks)}/{max_decks}"
+    shared.text(shared.screen, deck_count_text, (255, 255, 255), int(14 * scale1), 
+                [shared.WIDTH - 290 * scale1, 615 * scale2], "left", font=custom_font)
 
 
 def cardcollection_main(mouse_pos, mouse_click):
@@ -174,20 +192,14 @@ def cardcollection_main(mouse_pos, mouse_click):
         cost, atk, hp, name, rarity, scale_factor,description, image, ext = card_info
         CardTemplate(cost, atk, hp, name, rarity, x, y, description, scale_factor, image, ext).draw()
 
-    shared.text(shared.screen, "My Decks", (0, 0, 0), int(12 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center")
+    shared.text(shared.screen, "My Decks", (30, 30, 30), int(9 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center", font=custom_font)
 
     # Display page number at the bottom center
     page_number = f"Page {current_page + 1}"
-    shared.text(shared.screen, page_number, (70, 70, 70), int(16 * scale2), [shared.WIDTH - 650 * scale1, shared.HEIGHT - 110 * scale2], "center")
+    shared.text(shared.screen, page_number, (70, 70, 70), int(16 * scale2), [shared.WIDTH - 650 * scale1, shared.HEIGHT - 110 * scale2], "center", font=custom_font)
+
 
     draw_deck_list(mouse_pos, mouse_click)
-
-    for i, cancel_rect in enumerate(cancel_buttons):
-            if cancel_rect.collidepoint(mouse_pos) and mouse_click[0]:  # Clicked the "-" symbol
-                del decks[i]
-                break
-
-
     
 
 
