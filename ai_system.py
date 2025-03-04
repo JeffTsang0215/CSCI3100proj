@@ -161,7 +161,8 @@ class AISystem:
                         self.sys.attack(move[1], move[2], "ai")
             
             self.sys.checkAlive()
-            
+
+            #temporary solution for preventing numbers of minions exceeding 7
             if len(self.sys.cardSet["aiCard"]) > 7:
                 new_score = -9999
             else:
