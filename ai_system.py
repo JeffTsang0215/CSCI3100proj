@@ -4,7 +4,8 @@ import random
 
 class AISystem:
     def __init__(self, sys):
-        self.sys = sys  # Reference to the game system
+        self.sys = sys
+        self.MaxCombinations = 10000  # Reference to the game system
 
     def getPlacingIndex(self, card):
         """Find the index of a card in aiHandCard based on cost, attack, and HP."""
@@ -107,10 +108,10 @@ class AISystem:
                     for i in range(len(valid_attack_combo) + 1):
                         combined_moves = list(valid_attack_combo[:i]) + [play_combo] + list(valid_attack_combo[i:])
                         move_combinations.append(combined_moves)
-                        if len(move_combinations) > 10000:
+                        if len(move_combinations) > self.MaxCombinations:
                             emergency = True
                             break
-                if len(move_combinations) > 10000:
+                if len(move_combinations) > self.MaxCombinations:
                     emergency = True
                     break
         else:
@@ -123,7 +124,8 @@ class AISystem:
                         valid_attack_combo.append(attack)
                         used_minions.add(attack[1])
                 move_combinations.append(valid_attack_combo)
-                if len(move_combinations) > 10000:
+                if len(move_combinations) > self.MaxCombinations:
+                    emergency = True
                     break
         
         # Handle excessive move combinations
@@ -159,7 +161,11 @@ class AISystem:
                         self.sys.attack(move[1], move[2], "ai")
             
             self.sys.checkAlive()
-            new_score = self.calculate_board_score()
+            
+            if len(self.sys.cardSet["aiCard"]) > 7:
+                new_score = -9999
+            else:
+                new_score = self.calculate_board_score()
             
             if new_score > best_score:
                 best_score = new_score
