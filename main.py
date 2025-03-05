@@ -348,7 +348,7 @@ class Sys:
                 [self.pointing[0]+int(round(arrowSideLen*math.cos(-math.pi/2+math.pi/6))), self.pointing[1]-int(round(arrowSideLen*math.sin(-math.pi/2+math.pi/6)))]
                     ])
 
-    def ckeckingf(self):
+    def checkingf(self):
         self.placingCard = False
         self.checking = True
 
@@ -424,7 +424,7 @@ while running:
                     if (0 <= mouse_pos[1] <= shared.HEIGHT*0.3 or shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT):
                         sys.checking = False
                 elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking) and len(sys.cardSet["myCard"]) < 7 and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
-                    sys.ckeckingf()
+                    sys.checkingf()
                                     
                 # place card to desk
                 if (sys.placingCard):
