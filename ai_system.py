@@ -158,7 +158,7 @@ class AISystem:
                             self.sys.placeCardTo(placing_index, len(self.sys.cardSet["aiCard"]))
                 elif move[0] == "attack":
                     if not self.sys.cardSet["aiCard"][move[1]].attacked:
-                        self.sys.attack(move[1], move[2], "ai")
+                        self.sys.attack(move[1], move[2], False)
             
             self.sys.checkAlive()
 
@@ -191,7 +191,7 @@ class AISystem:
                             self.sys.placeCardTo(placing_index,len(self.sys.cardSet["aiCard"]))
                 elif move[0] == "attack":
                     if not self.sys.cardSet["aiCard"][move[1]].attacked:
-                        self.sys.attack(move[1], move[2], "ai")
+                        self.sys.attack(move[1], move[2], False)
         
         self.sys.checkAlive()
         self.sys.switchTurn()

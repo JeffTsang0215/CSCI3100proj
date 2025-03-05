@@ -109,8 +109,8 @@ class Sys:
         self.myhp = 30
         self.aihp = 30
 
-    def attack(self, attacker, target, turn = "player"):
-        if turn == "player":
+    def attack(self, attacker, target, isPlayerTurn = True):
+        if isPlayerTurn:
             if target != 99:
                 self.cardSet["aiCard"][target].hp -= self.cardSet["myCard"][attacker].atk
                 self.cardSet["myCard"][attacker].hp -= self.cardSet["aiCard"][target].atk
@@ -118,7 +118,7 @@ class Sys:
                 self.aihp -= self.cardSet["myCard"][attacker].atk
             
             self.cardSet["myCard"][attacker].attacked = True
-        if turn == "ai":
+        else:
             if target != 99:
                 self.cardSet["myCard"][target].hp -= self.cardSet["aiCard"][attacker].atk
                 self.cardSet["aiCard"][attacker].hp -= self.cardSet["myCard"][target].atk
@@ -150,7 +150,7 @@ class Sys:
         # player to ai
         if (self.isPlayerTurn):
             self.isPlayerTurn = False
-            self.giveCard("ai")
+            self.giveCard(False)
             for card in self.cardSet["aiCard"]:
                 card.attacked = False
             for card in self.cardSet["myCard"]:
@@ -160,12 +160,10 @@ class Sys:
             self.aiMana = self.aiMaxMana
             #Creating AI system here:
             self.ai.execute_best_move()
-
-
         # ai to player
         else:
             self.isPlayerTurn = True
-            self.giveCard("player")
+            self.giveCard(True)
             for card in self.cardSet["myCard"]:
                 card.attacked = False
             for card in self.cardSet["aiCard"]:
@@ -174,11 +172,8 @@ class Sys:
                 self.myMaxMana += 1
             self.myMana = self.myMaxMana
 
-        
-        
-
-    def giveCard(self, turn = "player"):
-        if(turn == "player"):
+    def giveCard(self, isPlayerTurn):
+        if isPlayerTurn:
             if len(self.cardSet["mySetCard"]) > 0:
                 temp = self.cardSet["mySetCard"][self.myCardOrder.pop(0)]
                 if len(self.cardSet["myHandCard"]) <= 6:
@@ -186,7 +181,7 @@ class Sys:
                 self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
             else:
                 self.myhp -= 1
-        if(turn == "ai"):
+        else:
             if len(self.cardSet["aiSetCard"]) > 0:
                 temp = self.cardSet["aiSetCard"][self.aiCardOrder.pop(0)]
                 if len(self.cardSet["aiHandCard"]) <= 6:
