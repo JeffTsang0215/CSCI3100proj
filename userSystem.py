@@ -51,10 +51,14 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS users
                  password TEXT NOT NULL,
                  security_question TEXT NOT NULL,
                  security_answer TEXT NOT NULL)''')
+                #  security_question2 TEXT NOT NULL,
+                #  security_answer2 TEXT NOT NULL
+                #  security_question3 TEXT NOT NULL,
+                #  security_answer3 TEXT NOT NULL)''')
 conn.commit()
 
 class InputBox:
-    def __init__(self, x, y, w, h, text = '', empty_text = '', outline = BLACK, alpha = 255, max_length = 16, is_username = False):
+    def __init__(self, x, y, w, h, text = '', empty_text = '', outline = BLACK, alpha = 255, max_length = 16, is_username = False, is_security_question=False):
         self.rect = pygame.Rect(x, y, w, h)
         self.color = WHITE
         self.outline = outline
@@ -63,9 +67,11 @@ class InputBox:
         self.empty_text = empty_text
         self.max_length = max_length
         self.is_username = is_username
+        self.is_security_question = is_security_question
         self.active = False
         self.txt_surface = font.render(self.text, True, WHITE)
         self.last_backspace_time = 0  # Separate timer for backspace
+        self.last_space_time = 0 # Separate timer for space key
         self.key_states = {}  # {key_code: (last_time, repeat_phase)}
 
     def handle_mouse_click(self, mouse_pos):
@@ -89,6 +95,17 @@ class InputBox:
             else:
                 # Reset backspace timer when key is released
                 self.last_backspace_time = 0
+
+            # Handle space character
+            if keys[pygame.K_SPACE]:
+                if current_time - self.last_space_time > 1000:
+                    if len(self.text) < self.max_length and self.is_security_question:
+                        self.text += ' '
+                        self.txt_surface = font.render(self.text, True, WHITE)
+                    self.last_space_time = current_time
+            else:
+                # Reset space timer when key is released
+                self.last_space_time = 0
 
             # Process character keys
             if len(self.text) < self.max_length:
@@ -131,10 +148,12 @@ class InputBox:
         return char.lower() if pygame.K_a <= key_code <= pygame.K_z else char
 
     def _validate_char(self, char):
-        """Validate characters for username fields"""
+        """Validate characters for username and security question fields"""
         if self.is_username:
             return char.isalnum() or char == '_'
-        return True
+        if self.is_security_question:
+            return char.isalnum() or char == ' ' or char in shifted_characters.values()
+        return char.isalnum() or char in shifted_characters.values()
 
     def _add_char(self, char):
         """Safely add character to input"""
@@ -279,7 +298,7 @@ def register_user(username, password, security_question, security_answer):
         error_message = "Verification answer cannot be empty!"
         error_color = RED
         return
-
+    print(security_answer)
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     hashed_security_answer = bcrypt.hashpw(security_answer.encode('utf-8'), bcrypt.gensalt())
     try:
@@ -300,7 +319,7 @@ login_username_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 
 login_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (80 * scale), 800 * scale, 60 * scale, empty_text = '<PASSWORD>', alpha = 130, max_length = 32)
 register_username_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (400 * scale), 800 * scale, 60 * scale, empty_text = '<USERNAME>', alpha = 130, max_length = 16, is_username=True)
 register_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (270 * scale), 800 * scale, 60 * scale, empty_text = '<PASSWORD>', alpha = 130, max_length = 32)
-security_answer_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (60 * scale), 800 * scale, 60 * scale, empty_text = '<ANSWER>', alpha = 130, max_length = 32)
+security_answer_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (60 * scale), 800 * scale, 60 * scale, empty_text = '<ANSWER>', alpha = 130, max_length = 32, is_security_question=True)
 login_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (260 * scale), (800 * scale), (60 * scale))
 register_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (260 * scale), (800 * scale), (60 * scale))
 createAccount_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (340 * scale), (800 * scale), (60 * scale))
