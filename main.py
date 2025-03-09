@@ -608,6 +608,22 @@ while running:
         pygame.display.update()
         shared.clock.tick(shared.fps)
 
+    elif shared.game_state == "forgot_password":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        userSystem.forgot_password_main(mouse_pos, mouse_click)
+        pygame.display.update()
+        shared.clock.tick(shared.fps)
+
+    elif shared.game_state == "reset_password":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        userSystem.reset_password_main(mouse_pos, mouse_click)
+        pygame.display.update()
+        shared.clock.tick(shared.fps)
+
     elif shared.game_state == "win":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
