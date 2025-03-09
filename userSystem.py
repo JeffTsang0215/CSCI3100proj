@@ -53,8 +53,6 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS users
                  security_answer1 TEXT NOT NULL,
                  security_question2 TEXT NOT NULL,
                  security_answer2 TEXT NOT NULL)''')
-                #  security_question3 TEXT NOT NULL,
-                #  security_answer3 TEXT NOT NULL)''')
 conn.commit()
 
 class InputBox:
@@ -189,12 +187,6 @@ class DropdownMenu:
             return True
         elif self.is_open and self.options_rect.collidepoint(mouse_pos):
             return True
-            # index = (mouse_pos[1] - self.options_rect.y) // self.rect.height
-            # if 0 <= index < len(self.questions):
-            #     self.selected_question = self.questions[index]
-            #     self.txt_surface = font.render(self.selected_question, True, WHITE)
-            #     self.is_open = False
-            # return True
         self.is_open = False
         return False
     
@@ -662,10 +654,6 @@ def reset_password_main(mouse_pos, mouse_click):
     new_password_instruction_one_text = new_password_instruction_detail_font.render("-Password must contain 8-32 characters", True, WHITE)
     new_password_instruction_two_text = new_password_instruction_detail_font.render("-It can include letters, numbers, and special characters", True, WHITE)
     new_password_instruction_three_text = new_password_instruction_detail_font.render("-You must include a number, uppercase, and lowercase letter", True, WHITE)
-    # ("-Password must contain 8-32 characters", 26, (shared.HEIGHT/2 - 250 * scale), "left"),
-    # ("-It can include letters, numbers, and special characters", 26, (shared.HEIGHT/2 - 220 * scale), "left"),
-    # ("-You must include a number, uppercase, and lowercase", 26, (shared.HEIGHT/2 - 190 * scale), "left"),
-    # ("  letter", 26, (shared.HEIGHT/2 - 160 * scale), "left"),
     shared.screen.blit(new_password_instruction_title_text, (shared.WIDTH/2 - 400*scale, shared.HEIGHT/2 + 40*scale))
     shared.screen.blit(new_password_instruction_one_text, (shared.WIDTH/2 - 400*scale, shared.HEIGHT/2 + 140*scale))
     shared.screen.blit(new_password_instruction_two_text, (shared.WIDTH/2 - 400*scale, shared.HEIGHT/2 + 160*scale))
@@ -695,7 +683,7 @@ def reset_password_main(mouse_pos, mouse_click):
                 has_lower = True
             elif char.isupper():
                 has_upper = True
-            # Approve password have at least 1 number, lower-case and upper-case letter.
+            # Approve password if have at least 1 number, lower-case and upper-case letter.
             if has_number and has_upper and has_lower:
                 return True
 
@@ -755,3 +743,4 @@ def reset_password_main(mouse_pos, mouse_click):
     shared.screen.blit(confirm_reset_text, confirm_reset_text.get_rect(center=confirm_reset_button.center))
     shared.screen.blit(return_text_surface, return_text_surface.get_rect(center=return_to_login_button.center))
     prev_mouse_click = mouse_click
+    
