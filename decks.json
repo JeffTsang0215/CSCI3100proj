@@ -8,15 +8,23 @@
         "cards": []
     },
     {
+        "name": "Elven Arher",
+        "cards": [
+            "Goblin Scout",
+            "Goblin Scout",
+            "Elven Archer"
+        ]
+    },
+    {
         "name": "New Deck",
         "cards": []
     },
     {
-        "name": "Globin Scott",
+        "name": "New Deck",
         "cards": []
     },
     {
-        "name": "Elven Archer",
+        "name": "New Deck",
         "cards": []
     }
 ]

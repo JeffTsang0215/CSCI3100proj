@@ -43,8 +43,8 @@ card.append([4, 5, 6, "Dragon Hatchling", "epic", scale1, "description", "cardTe
 card.append([4, 4, 9, "Dark Knight", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}])
 card.append([5, 5, 8, "Desert King", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}])
 card.append([5, 5, 10, "Elder Sage", "epic", scale1, "description", "cardTemp.png", {"type": "minion", "skill": "draw", "n": 2}])
-#card.append([3, 0, 0, "Blizzard", "epic", scale1, "description", "cardTemp.png", {"type": "spell", "skill": "freeze", "n": 2}])
-#card.append([4, 0, 0, "Firestorm", "epic", scale1, "description", "cardTemp.png", {"type": "spell", "skill": "fullAtk"}])
+card.append([3, 0, 0, "Blizzard", "epic", scale1, "description", "cardTemp.png", {"type": "spell", "skill": "freeze", "n": 2}])
+card.append([4, 0, 0, "Firestorm", "epic", scale1, "description", "cardTemp.png", {"type": "spell", "skill": "fullAtk"}])
 
 # LEGENDARY CARDS
 card.append([4, 5, 8, "Infernal Demon", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}])

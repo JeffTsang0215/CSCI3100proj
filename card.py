@@ -22,6 +22,8 @@ class CardTemplate:
         self.x = x
         self.y = y
 
+        self.rect = pygame.Rect(self.x, self.y, self.card_width, self.card_height)
+
         # Load and scale card background based on rarity
         rarity_images = {
             "common": "CommonCard.png",
@@ -129,3 +131,44 @@ class CardTemplate:
         self.draw_text_with_border(shared.screen, str(self.hp), card_data_font, text_color, border_color, hp_pos, align="center")
         self.draw_text_with_border(shared.screen, str(self.name), name_font, text_color, border_color, name_pos, align="center")
         self.draw_text(shared.screen, str(self.description), name_font, description_color, description_pos, align="center")
+
+
+
+
+class DeckCard:
+    BASE_SIZE = (145, 35)
+
+    def __init__(self, x, y, name, cost, count=1, image=None):
+        self.x = x
+        self.y = y
+        self.name = name
+        self.cost = cost
+        self.count = count  # Number of times this card appears in the deck
+        self.image = image
+        self.rect = pygame.Rect(self.x, self.y, *self.BASE_SIZE)
+
+    def draw(self, screen, font):
+        # Background rectangle
+        pygame.draw.rect(screen, (137, 84, 39), self.rect) 
+        pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)  # White border
+
+        # Render cost on the left
+        cost_text = font.render(str(self.cost), True, (255, 255, 255))
+        screen.blit(cost_text, (self.x + 5, self.y + 5))
+
+        # Render name in the center
+        name_text = font.render(self.name, True, (255, 255, 255))
+        name_rect = name_text.get_rect(center=(self.x + self.BASE_SIZE[0] // 2, self.y + 15))
+        screen.blit(name_text, name_rect)
+
+        # Render count on the right (e.g., "x1" or "x2")
+        #count_text = font.render(f"x{self.count}", True, (255, 255, 255))
+        #screen.blit(count_text, (self.x + self.BASE_SIZE[0] - 20, self.y + 5))
+
+        # Render count only if it's 2
+        if self.count == 2:
+            count_text = font.render(f"x2", True, (255, 255, 255))
+            screen.blit(count_text, (self.x + self.BASE_SIZE[0] - 20, self.y + 5))
+
+        
+

@@ -1,6 +1,6 @@
 import pygame
 import shared
-from card import CardTemplate
+from card import CardTemplate, DeckCard
 from cardList import card
 import decks
 import pygame.time
@@ -70,6 +70,8 @@ last_click_time = 0
 double_click_delay = 400  # Time in milliseconds for double-click detection
 typing_active = False
 input_text = ""
+
+card_objects = []
 
 def draw_deck_list(mouse_pos, mouse_click):
     global deck_rects, cancel_buttons
@@ -205,33 +207,70 @@ def handle_text_input(event):
             input_text += event.text  # Append typed character
 
 def draw_deck_view(mouse_pos, mouse_click):
-    global current_view
-    
+    global current_view, last_click_time  
+
     if current_view != "deck_view":
         return
     
     deck = decks.decks[selected_deck_index]
-    
+
     # Display deck name
-    #text_surface = custom_font.render(deck["name"], True, (255, 255, 255))
-    #shared.screen.blit(text_surface, (50, 50))
-    
-    # Display deck cards
-    for i, card in enumerate(deck["cards"]):
-        card_text = custom_font.render(card, True, (255, 255, 255))
-        shared.screen.blit(card_text, (50, 100 + i * 30))
-    
+    text_surface = custom_font.render(deck["name"], True, (255, 255, 255))
+    shared.screen.blit(text_surface, (shared.WIDTH - 290 * scale1, 40 * scale2))
+
+    # Define card positions
+    deck_card_x = shared.WIDTH - 290 * scale1  
+    deck_card_y = 70 * scale2
+    deck_card_spacing = 35 * scale2  
+
+    # Count occurrences of each card in the selected deck
+    card_counts = {}
+    for card_name in deck["cards"]:
+        card_counts[card_name] = card_counts.get(card_name, 0) + 1
+
+    # Render DeckCard objects
+    for card_name, count in card_counts.items():
+        card_cost = next((c[0] for c in card if c[3] == card_name), "?")  
+
+        # Only pass count=2 if the card appears twice
+        deck_card = DeckCard(deck_card_x - 20 * scale1, deck_card_y - 10 * scale2, card_name, card_cost, count)
+        deck_card.draw(shared.screen, custom_font)
+
+        deck_card_y += deck_card_spacing  
+
+    # Ensure `current_time` is set before checking double-click
+    current_time = pygame.time.get_ticks()
+    double_click_delay = 400  # Time in milliseconds
+
+    for card_obj in card_objects:
+        if card_obj.rect.collidepoint(mouse_pos):
+            if mouse_click[0]:  # Left mouse button clicked
+                if last_click_time and (current_time - last_click_time < double_click_delay):  
+                    if selected_deck_index is not None and selected_deck_index < len(decks.decks):
+                        deck = decks.decks[selected_deck_index]  # Get the selected deck
+                        card_count = deck["cards"].count(card_obj.name)  # Count occurrences of the card
+
+                        if len(deck["cards"]) < 30:  # Ensure deck size limit of 30 cards
+                            if card_count < 2:  # Each card can only appear up to 2 times
+                                deck["cards"].append(card_obj.name)  
+                                decks.save_decks()
+                                break
+                
+                # Update last_click_time only after a click is detected
+                last_click_time = current_time
+
+
     # Back button
     back_rect = pygame.Rect(874 * scale1, 618 * scale2, 45, 18)
     pygame.draw.rect(shared.screen, (206, 176, 149), back_rect)
     back_text = custom_font.render("Back", True, (0, 0, 0))
     shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
-    
+
     if back_rect.collidepoint(mouse_pos):
         pygame.draw.rect(shared.screen, (255, 226, 199), back_rect)
         shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
         if mouse_click[0]:
-            current_view = "deck_list"  # Go back to deck list
+            current_view = "deck_list"  
 
 
 def cardcollection_main(mouse_pos, mouse_click):
@@ -259,6 +298,7 @@ def cardcollection_main(mouse_pos, mouse_click):
         else:
             shared.screen.blit(back_button_image, back_button.topleft)
 
+
     # Draw only the cards for the current page
     start_index = current_page * CARDS_PER_PAGE
     end_index = start_index + CARDS_PER_PAGE
@@ -269,7 +309,11 @@ def cardcollection_main(mouse_pos, mouse_click):
         x = start_x + col * card_spacing_x
         y = start_y + row * card_spacing_y
         cost, atk, hp, name, rarity, scale_factor,description, image, ext = card_info
-        CardTemplate(cost, atk, hp, name, rarity, x, y, description, scale_factor, image, ext).draw()
+        cost, atk, hp, name, rarity, scale_factor, description, image, ext = card_info
+
+        card_obj = CardTemplate(cost, atk, hp, name, rarity, x, y, description, scale_factor, image, ext)
+        card_obj.draw()
+        card_objects.append(card_obj)  # Store card object
 
     shared.text(shared.screen, "My Decks", (30, 30, 30), int(9 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center", font=custom_font)
 
