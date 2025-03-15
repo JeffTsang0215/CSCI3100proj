@@ -107,6 +107,7 @@ def draw_deck_list(mouse_pos, mouse_click):
 
         # Draw deck rectangle
         pygame.draw.rect(shared.screen, deck_color, rect)
+        pygame.draw.rect(shared.screen, (0, 0, 0), rect, 2)
 
         # Apply deck hover effect
         if rect.collidepoint(mouse_pos):
@@ -126,8 +127,10 @@ def draw_deck_list(mouse_pos, mouse_click):
         if typing_active and selected_deck_index == i:
             pygame.draw.rect(shared.screen, (200, 200, 200), rect, 2)  # Highlight editing deck
             text_surface = custom_font.render(input_text, True, (255, 255, 255))
+            #shared.draw_text_with_border(shared.screen, deck["name"], pygame.font.Font("fonts/belwe-bold-bt.ttf", 16), (255, 255, 255), (0, 0, 0), (shared.WIDTH - 250 * scale1, 40 * scale2), align="center")
         else:
             text_surface = custom_font.render(deck["name"], True, (255, 255, 255))
+            #shared.draw_text_with_border(shared.screen, deck["name"], pygame.font.Font("fonts/belwe-bold-bt.ttf", 16), (255, 255, 255), (0, 0, 0), (shared.WIDTH - 250 * scale1, 40 * scale2), align="center")
 
         text_rect = text_surface.get_rect(center=(deck_x + deck_width / 2, deck_y + deck_height / 2))
         shared.screen.blit(text_surface, text_rect)
@@ -214,9 +217,21 @@ def draw_deck_view(mouse_pos, mouse_click):
     
     deck = decks.decks[selected_deck_index]
 
+     # Back button
+    back_rect = pygame.Rect(874 * scale1, 618 * scale2, 45, 18)
+    pygame.draw.rect(shared.screen, (206, 176, 149), back_rect)
+    back_text = custom_font.render("Back", True, (0, 0, 0))
+    shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
+
+    if back_rect.collidepoint(mouse_pos):
+        pygame.draw.rect(shared.screen, (255, 226, 199), back_rect)
+        shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
+        if mouse_click[0]:
+            current_view = "deck_list"  
+
+
     # Display deck name
-    text_surface = custom_font.render(deck["name"], True, (255, 255, 255))
-    shared.screen.blit(text_surface, (shared.WIDTH - 290 * scale1, 40 * scale2))
+    shared.draw_text_with_border(shared.screen, deck["name"], pygame.font.Font("fonts/belwe-bold-bt.ttf", 16), (255, 255, 255), (0, 0, 0), (shared.WIDTH - 250 * scale1, 40 * scale2), align="center")
 
     # Define card positions
     deck_card_x = shared.WIDTH - 290 * scale1  
@@ -228,15 +243,28 @@ def draw_deck_view(mouse_pos, mouse_click):
     for card_name in deck["cards"]:
         card_counts[card_name] = card_counts.get(card_name, 0) + 1
 
+    # Store DeckCard instances for interaction
+    deck_cards = []
+
     # Render DeckCard objects
     for card_name, count in card_counts.items():
         card_cost = next((c[0] for c in card if c[3] == card_name), "?")  
 
-        # Only pass count=2 if the card appears twice
         deck_card = DeckCard(deck_card_x - 20 * scale1, deck_card_y - 10 * scale2, card_name, card_cost, count)
-        deck_card.draw(shared.screen, custom_font)
+        deck_card.draw(shared.screen, mouse_pos)
+
+        deck_cards.append(deck_card)  # Store for interaction
 
         deck_card_y += deck_card_spacing  
+
+    # Check for cancel button clicks
+    if mouse_click[0]:  # Left mouse click
+        for deck_card in deck_cards:
+            if deck_card.cancel_rect.collidepoint(mouse_pos):
+                if deck_card.name in deck["cards"]:
+                    deck["cards"].remove(deck_card.name)  # Remove one occurrence
+                    decks.save_decks()  # Save changes
+                    return  # Exit early to avoid issues with list modification
 
     # Ensure `current_time` is set before checking double-click
     current_time = pygame.time.get_ticks()
@@ -259,19 +287,9 @@ def draw_deck_view(mouse_pos, mouse_click):
                 # Update last_click_time only after a click is detected
                 last_click_time = current_time
 
-
-    # Back button
-    back_rect = pygame.Rect(874 * scale1, 618 * scale2, 45, 18)
-    pygame.draw.rect(shared.screen, (206, 176, 149), back_rect)
-    back_text = custom_font.render("Back", True, (0, 0, 0))
-    shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
-
-    if back_rect.collidepoint(mouse_pos):
-        pygame.draw.rect(shared.screen, (255, 226, 199), back_rect)
-        shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
-        if mouse_click[0]:
-            current_view = "deck_list"  
-
+    #card_count = f"{len(decks.cards)}/{max_decks}"
+    #shared.text(shared.screen, deck_count_text, (255, 255, 255), int(14 * scale1), 
+     #           [shared.WIDTH - 290 * scale1, 615 * scale2], "left", font=custom_font)
 
 def cardcollection_main(mouse_pos, mouse_click):
     global current_page, last_button_press

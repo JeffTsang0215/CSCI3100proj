@@ -10,9 +10,23 @@
     {
         "name": "Elven Arher",
         "cards": [
-            "Goblin Scout",
-            "Goblin Scout",
-            "Elven Archer"
+            "Goblin",
+            "Archer",
+            "SkeletalMinion",
+            "SkeletalMinion",
+            "Frost",
+            "ForestDryad",
+            "Warrior",
+            "Ice",
+            "Arcane"
+        ]
+    },
+    {
+        "name": "Testing",
+        "cards": [
+            "SkeletalMinion",
+            "SkeletalMinion",
+            "Archer"
         ]
     },
     {

@@ -49,5 +49,46 @@ def text(screen, text, color, size, pos, align="left", font=None):
         text_rect = text_surface.get_rect(center=pos)
         screen.blit(text_surface, text_rect)
 
+def draw_text_with_border(surface, text, font, text_color, border_color, position, border_thickness=2, align="center"):
+    """Draws text with a border (outline effect)."""
+    text_surface = font.render(text, True, text_color)
+    text_rect = text_surface.get_rect()
+
+    # Adjust the position based on alignment
+    if align == "center":
+        text_rect.center = position
+    elif align == "left":
+        text_rect.topleft = position
+    elif align == "right":
+        text_rect.topright = position
+
+    # Draw border (outline effect)
+    for dx in [-border_thickness, 0, border_thickness]:
+        for dy in [-border_thickness, 0, border_thickness]:
+            if dx == 0 and dy == 0:
+                continue
+            border_surface = font.render(text, True, border_color)
+            border_rect = border_surface.get_rect(center=text_rect.center)
+            border_rect.move_ip(dx, dy)
+            surface.blit(border_surface, border_rect)
+
+    # Draw main text on top
+    surface.blit(text_surface, text_rect)
+
+
+def draw_text(surface, text, font, text_color, position, align="center"):
+    """Draws normal text without a border."""
+    text_surface = font.render(text, True, text_color)
+    text_rect = text_surface.get_rect()
+
+    if align == "center":
+        text_rect.center = position
+    elif align == "left":
+        text_rect.topleft = position
+    elif align == "right":
+        text_rect.topright = position
+
+    surface.blit(text_surface, text_rect)
+
 
 

@@ -1,6 +1,9 @@
 import pygame, os, random
 import shared
 
+scale1 = shared.WIDTH / 1080
+scale2 = shared.HEIGHT / 675
+
 class CardTemplate:
     BASE_SIZE = (140, 196)  # Base card size
 
@@ -54,47 +57,6 @@ class CardTemplate:
             self.image_x = self.x + (self.card_width - image_width) // 2 + 3
             self.image_y = self.y + int(13 * self.scale_factor)
 
-    def draw_text_with_border(self, surface, text, font, text_color, border_color, position, border_thickness=2, align="center"):
-        """Draws text with a border (outline effect)."""
-        text_surface = font.render(text, True, text_color)
-        text_rect = text_surface.get_rect()
-
-        # Adjust the position based on alignment
-        if align == "center":
-            text_rect.center = position
-        elif align == "left":
-            text_rect.topleft = position
-        elif align == "right":
-            text_rect.topright = position
-
-        # Draw border (outline effect)
-        for dx in [-border_thickness, 0, border_thickness]:
-            for dy in [-border_thickness, 0, border_thickness]:
-                if dx == 0 and dy == 0:
-                    continue
-                border_surface = font.render(text, True, border_color)
-                border_rect = border_surface.get_rect(center=text_rect.center)
-                border_rect.move_ip(dx, dy)
-                surface.blit(border_surface, border_rect)
-
-        # Draw main text on top
-        surface.blit(text_surface, text_rect)
-
-
-    def draw_text(self, surface, text, font, text_color, position, align="center"):
-        """Draws normal text without a border."""
-        text_surface = font.render(text, True, text_color)
-        text_rect = text_surface.get_rect()
-
-        if align == "center":
-            text_rect.center = position
-        elif align == "left":
-            text_rect.topleft = position
-        elif align == "right":
-            text_rect.topright = position
-
-        surface.blit(text_surface, text_rect)
-
 
     def draw(self):
         """Draws the card with its image, background, and text indicators."""
@@ -125,50 +87,81 @@ class CardTemplate:
         name_pos = (self.x + self.card_width // 2, self.y + int(107 * self.scale_factor))
         description_pos = (self.x + self.card_width // 2, self.y + int(150 * self.scale_factor))
 
-        # Draw text with border effect
-        self.draw_text_with_border(shared.screen, str(self.cost), card_data_font, text_color, border_color, cost_pos, align="center")
-        self.draw_text_with_border(shared.screen, str(self.atk), card_data_font, text_color, border_color, atk_pos, align="center")
-        self.draw_text_with_border(shared.screen, str(self.hp), card_data_font, text_color, border_color, hp_pos, align="center")
-        self.draw_text_with_border(shared.screen, str(self.name), name_font, text_color, border_color, name_pos, align="center")
-        self.draw_text(shared.screen, str(self.description), name_font, description_color, description_pos, align="center")
-
-
+        # Draw text with border effect using shared function
+        shared.draw_text_with_border(shared.screen, str(self.cost), card_data_font, text_color, border_color, cost_pos, align="center")
+        shared.draw_text_with_border(shared.screen, str(self.atk), card_data_font, text_color, border_color, atk_pos, align="center")
+        shared.draw_text_with_border(shared.screen, str(self.hp), card_data_font, text_color, border_color, hp_pos, align="center")
+        shared.draw_text_with_border(shared.screen, self.name, name_font, text_color, border_color, name_pos, align="center")
+        shared.draw_text(shared.screen, self.description, description_font, description_color, description_pos, align="center")
 
 
 class DeckCard:
     BASE_SIZE = (145, 35)
 
-    def __init__(self, x, y, name, cost, count=1, image=None):
+    def __init__(self, x, y, name, cost, count=1):
         self.x = x
         self.y = y
         self.name = name
         self.cost = cost
-        self.count = count  # Number of times this card appears in the deck
-        self.image = image
+        self.count = count  
         self.rect = pygame.Rect(self.x, self.y, *self.BASE_SIZE)
-
-    def draw(self, screen, font):
-        # Background rectangle
-        pygame.draw.rect(screen, (137, 84, 39), self.rect) 
-        pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)  # White border
-
-        # Render cost on the left
-        cost_text = font.render(str(self.cost), True, (255, 255, 255))
-        screen.blit(cost_text, (self.x + 5, self.y + 5))
-
-        # Render name in the center
-        name_text = font.render(self.name, True, (255, 255, 255))
-        name_rect = name_text.get_rect(center=(self.x + self.BASE_SIZE[0] // 2, self.y + 15))
-        screen.blit(name_text, name_rect)
-
-        # Render count on the right (e.g., "x1" or "x2")
-        #count_text = font.render(f"x{self.count}", True, (255, 255, 255))
-        #screen.blit(count_text, (self.x + self.BASE_SIZE[0] - 20, self.y + 5))
-
-        # Render count only if it's 2
-        if self.count == 2:
-            count_text = font.render(f"x2", True, (255, 255, 255))
-            screen.blit(count_text, (self.x + self.BASE_SIZE[0] - 20, self.y + 5))
-
+        self.countrect = pygame.Rect(self.x + self.BASE_SIZE[0] - self.BASE_SIZE[1] + 5*scale1, self.y + 2*scale2, self.BASE_SIZE[1] - 7*scale1, self.BASE_SIZE[1] - 3*scale1)
         
+        # Define cancel button area 
+        self.cancel_rect = pygame.Rect(self.x + self.BASE_SIZE[0], self.y, 35, 35)
+
+    def draw(self, screen, mouse_pos):
+        # Create fontsd
+        deck_name_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", 12)  
+        cost_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", 30)  # Larger font for cost
+        count_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", 16)  
+
+        text_color = (255, 255, 255)  # White text
+        border_color = (0, 0, 0)  # Black outline
+
+        # Background rectangle
+        pygame.draw.rect(screen, (137, 84, 39), self.rect)  
+        pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)  # Black border
+
+        # Load and draw the mana image
+        mana_image = pygame.image.load(shared.path + "image/ManaT.png")
+        mana_image = pygame.transform.scale(mana_image, (35, 35))  
+        screen.blit(mana_image, (self.x - 10 * scale1, self.y))  
+
+        # Draw cost with border
+        cost_pos = (self.x + 6 * scale1, self.y + 15 * scale2)
+        shared.draw_text_with_border(screen, str(self.cost), cost_font, text_color, border_color, cost_pos, align="center")
+
+        # Draw name with border
+        name_pos = (self.x + self.BASE_SIZE[0] // 2 - 42*scale1, self.y + 10*scale2)
+        shared.draw_text_with_border(screen, self.name, deck_name_font, text_color, border_color, name_pos, align="left")
+
+        # Draw count if it's 2
+        if self.count == 2:
+            pygame.draw.rect(screen, (117, 64, 19), self.countrect)
+           # pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)  # Black border
+            count_pos = (self.x + self.BASE_SIZE[0] - 15*scale1, self.y + 15*scale2)
+            shared.draw_text_with_border(screen, "2", count_font, text_color, border_color, count_pos, align="center")
+
+        # Change cancel button color on hover
+        cancel_text_color = (255, 255, 255)  
+        if self.cancel_rect.collidepoint(mouse_pos):
+            cancel_text_color = (255, 50, 50)  # Red when hovered
+
+        # Render "-" using shared.text
+        shared.text(screen, "-", cancel_text_color, int(20 * scale1), 
+            [self.x + self.BASE_SIZE[0] + 10, self.y + 17], "center") 
+
+
+    def handle_event(self, event, deck):
+        """Check if the cancel button is clicked and remove the card from the deck."""
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse click
+            if self.cancel_rect.collidepoint(event.pos):
+                if self.name in deck["cards"]:
+                    deck["cards"].remove(self.name)  # Remove one occurrence
+                    print(f"Removed {self.name} from deck")
+                    return True  # Indicate the card was removed
+        return False
+
+
 
