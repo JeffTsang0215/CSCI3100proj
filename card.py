@@ -98,7 +98,7 @@ class CardTemplate:
 class DeckCard:
     BASE_SIZE = (145, 35)
 
-    def __init__(self, x, y, name, cost, count=1):
+    def __init__(self, x, y, name, rarity,  cost, count=1):
         self.x = x
         self.y = y
         self.name = name
@@ -106,7 +106,8 @@ class DeckCard:
         self.count = count  
         self.rect = pygame.Rect(self.x, self.y, *self.BASE_SIZE)
         self.countrect = pygame.Rect(self.x + self.BASE_SIZE[0] - self.BASE_SIZE[1] + 5*scale1, self.y + 2*scale2, self.BASE_SIZE[1] - 7*scale1, self.BASE_SIZE[1] - 3*scale1)
-        
+        self.rarity = rarity
+
         # Define cancel button area 
         self.cancel_rect = pygame.Rect(self.x + self.BASE_SIZE[0], self.y, 35, 35)
 
@@ -116,8 +117,9 @@ class DeckCard:
         cost_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", 30)  # Larger font for cost
         count_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", 16)  
 
-        text_color = (255, 255, 255)  # White text
-        border_color = (0, 0, 0)  # Black outline
+        text_color = (255, 255, 255) 
+        border_color = (0, 0, 0)  
+        count_color = (255, 215, 0)
 
         # Background rectangle
         pygame.draw.rect(screen, (137, 84, 39), self.rect)  
@@ -127,6 +129,12 @@ class DeckCard:
         mana_image = pygame.image.load(shared.path + "image/ManaT.png")
         mana_image = pygame.transform.scale(mana_image, (35, 35))  
         screen.blit(mana_image, (self.x - 10 * scale1, self.y))  
+        star_image = pygame.image.load(shared.path + f"image/legendary star.png")
+
+        star_width = self.BASE_SIZE[1] * 0.4
+        star_height = self.BASE_SIZE[1] * 0.4
+
+        star_image = pygame.transform.scale(star_image, (star_width, star_height))
 
         # Draw cost with border
         cost_pos = (self.x + 6 * scale1, self.y + 15 * scale2)
@@ -136,12 +144,16 @@ class DeckCard:
         name_pos = (self.x + self.BASE_SIZE[0] // 2 - 42*scale1, self.y + 10*scale2)
         shared.draw_text_with_border(screen, self.name, deck_name_font, text_color, border_color, name_pos, align="left")
 
-        # Draw count if it's 2
-        if self.count == 2:
+        if self.rarity == "legendary":
+            # Draw a star symbol ★ instead of "x2"
             pygame.draw.rect(screen, (117, 64, 19), self.countrect)
-           # pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)  # Black border
+            screen.blit(star_image, (self.x + self.BASE_SIZE[0] - 20*scale1, self.y + 9*scale2))
+        
+          # Draw count if it's 2
+        elif self.count == 2:
+            pygame.draw.rect(screen, (117, 64, 19), self.countrect)
             count_pos = (self.x + self.BASE_SIZE[0] - 15*scale1, self.y + 15*scale2)
-            shared.draw_text_with_border(screen, "2", count_font, text_color, border_color, count_pos, align="center")
+            shared.draw_text(screen, "2", count_font, count_color, count_pos, align='center')
 
         # Change cancel button color on hover
         cancel_text_color = (255, 255, 255)  

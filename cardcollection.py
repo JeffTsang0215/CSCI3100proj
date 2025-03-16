@@ -4,9 +4,13 @@ from card import CardTemplate, DeckCard
 from cardList import card
 import decks
 import pygame.time
+from collections import Counter
 
 scale1 = shared.WIDTH / 1080
 scale2 = shared.HEIGHT / 675
+
+current_card_page = 0
+last_page = -1
 
 # Load background
 cardcollection_bg = pygame.image.load(shared.path + "image/cardcollection.png")
@@ -58,10 +62,10 @@ deck_rects = []
 cancel_buttons = []
 
 # Define deck UI properties
-deck_width = 122 * scale1
+deck_width = 126 * scale1
 deck_height = 30 * scale2
 deck_spacing = 0 * scale2
-deck_start_x = shared.WIDTH - 305 * scale1
+deck_start_x = shared.WIDTH - 307 * scale1
 deck_start_y = 60 * scale2
 cancel_button_size = (30 * scale1, 30 * scale2)
 
@@ -123,17 +127,22 @@ def draw_deck_list(mouse_pos, mouse_click):
                 selected_deck_index = i
                 input_text = deck["name"]
 
-        # Draw deck name
+        # Draw deck name using draw_text_with_border
         if typing_active and selected_deck_index == i:
             pygame.draw.rect(shared.screen, (200, 200, 200), rect, 2)  # Highlight editing deck
-            text_surface = custom_font.render(input_text, True, (255, 255, 255))
-            #shared.draw_text_with_border(shared.screen, deck["name"], pygame.font.Font("fonts/belwe-bold-bt.ttf", 16), (255, 255, 255), (0, 0, 0), (shared.WIDTH - 250 * scale1, 40 * scale2), align="center")
+            shared.draw_text_with_border(
+                shared.screen, input_text, custom_font, 
+                (255, 255, 255), (0, 0, 0),  # White text, Black border
+                (deck_x + deck_width // 2, deck_y + deck_height // 2),
+                align="center"
+            )
         else:
-            text_surface = custom_font.render(deck["name"], True, (255, 255, 255))
-            #shared.draw_text_with_border(shared.screen, deck["name"], pygame.font.Font("fonts/belwe-bold-bt.ttf", 16), (255, 255, 255), (0, 0, 0), (shared.WIDTH - 250 * scale1, 40 * scale2), align="center")
-
-        text_rect = text_surface.get_rect(center=(deck_x + deck_width / 2, deck_y + deck_height / 2))
-        shared.screen.blit(text_surface, text_rect)
+            shared.draw_text_with_border(
+                shared.screen, deck["name"], custom_font, 
+                (255, 255, 255), (0, 0, 0),  # White text, Black border
+                (deck_x + deck_width // 2, deck_y + deck_height // 2),
+                align="center"
+            )
 
         # Delete deck button hover effect
         cancel_text_color = default_cancel_color  # Default White
@@ -173,8 +182,11 @@ def draw_deck_list(mouse_pos, mouse_click):
 
     # Display total number of decks
     deck_count_text = f"{len(decks.decks)}/{max_decks}"
-    shared.text(shared.screen, deck_count_text, (255, 255, 255), int(14 * scale1), 
-                [shared.WIDTH - 290 * scale1, 615 * scale2], "left", font=custom_font)
+    shared.draw_text_with_border(
+    shared.screen, deck_count_text, custom_font, (255, 255, 255), (0, 0, 0),  
+    [shared.WIDTH - 290 * scale1, 615 * scale2], 
+    border_thickness=2, align="left"
+    )
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -210,14 +222,14 @@ def handle_text_input(event):
             input_text += event.text  # Append typed character
 
 def draw_deck_view(mouse_pos, mouse_click):
-    global current_view, last_click_time  
+    global current_view, last_click_time, current_card_page
 
     if current_view != "deck_view":
         return
     
     deck = decks.decks[selected_deck_index]
 
-     # Back button
+    # Back button
     back_rect = pygame.Rect(874 * scale1, 618 * scale2, 45, 18)
     pygame.draw.rect(shared.screen, (206, 176, 149), back_rect)
     back_text = custom_font.render("Back", True, (0, 0, 0))
@@ -229,33 +241,92 @@ def draw_deck_view(mouse_pos, mouse_click):
         if mouse_click[0]:
             current_view = "deck_list"  
 
-
     # Display deck name
     shared.draw_text_with_border(shared.screen, deck["name"], pygame.font.Font("fonts/belwe-bold-bt.ttf", 16), (255, 255, 255), (0, 0, 0), (shared.WIDTH - 250 * scale1, 40 * scale2), align="center")
 
     # Define card positions
-    deck_card_x = shared.WIDTH - 290 * scale1  
-    deck_card_y = 70 * scale2
-    deck_card_spacing = 35 * scale2  
+    deck_card_x = shared.WIDTH - 290 * scale1  # X position for the cards
+    deck_card_y = 70 * scale2  # Starting Y position for the first card
+    deck_card_spacing = 35 * scale2  # Space between cards vertically
 
     # Count occurrences of each card in the selected deck
     card_counts = {}
     for card_name in deck["cards"]:
         card_counts[card_name] = card_counts.get(card_name, 0) + 1
 
+    # Create a dictionary for quick lookups
+    card_dict = {c[3]: (c[0], c[4]) for c in card}  # Maps name -> (cost, rarity)
+
+    # Collect deck cards with cost
+    deck_cards_data = [
+        (card_name, count, *card_dict.get(card_name, ("?", "?"))) 
+        for card_name, count in card_counts.items()
+    ]
+
     # Store DeckCard instances for interaction
     deck_cards = []
 
-    # Render DeckCard objects
-    for card_name, count in card_counts.items():
-        card_cost = next((c[0] for c in card if c[3] == card_name), "?")  
+    # Pagination logic for unique cards (show only the first 15 unique cards)
+    unique_cards = list(card_counts.keys())  # Get unique card names
+    cards_per_page = 15  # Cards shown per page
+    total_pages = (len(unique_cards) - 1) // cards_per_page + 1  # Calculate total pages
 
-        deck_card = DeckCard(deck_card_x - 20 * scale1, deck_card_y - 10 * scale2, card_name, card_cost, count)
+    # Pagination logic: show only the current page's cards
+    start_idx = current_card_page * cards_per_page
+    end_idx = start_idx + cards_per_page
+    page_cards = unique_cards[start_idx:end_idx]
+
+    # Sort by cost (index 2 in the tuple)
+    deck_cards_data.sort(key=lambda x: x[2] if isinstance(x[2], int) else float('inf'))
+
+    # Before rendering the cards, print the sorted list
+   # print("Sorted deck cards data:", deck_cards_data)
+
+
+    # Render DeckCard objects for the current page (only unique cards)
+    deck_card_y = 70 * scale2  # Reset to starting Y position for cards
+    for card_name, count, card_cost, card_rarity in deck_cards_data[start_idx:end_idx]:  # Use sorted data
+        deck_card = DeckCard(deck_card_x - 20 * scale1, deck_card_y - 10 * scale2, card_name, card_rarity, card_cost, count)
         deck_card.draw(shared.screen, mouse_pos)
+        deck_cards.append(deck_card)
+        deck_card_y += deck_card_spacing  # Increment the Y position for the next card
 
-        deck_cards.append(deck_card)  # Store for interaction
+    # Localized positions for the pagination arrows in deck_view
+    local_page_button_size = (17 * scale1, 31 * scale1)
 
-        deck_card_y += deck_card_spacing  
+    # Next button (right arrow) position
+    next_button_image = pygame.image.load(shared.path + "image/rightarrow.png")
+    next_button_image = pygame.transform.scale(next_button_image, local_page_button_size)
+    next_button = next_button_image.get_rect(topright=(0.92 * shared.WIDTH, 0.82 * shared.HEIGHT))
+
+    # Back button (left arrow) position
+    back_button_image = pygame.image.load(shared.path + "image/leftarrow.png")
+    back_button_image = pygame.transform.scale(back_button_image, local_page_button_size)
+    back_button = back_button_image.get_rect(topright=(0.9 * shared.WIDTH, 0.82 * shared.HEIGHT))
+
+    # Draw pagination arrows with hover effect (move buttons by 2 pixels)
+    if current_card_page > 0:
+        if back_button.collidepoint(mouse_pos):
+            # Move the back button 2 pixels to the left on hover
+            shared.screen.blit(back_button_image, (back_button.left - 2, back_button.top))
+        else:
+            shared.screen.blit(back_button_image, back_button.topleft)
+
+    if current_card_page < total_pages - 1:
+        if next_button.collidepoint(mouse_pos):
+            # Move the next button 2 pixels to the right on hover
+            shared.screen.blit(next_button_image, (next_button.left + 2, next_button.top))
+        else:
+            shared.screen.blit(next_button_image, next_button.topleft)
+
+    # Handle button click for changing pages
+    if back_button.collidepoint(mouse_pos) and mouse_click[0]:
+        if current_card_page > 0:
+            current_card_page -= 1  # Go to the previous page
+
+    if next_button.collidepoint(mouse_pos) and mouse_click[0]:
+        if current_card_page < total_pages - 1:
+            current_card_page += 1  # Go to the next page
 
     # Check for cancel button clicks
     if mouse_click[0]:  # Left mouse click
@@ -278,23 +349,57 @@ def draw_deck_view(mouse_pos, mouse_click):
                         deck = decks.decks[selected_deck_index]  # Get the selected deck
                         card_count = deck["cards"].count(card_obj.name)  # Count occurrences of the card
 
+                         # Check if the card is legendary
+                        is_legendary = card_obj.rarity.lower() == "legendary"
+                        contains_legendary = any(
+                            card_info[4].lower() == "legendary" for card_info in card if card_info[3] in deck["cards"]
+                        )
+
                         if len(deck["cards"]) < 30:  # Ensure deck size limit of 30 cards
-                            if card_count < 2:  # Each card can only appear up to 2 times
+                            # If the card is legendary, check if there is already one in the deck
+                            if is_legendary and contains_legendary:
+                                print("You can only have one legendary card in the deck!")
+                            elif card_count < 2:  # Each card can only appear up to 2 times
                                 deck["cards"].append(card_obj.name)  
                                 decks.save_decks()
+                                # Recalculate card counts and sort deck cards
+                                card_counts = Counter(deck["cards"])  # Count occurrences of each card
+                                deck_cards_data = [
+                                    (card_name, count, *card_dict.get(card_name, ("?", "?"))) 
+                                    for card_name, count in card_counts.items()
+                                ]
+                                deck_cards_data.sort(key=lambda x: x[2] if isinstance(x[2], int) else float('inf'))
+
+                                 # After sorting, reapply pagination logic (if you are paginating)
+                                unique_cards = list(card_counts.keys())  # Get unique card names
+                                total_pages = (len(unique_cards) - 1) // cards_per_page + 1  # Calculate total pages
+                                start_idx = current_card_page * cards_per_page
+                                end_idx = start_idx + cards_per_page
+                                page_cards = unique_cards[start_idx:end_idx]
                                 break
                 
                 # Update last_click_time only after a click is detected
                 last_click_time = current_time
 
-    #card_count = f"{len(decks.cards)}/{max_decks}"
-    #shared.text(shared.screen, deck_count_text, (255, 255, 255), int(14 * scale1), 
-     #           [shared.WIDTH - 290 * scale1, 615 * scale2], "left", font=custom_font)
+    card_counts = Counter(deck["cards"])  # Count occurrences of each card
+    total_cards = sum(card_counts.values())  # Sum up all card counts
+
+    max_cards = 30
+    total_cards_text = f"{total_cards}/{max_cards}"
+    shared.draw_text_with_border(
+        shared.screen, total_cards_text, custom_font, (255, 255, 255), (0, 0, 0),  # White text, black border
+        [shared.WIDTH - 290 * scale1, 615 * scale2], 
+        border_thickness=2, align="left"
+    )
+
 
 def cardcollection_main(mouse_pos, mouse_click):
-    global current_page, last_button_press
+    global current_page, last_button_press, card_objects
 
     shared.screen.blit(cardcollection_bg, (0, 0))  # Draw background
+
+    # Clear previous page's cards to prevent accumulation
+    card_objects = []  # Reset the list to store only current page's cards
 
     # Handle next button (only if NOT on the last page)
     if current_page < total_pages - 1:
@@ -316,7 +421,6 @@ def cardcollection_main(mouse_pos, mouse_click):
         else:
             shared.screen.blit(back_button_image, back_button.topleft)
 
-
     # Draw only the cards for the current page
     start_index = current_page * CARDS_PER_PAGE
     end_index = start_index + CARDS_PER_PAGE
@@ -326,12 +430,11 @@ def cardcollection_main(mouse_pos, mouse_click):
         col = i % cards_per_row  
         x = start_x + col * card_spacing_x
         y = start_y + row * card_spacing_y
-        cost, atk, hp, name, rarity, scale_factor,description, image, ext = card_info
         cost, atk, hp, name, rarity, scale_factor, description, image, ext = card_info
 
         card_obj = CardTemplate(cost, atk, hp, name, rarity, x, y, description, scale_factor, image, ext)
         card_obj.draw()
-        card_objects.append(card_obj)  # Store card object
+        card_objects.append(card_obj)  # Store only cards from the current page
 
     shared.text(shared.screen, "My Decks", (30, 30, 30), int(9 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center", font=custom_font)
 
@@ -339,10 +442,9 @@ def cardcollection_main(mouse_pos, mouse_click):
     page_number = f"Page {current_page + 1}"
     shared.text(shared.screen, page_number, (70, 70, 70), int(16 * scale2), [shared.WIDTH - 650 * scale1, shared.HEIGHT - 110 * scale2], "center", font=custom_font)
 
-
     draw_deck_list(mouse_pos, mouse_click)
     draw_deck_view(mouse_pos, mouse_click)
-    
+
 
 
 
