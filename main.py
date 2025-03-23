@@ -448,6 +448,8 @@ while running:
 
     mouse_pos = pygame.mouse.get_pos()
     mouse_click = pygame.mouse.get_pressed()
+   # handle_click = pygame.MOUSEBUTTONDOWN()
+
     #Use to track mouse position
     #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     #print(mouse_pos[0],mouse_pos[1])

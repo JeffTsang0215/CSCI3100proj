@@ -12,24 +12,20 @@
     {
         "name": "Elven Arher",
         "cards": [
-            "Goblin",
             "Blizzard",
             "Firestorm",
             "Frost",
             "Archer",
-            "Warrior",
-            "Ice",
             "Ice",
             "Arcane",
             "Arcane",
             "Warrior",
-            "ForestDryad",
             "ForestDryad",
             "Paladin",
-            "Berserker",
             "Frost",
             "Berserker",
-            "Champion"
+            "Champion",
+            "Goblin"
         ]
     },
     {
@@ -41,54 +37,50 @@
             "Frost",
             "ForestDryad",
             "ForestDryad",
-            "Firestorm",
-            "Void",
             "Void",
             "Warrior",
             "Paladin",
-            "Paladin",
             "Berserker",
             "Assassin",
-            "Medic",
             "Panther",
             "Flamecaller",
-            "Guardian",
             "Champion",
             "Blizzard",
             "Dragon",
             "Berserker",
-            "Medic",
             "Assassin",
             "Flamecaller",
             "Guardian",
             "Champion",
             "Goblin",
             "Goblin",
-            "Archer"
+            "Archer",
+            "Dragon",
+            "Firestorm",
+            "DesertKing",
+            "Firestorm",
+            "Frost"
         ]
     },
     {
-        "name": "New Deck",
+        "name": "New De",
         "cards": [
-            "Warrior",
-            "Warrior",
-            "Ice",
-            "Ice",
             "SkeletalMinion",
             "Archer",
             "Goblin",
             "Goblin",
             "Archer",
+            "SkeletalMinion",
+            "Void",
             "ForestDryad",
-            "SkeletalMinion",
+            "DarkKnight",
+            "Firestorm",
+            "Berserker",
+            "Berserker",
             "Paladin",
-            "Paladin",
-            "Guardian",
-            "Guardian",
-            "Champion",
-            "Champion",
-            "Arcane",
-            "Void"
+            "Warrior",
+            "Ice",
+            "Arcane"
         ]
     },
     {
@@ -99,6 +91,11 @@
     },
     {
         "name": "New Deck",
-        "cards": []
+        "cards": [
+            "Wizard",
+            "Frost",
+            "ForestDryad",
+            "Warrior"
+        ]
     }
 ]

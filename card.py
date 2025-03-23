@@ -26,7 +26,7 @@ class CardTemplate:
         self.y = y
 
         self.rect = pygame.Rect(self.x, self.y, self.card_width, self.card_height)
-
+        self.add_rect = pygame.Rect(self.x + self.BASE_SIZE[0] // 2 , self.y + self.BASE_SIZE[1] + int(25 * scale2), int(25 * scale1), int(25 * scale2))
         # Load and scale card background based on rarity
         rarity_images = {
             "common": "CommonCard.png",
@@ -94,9 +94,27 @@ class CardTemplate:
         shared.draw_text_with_border(shared.screen, self.name, name_font, text_color, border_color, name_pos, align="center")
         shared.draw_text(shared.screen, self.description, description_font, description_color, description_pos, align="center")
 
+    def draw_plus_button(self, mouse_pos):  
+            if self.add_rect.collidepoint(mouse_pos):
+                add_rect_color = (180, 220, 180)  # Lighter green when hovered
+            else:
+                add_rect_color = (100, 200, 100)  # Default green
+
+            pygame.draw.rect(shared.screen, add_rect_color, self.add_rect)  # Draw button
+
+            # Render the "+" text
+            font = pygame.font.Font(None, 24)
+            plus_text = font.render("+", True, (255, 255, 255))  # White text
+            plus_text_rect = plus_text.get_rect(center=self.add_rect.center)  # Center text
+
+            shared.screen.blit(plus_text, plus_text_rect)  # Draw text on button
+
+
+
+        
 
 class DeckCard:
-    BASE_SIZE = (145, 35)
+    BASE_SIZE = (126*scale1, 30*scale2)
 
     def __init__(self, x, y, name, rarity,  cost, count=1):
         self.x = x
@@ -109,13 +127,13 @@ class DeckCard:
         self.rarity = rarity
 
         # Define cancel button area 
-        self.cancel_rect = pygame.Rect(self.x + self.BASE_SIZE[0], self.y, 35, 35)
+        self.cancel_rect = pygame.Rect(self.x + self.BASE_SIZE[0], self.y, 30, 30)
 
     def draw(self, screen, mouse_pos):
         # Create fontsd
-        deck_name_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", 12)  
-        cost_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", 30)  # Larger font for cost
-        count_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", 16)  
+        deck_name_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(10*scale1))  
+        cost_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(24*scale1))  # Larger font for cost
+        count_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(14*scale1))  
 
         text_color = (255, 255, 255) 
         border_color = (0, 0, 0)  
@@ -127,7 +145,7 @@ class DeckCard:
 
         # Load and draw the mana image
         mana_image = pygame.image.load(shared.path + "image/ManaT.png")
-        mana_image = pygame.transform.scale(mana_image, (35, 35))  
+        mana_image = pygame.transform.scale(mana_image, (30*scale1, 30*scale2))  
         screen.blit(mana_image, (self.x - 10 * scale1, self.y))  
         star_image = pygame.image.load(shared.path + f"image/legendary star.png")
 
@@ -137,22 +155,22 @@ class DeckCard:
         star_image = pygame.transform.scale(star_image, (star_width, star_height))
 
         # Draw cost with border
-        cost_pos = (self.x + 6 * scale1, self.y + 15 * scale2)
+        cost_pos = (self.x + 5 * scale1, self.y + 14 * scale2)
         shared.draw_text_with_border(screen, str(self.cost), cost_font, text_color, border_color, cost_pos, align="center")
 
         # Draw name with border
-        name_pos = (self.x + self.BASE_SIZE[0] // 2 - 42*scale1, self.y + 10*scale2)
+        name_pos = (self.x + self.BASE_SIZE[0] // 2 - 43*scale1, self.y + self.BASE_SIZE[1] // 2 - 7*scale2)
         shared.draw_text_with_border(screen, self.name, deck_name_font, text_color, border_color, name_pos, align="left")
 
         if self.rarity == "legendary":
-            # Draw a star symbol ★ instead of "x2"
+            # Draw a star symbol ★ 
             pygame.draw.rect(screen, (117, 64, 19), self.countrect)
-            screen.blit(star_image, (self.x + self.BASE_SIZE[0] - 20*scale1, self.y + 9*scale2))
+            screen.blit(star_image, (self.x + self.BASE_SIZE[0] - 18*scale1, self.y + 9*scale2))
         
           # Draw count if it's 2
         elif self.count == 2:
             pygame.draw.rect(screen, (117, 64, 19), self.countrect)
-            count_pos = (self.x + self.BASE_SIZE[0] - 15*scale1, self.y + 15*scale2)
+            count_pos = (self.x + self.BASE_SIZE[0] - 13*scale1, self.y + 15*scale2)
             shared.draw_text(screen, "2", count_font, count_color, count_pos, align='center')
 
         # Change cancel button color on hover
@@ -162,7 +180,7 @@ class DeckCard:
 
         # Render "-" using shared.text
         shared.text(screen, "-", cancel_text_color, int(20 * scale1), 
-            [self.x + self.BASE_SIZE[0] + 10, self.y + 17], "center") 
+            [self.x + self.BASE_SIZE[0] + 10*scale1, self.y + 17*scale2], "center") 
 
 
     def handle_event(self, event, deck):
