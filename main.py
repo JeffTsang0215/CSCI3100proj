@@ -465,7 +465,7 @@ while running:
    # handle_click = pygame.MOUSEBUTTONDOWN()
 
     #Use to track mouse position
-    #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     #print(mouse_pos[0],mouse_pos[1])
     #print(shared.WIDTH,shared.HEIGHT)
     #color = shared.screen.get_at(mouse_pos)  # Get (R, G, B, A)
@@ -636,6 +636,9 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONUP:
+                if 0.42*shared.WIDTH<=mouse_pos[0]<=0.58*shared.WIDTH and 0.80*shared.HEIGHT<=mouse_pos[1]<=0.88*shared.HEIGHT:
+                    shared.game_state = "menu"
         shared.screen.fill((105, 77, 0))
         bg = pygame.image.load("image/win_lost.png")
         bg = pygame.transform.scale(bg, (shared.WIDTH, shared.HEIGHT))
@@ -643,18 +646,8 @@ while running:
 
         shared.text(shared.screen, "YOU WIN!!", (0, 0, 0), int(shared.HEIGHT / 10),
                     (shared.WIDTH / 2, shared.HEIGHT / 2), "center")
-        ## Your code
-        # Back button
-        back_rect = pygame.Rect(874 * scale1, 618 * scale2, 43*scale1, 18*scale2)
-        pygame.draw.rect(shared.screen, (206, 176, 149), back_rect)
-        back_text = custom_font.render("Back", True, (0, 0, 0))
-        shared.screen.blit(back_text, (878 * scale1, 616 * scale2)) 
 
-        if back_rect.collidepoint(mouse_pos):
-            pygame.draw.rect(shared.screen, (255, 226, 199), back_rect)
-            shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
-            if mouse_click[0]:
-                shared.game_state = "menu"
+        shared.text(shared.screen, "Back", (0, 0, 0), int(shared.WIDTH/30), [0.50*shared.WIDTH, 0.84*shared.HEIGHT], "center")
 
         pygame.display.update()
         shared.clock.tick(shared.fps)
@@ -663,6 +656,9 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+        if event.type == pygame.MOUSEBUTTONUP:
+                if 0.42*shared.WIDTH<=mouse_pos[0]<=0.58*shared.WIDTH and 0.80*shared.HEIGHT<=mouse_pos[1]<=0.88*shared.HEIGHT:
+                    shared.game_state = "menu"
         shared.screen.fill((105, 77, 0))
         bg = pygame.image.load("image/win_lost.png")
         bg = pygame.transform.scale(bg, (shared.WIDTH, shared.HEIGHT))
@@ -670,17 +666,8 @@ while running:
         ## Your code
         shared.text(shared.screen, "YOU LOST", (0, 0, 0), int(shared.HEIGHT / 10),
                     (shared.WIDTH / 2, shared.HEIGHT / 2), "center")
-        # Back button
-        back_rect = pygame.Rect(874 * scale1, 618 * scale2, 43*scale1, 18*scale2)
-        pygame.draw.rect(shared.screen, (206, 176, 149), back_rect)
-        back_text = custom_font.render("Back", True, (0, 0, 0))
-        shared.screen.blit(back_text, (878 * scale1, 616 * scale2)) 
-
-        if back_rect.collidepoint(mouse_pos):
-            pygame.draw.rect(shared.screen, (255, 226, 199), back_rect)
-            shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
-            if mouse_click[0]:
-                shared.game_state = "menu"
+        
+        shared.text(shared.screen, "Back", (0, 0, 0), int(shared.WIDTH/30), [0.50*shared.WIDTH, 0.84*shared.HEIGHT], "center")
 
         pygame.display.update()
         shared.clock.tick(shared.fps)
