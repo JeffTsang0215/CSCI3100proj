@@ -26,8 +26,8 @@ else:
 clock = pygame.time.Clock()
 fps = 60
 
-# game_state = "playing"
-game_state = "login"
+# game_state = "playing" | "menu" | "login" | "lost" | "win"
+game_state = "lost"
 
 def text(screen, text, color, size, pos, align="left", font=None):
     text = text.encode("utf-8").decode("utf-8")
@@ -35,7 +35,7 @@ def text(screen, text, color, size, pos, align="left", font=None):
     # Use custom font if provided; otherwise, use system/default font
     if font is None:
         try:
-            my_font = pygame.font.SysFont(pygame.font.get_fonts()[2], size)
+            my_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", size)
         except Exception:
             my_font = pygame.font.Font(pygame.font.get_default_font(), size)
     else:

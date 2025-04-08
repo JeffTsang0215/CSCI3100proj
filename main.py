@@ -29,6 +29,20 @@ def rotate(surface, angle, pivot, offset):
 def click_circle(mouse_pos, center, radius):
     return (mouse_pos[0] - center[0]) ** 2 + (mouse_pos[1] - center[1]) ** 2 <= radius ** 2
 
+scale1 = shared.WIDTH / 1080
+scale2 = shared.HEIGHT / 675
+custom_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(16 * scale2))
+
+# Load button images
+return_button_image = pygame.image.load(shared.path + "image/returnarrow.png")
+hover_button_image = pygame.image.load(shared.path + "image/returnarrow_hover.png")
+click_button_image = pygame.image.load(shared.path + "image/returnarrow_click.png")
+
+# Scale return button
+return_button_size = (50 * scale1, 35 * scale1)
+return_button_image = pygame.transform.scale(return_button_image, return_button_size)
+hover_button_image = pygame.transform.scale(hover_button_image, return_button_size)
+click_button_image = pygame.transform.scale(click_button_image, return_button_size)
 
 running = True
 
@@ -623,10 +637,24 @@ while running:
             if event.type == pygame.QUIT:
                 running = False
         shared.screen.fill((105, 77, 0))
+        bg = pygame.image.load("image/win_lost.png")
+        bg = pygame.transform.scale(bg, (shared.WIDTH, shared.HEIGHT))
+        shared.screen.blit(bg, (0, 0))
 
         shared.text(shared.screen, "YOU WIN!!", (0, 0, 0), int(shared.HEIGHT / 10),
                     (shared.WIDTH / 2, shared.HEIGHT / 2), "center")
         ## Your code
+        # Back button
+        back_rect = pygame.Rect(874 * scale1, 618 * scale2, 43*scale1, 18*scale2)
+        pygame.draw.rect(shared.screen, (206, 176, 149), back_rect)
+        back_text = custom_font.render("Back", True, (0, 0, 0))
+        shared.screen.blit(back_text, (878 * scale1, 616 * scale2)) 
+
+        if back_rect.collidepoint(mouse_pos):
+            pygame.draw.rect(shared.screen, (255, 226, 199), back_rect)
+            shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
+            if mouse_click[0]:
+                shared.game_state = "menu"
 
         pygame.display.update()
         shared.clock.tick(shared.fps)
@@ -636,9 +664,23 @@ while running:
             if event.type == pygame.QUIT:
                 running = False
         shared.screen.fill((105, 77, 0))
+        bg = pygame.image.load("image/win_lost.png")
+        bg = pygame.transform.scale(bg, (shared.WIDTH, shared.HEIGHT))
+        shared.screen.blit(bg, (0, 0))
         ## Your code
         shared.text(shared.screen, "YOU LOST", (0, 0, 0), int(shared.HEIGHT / 10),
                     (shared.WIDTH / 2, shared.HEIGHT / 2), "center")
+        # Back button
+        back_rect = pygame.Rect(874 * scale1, 618 * scale2, 43*scale1, 18*scale2)
+        pygame.draw.rect(shared.screen, (206, 176, 149), back_rect)
+        back_text = custom_font.render("Back", True, (0, 0, 0))
+        shared.screen.blit(back_text, (878 * scale1, 616 * scale2)) 
+
+        if back_rect.collidepoint(mouse_pos):
+            pygame.draw.rect(shared.screen, (255, 226, 199), back_rect)
+            shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
+            if mouse_click[0]:
+                shared.game_state = "menu"
 
         pygame.display.update()
         shared.clock.tick(shared.fps)

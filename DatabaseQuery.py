@@ -9,6 +9,7 @@ import sqlite3
 import bcrypt
 
 
+
 conn = sqlite3.connect(shared.path + 'database/database.db')
 cursor = conn.cursor()
 
