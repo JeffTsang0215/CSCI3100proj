@@ -7,6 +7,7 @@ import userSystem
 import copy
 from ai_system import AISystem
 
+debug = False
 
 # pygame.init handled by shared.py
 
@@ -66,7 +67,7 @@ cardDimEnlarged = [shared.WIDTH / 10, shared.WIDTH / 10 * 4 / 3]
 
 
 class Card:
-    def __init__(self, cost, atk, hp, image=None, ext={}):
+    def __init__(self, cost, atk, hp, description, image=None, ext={}):
         self.maxhp = hp
         self.hp = hp
         self.atk = atk
@@ -74,6 +75,7 @@ class Card:
         self.ext = ext
         self.attacked = True
         self.round = 0
+        self.description = description
 
         if (image):
             self.image = image.convert_alpha()
@@ -90,7 +92,7 @@ class Card:
 
     def __deepcopy__(self, memo):
         # Create a copy WITHOUT copying the pygame.Surface
-        new_card = Card(self.cost, self.atk, self.hp, self.image.copy() if self.image else None,
+        new_card = Card(self.cost, self.atk, self.hp, self.description, self.image.copy() if self.image else None,
                         copy.deepcopy(self.ext, memo))
         new_card.attacked = self.attacked
         new_card.round = self.round
@@ -116,7 +118,7 @@ class Sys:
                                                (int(shared.WIDTH * 0.016), int(shared.WIDTH * 0.016)))
         self.manaTImg = pygame.transform.scale(pygame.image.load(shared.path + "image/ManaT.png").convert_alpha(),
                                                (int(shared.WIDTH * 0.016), int(shared.WIDTH * 0.016)))
-
+        self.rubbishBin = None
         self.clickTimer = 0
         self.clickedCard = -1
         self.releasedCard = -1
@@ -214,17 +216,16 @@ class Sys:
             if len(self.cardSet["mySetCard"]) > 0:
                 temp = self.cardSet["mySetCard"][self.myCardOrder.pop(0)]
                 if len(self.cardSet["myHandCard"]) <= 6:
-                    temp = self.cardSet["mySetCard"][self.myCardOrder.pop(0)]
-                self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], pygame.image.load(shared.path + "image/cardBack.png") if temp[3] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
+                    self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6], pygame.image.load(shared.path + "image/cardBack.png") if temp[7] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
             else:
                 self.myhp -= 1
         else:
             if len(self.cardSet["aiSetCard"]) > 0:
                 temp = self.cardSet["aiSetCard"][self.aiCardOrder.pop(0)]
                 if len(self.cardSet["aiHandCard"]) <= 6:
-                    self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2],
+                    self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6],
                                                            pygame.image.load(shared.path + "image/cardBack.png") if
-                                                           temp[3] == None else pygame.image.load(
+                                                           temp[7] == None else pygame.image.load(
                                                                shared.path + "image/" + temp[7]), temp[8]))
             else:
                 self.aihp -= 1
@@ -272,21 +273,23 @@ class Sys:
             pygame.draw.circle(shared.screen, (0, 181, 172), [left, top], shared.WIDTH / 150)  # cost
             shared.text(shared.screen, str(card.cost), (0, 0, 0), int(shared.WIDTH / 128), [left, top], "center")
 
-            pygame.draw.circle(shared.screen, (242, 89, 0), [left + cardDim[0], top + cardDim[1]],
-                               shared.WIDTH / 150)  # health
-            if(sys.curing and card.rect.collidepoint(mouse_pos)):
-                shared.text(shared.screen, str(card.hp+sys.curingAmount), (75, 255, 75), int(shared.WIDTH / 128), [left + cardDim[0], top + cardDim[1]], "center")
+            pygame.draw.circle(shared.screen, (242, 89, 0), [left + cardDim[0], top + cardDim[1]], shared.WIDTH / 150)  # health
+            if(sys.curing and card.rect.collidepoint(pygame.mouse.get_pos())):
+                if(card.hp+sys.curingAmount<=card.maxhp):
+                    shared.text(shared.screen, str(card.hp+sys.curingAmount), (75, 255, 75), int(shared.WIDTH / 128), [left + cardDim[0], top + cardDim[1]], "center")
+                else:
+                    shared.text(shared.screen, str(card.maxhp), (75, 255, 75), int(shared.WIDTH / 128), [left + cardDim[0], top + cardDim[1]], "center")
             else:
                 shared.text(shared.screen, str(card.hp), (0, 0, 0), int(shared.WIDTH / 128), [left + cardDim[0], top + cardDim[1]], "center")
 
+            # description
+            shared.text(shared.screen, str(card.description), (0, 0, 0), int(shared.WIDTH / 128), [left + cardDim[0]/2, top + cardDim[1]/1.95], "center")
+
             left += cardDim[0] + shared.WIDTH / 80
-        pygame.draw.circle(shared.screen, (238, 255, 48), [shared.WIDTH / 2, shared.HEIGHT * 0.9],
-                           shared.HEIGHT * 0.05)  # me
-        pygame.draw.circle(shared.screen, (242, 89, 0),
-                           [shared.WIDTH / 2 + shared.HEIGHT * 0.05, shared.HEIGHT * 0.9 + shared.HEIGHT * 0.05],
-                           shared.HEIGHT * 0.025)
-        shared.text(shared.screen, str(self.myhp), (0, 0, 0), int(shared.WIDTH / 64),
-                    [shared.WIDTH / 2 + shared.HEIGHT * 0.05, shared.HEIGHT * 0.9 + shared.HEIGHT * 0.05], "center")
+
+        pygame.draw.circle(shared.screen, (238, 255, 48), [shared.WIDTH / 2, shared.HEIGHT * 0.9], shared.HEIGHT * 0.05)  # me
+        pygame.draw.circle(shared.screen, (242, 89, 0), [shared.WIDTH / 2 + shared.HEIGHT * 0.05, shared.HEIGHT * 0.9 + shared.HEIGHT * 0.05], shared.HEIGHT * 0.025)
+        shared.text(shared.screen, str(self.myhp), (0, 0, 0), int(shared.WIDTH / 64), [shared.WIDTH / 2 + shared.HEIGHT * 0.05, shared.HEIGHT * 0.9 + shared.HEIGHT * 0.05], "center")
 
         # my hand card
         angle = -45
@@ -321,8 +324,7 @@ class Sys:
                     shared.screen.blit(my_surface, [left, top])
 
             pygame.draw.circle(shared.screen, (200, 200, 100), [left, top + cardDim[1]], shared.WIDTH / 150)  # attack
-            shared.text(shared.screen, str(card.atk), (0, 0, 0), int(shared.WIDTH / 128), [left, top + cardDim[1]],
-                        "center")
+            shared.text(shared.screen, str(card.atk), (0, 0, 0), int(shared.WIDTH / 128), [left, top + cardDim[1]], "center")
 
             pygame.draw.circle(shared.screen, (0, 181, 172), [left, top], shared.WIDTH / 150)  # cost
             shared.text(shared.screen, str(card.cost), (0, 0, 0), int(shared.WIDTH / 128), [left, top], "center")
@@ -331,7 +333,9 @@ class Sys:
                                shared.WIDTH / 150)  # health
             shared.text(shared.screen, str(card.hp), (0, 0, 0), int(shared.WIDTH / 128),
                         [left + cardDim[0], top + cardDim[1]], "center")
-
+            
+            # description
+            shared.text(shared.screen, str(card.description), (0, 0, 0), int(shared.WIDTH / 128), [left + cardDim[0]/2, top + cardDim[1]/1.95], "center")
             left += cardDim[0] + shared.WIDTH / 80
         pygame.draw.circle(shared.screen, (238, 255, 48), [shared.WIDTH / 2, shared.HEIGHT * 0.1],
                            shared.HEIGHT * 0.05)  # ai
@@ -436,6 +440,8 @@ class Sys:
                     shared.text(shared.screen, str(card.hp), (0, 0, 0), int(shared.WIDTH / 64),
                                 [left + cardDimEnlarged[0], top + cardDimEnlarged[1]], "center")
 
+                # description
+                shared.text(shared.screen, str(card.description), (0, 0, 0), int(shared.WIDTH / 64), [left + cardDimEnlarged[0]/2, top + cardDimEnlarged[1]/1.95], "center")
                 left += cardDimEnlarged[0] + shared.WIDTH / 40
 
         # draw arrow when placing card
@@ -487,8 +493,7 @@ class Sys:
         if self.isPlayerTurn:
             temp = self.cardSet["myHandCard"].pop(cardid)
             if targetpos < len(self.cardSet["myCard"]):
-                self.cardSet["myCard"] = self.cardSet["myCard"][:targetpos] + [temp] + self.cardSet["myCard"][
-                                                                                       targetpos:]
+                self.cardSet["myCard"] = self.cardSet["myCard"][:targetpos] + [temp] + self.cardSet["myCard"][targetpos:]
             else:
                 self.cardSet["myCard"].append(temp)
             self.myMana -= temp.cost
@@ -498,7 +503,9 @@ class Sys:
                     for i in range(temp.ext["n"]):
                         self.giveCard(True)
                 if("freeze" in temp.ext["skill"]):
-                    target = random.sample(range(len(self.cardSet["aiCard"])), temp.ext["n"])
+                    target = range(len(self.cardSet["aiCard"]))
+                    if(len(self.cardSet["aiCard"]) > temp.ext["n"]):
+                        target = random.sample(range(len(self.cardSet["aiCard"])), temp.ext["n"])
                     for i in target:
                         self.freeze(self.cardSet["aiCard"][i])
 
@@ -516,12 +523,14 @@ class Sys:
                     for i in range(temp.ext["n"]):
                         self.giveCard(False)
                 if("freeze" in temp.ext["skill"]):
-                    target = random.sample(range(len(self.cardSet["myCard"])), temp.ext["n"])
+                    target = range(len(self.cardSet["myCard"]))
+                    if(len(self.cardSet["myCard"]) > temp.ext["n"]):
+                        target = random.sample(range(len(self.cardSet["myCard"])), temp.ext["n"])
                     for i in target:
                         self.freeze(self.cardSet["myCard"][i])
     
     def freeze(self, card):
-        card.ext["debuff"].append("freeze")
+        card.ext["debuff"] = ["freeze"]
 
     def cure(self, card, amount):
         if(card.hp+amount<=card.maxhp):
@@ -557,6 +566,7 @@ while running:
     #print(shared.WIDTH,shared.HEIGHT)
     #color = shared.screen.get_at(mouse_pos)  # Get (R, G, B, A)
     #print(color[:3])
+    if debug: print("sys.aiCardOrder: " + str(len(sys.aiCardOrder)) + "; sys.myCardOrder: " + str(len(sys.myCardOrder)))
     ###
 
     if shared.renewed == False:
@@ -594,7 +604,7 @@ while running:
                     if (0 <= mouse_pos[1] <= shared.HEIGHT * 0.3 or shared.HEIGHT * 0.7 <= mouse_pos[1] <= shared.HEIGHT):
                         sys.checking = False
                 # state variable
-                elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking) and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
+                elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking or sys.curing) and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                     sys.checkingf()
                                     
                 # place card to desk
@@ -636,28 +646,39 @@ while running:
                             if sys.cardSet["myHandCard"][i].rectEnlarged.collidepoint(mouse_pos):
                                 if (sys.cardSet["myHandCard"][i].cost <= sys.myMana):
                                     if(sys.cardSet["myHandCard"][i].ext["type"] == "minion" and len(sys.cardSet["myCard"]) < 7 ):
+                                        if debug: print("test a")
                                         sys.placingCardf(i)
                                     else:
                                         # spell card
+                                        if debug: print("test b")
                                         if("skill" in sys.cardSet["myHandCard"][i].ext):
+                                            if debug: print("test c")
                                             if("freeze" in sys.cardSet["myHandCard"][i].ext["skill"]):
-                                                target = random.sample(range(len(sys.cardSet["myCard"])), sys.cardSet["myHandCard"][i].ext["n"])
-                                                for i in target:
-                                                    sys.freeze(sys.cardSet["myCard"][i])
+                                                target = range(len(sys.cardSet["aiCard"]))
+                                                if(len(sys.cardSet["aiCard"]) > sys.cardSet["myHandCard"][i].ext["n"]):
+                                                    target = random.sample(range(len(sys.cardSet["aiCard"])), sys.cardSet["myHandCard"][i].ext["n"])
+                                                for j in target:
+                                                    sys.freeze(sys.cardSet["aiCard"][j])
                                             if ("fullAtk" in sys.cardSet["myHandCard"][i].ext["skill"]):
                                                 sys.fullAtk(False, sys.cardSet["myHandCard"][i].ext["atk"])
                                             if ("draw" in sys.cardSet["myHandCard"][i].ext["skill"]):
-                                                for i in range(sys.cardSet["myHandCard"][i].ext["n"]):
+                                                for j in range(sys.cardSet["myHandCard"][i].ext["n"]):
                                                     sys.giveCard(True)
-                                            if ("cure" in sys.cardSet["myHandCard"][i].ext["skill"]):
+                                            if ("cure" in sys.cardSet["myHandCard"][i].ext["skill"] and len(sys.cardSet["myCard"]) > 0):
                                                 if(sys.cardSet["myHandCard"][i].ext["random"]):
+                                                    if debug: print("test d")
                                                     target = random.sample(range(len(sys.cardSet["myCard"])), 1)
-                                                    sys.cure(sys.cardSet["myHandCard"][target], sys.cardSet["myHandCard"][i].ext["atk"])
+                                                    sys.cure(sys.cardSet["myHandCard"][target[0]], sys.cardSet["myHandCard"][i].ext["atk"])
                                                 else:
                                                     # state variable
                                                     sys.curing = True
                                                     sys.curingAmount = sys.cardSet["myHandCard"][i].ext["atk"]
-                                                    
+                                            if debug: print("test e")
+                                            sys.checking = False
+                                            sys.myMana -= sys.cardSet["myHandCard"][i].cost
+                                            sys.rubbishBin = sys.cardSet["myHandCard"].pop(i)
+                                            
+
                                 break
                 except:
                     pass
@@ -669,6 +690,11 @@ while running:
                             sys.curing = False
                             sys.curingAmount = 0
                             break
+                    if(shared.WIDTH * 0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT * 0.7 <= mouse_pos[1] <= shared.HEIGHT * 0.9):
+                        if sys.rubbishBin:
+                            sys.cardSet["myHandCard"].append(sys.rubbishBin)
+                        sys.rubbishBin = None
+                        sys.curing = False
                 sys.clickTimer = 0
 
         shared.screen.fill((105, 77, 0))

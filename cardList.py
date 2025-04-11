@@ -29,7 +29,7 @@ card.append([2, 4, 5, "Warrior", "common", scale1, "description", "cardTemp.png"
 
 # RARE CARDS
 card.append([2, 5, 3, "Assassin", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}])
-card.append([2, 0, 0, "Medic", "rare", scale1, "ramdomly cure one card by 3 hp", "cardTemp.png", {"type": "spell", "skill": "cure", "atk": 3, "random": True}])
+card.append([2, 0, 0, "Medic", "rare", scale1, "ramdomly\n  cure one\n    CARD\n  by 3 hp", "cardTemp.png", {"type": "spell", "skill": "cure", "atk": 3, "random": True}])
 card.append([3, 3, 6, "Paladin", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}])
 card.append([3, 4, 5, "Berserker", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}])
 card.append([3, 5, 6, "Panther", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}])
