@@ -172,7 +172,13 @@ class Sys:
             self.isPlayerTurn = False
             self.giveCard(False)
             for card in self.cardSet["aiCard"]:
-                card.attacked = False
+                if ("debuff" in card.ext):
+                    if ("freeze" in card.ext["debuff"]):
+                        card.ext["debuff"].pop(card.ext["debuff"].index("freeze"))
+                    else:
+                        card.attacked = False
+                else:
+                    card.attacked = False
             for card in self.cardSet["myCard"]:
                 card.round += 1
             if self.aiMaxMana < 10:
@@ -185,7 +191,13 @@ class Sys:
             self.isPlayerTurn = True
             self.giveCard(True)
             for card in self.cardSet["myCard"]:
-                card.attacked = False
+                if ("debuff" in card.ext):
+                    if ("freeze" in card.ext["debuff"]):
+                        card.ext["debuff"].pop(card.ext["debuff"].index("freeze"))
+                    else:
+                        card.attacked = False
+                else:
+                    card.attacked = False
             for card in self.cardSet["aiCard"]:
                 card.round += 1
             if self.myMaxMana < 10:
@@ -288,7 +300,7 @@ class Sys:
             # drawing attacked indicator
             if(card.attacked == False):
                 pygame.draw.rect(shared.screen, (255, 0, 0), [left-2, top-2, cardDim[0]+4, cardDim[1]+4])
-                
+
             # drawing card image
             shared.screen.blit(card.image, [left, top])
             card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
