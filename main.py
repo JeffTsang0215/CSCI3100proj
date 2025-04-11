@@ -50,23 +50,24 @@ cardDim = [shared.WIDTH / 20, shared.WIDTH / 20 * 4 / 3]  # x:y = 3:4
 cardDimEnlarged = [shared.WIDTH / 10, shared.WIDTH / 10 * 4 / 3]
 
 
-# ext:
+#ext:
 #  type:
 #    minion
 #    spell
 #  skill:
-#    summon n
 #    fullAtk
 #    freeze n
 #    draw n
-#    cure n
+#    cure n random
 #  n: int
+#  random: bool
 #  atk: int
+#  debuff: [string]list
 
 
 class Card:
     def __init__(self, cost, atk, hp, image=None, ext={}):
-
+        self.maxhp = hp
         self.hp = hp
         self.atk = atk
         self.cost = cost
@@ -99,10 +100,14 @@ class Card:
 class Sys:
     def __init__(self):
         self.ai = AISystem(self)
+
+        # state variable
         self.isPlayerTurn = True
         self.checking = False
         self.placingCard = False
+        self.curing = False
 
+        self.curingAmount = 0
         self.myMaxMana = 1
         self.myMana = 1
         self.aiMaxMana = 0
@@ -269,8 +274,10 @@ class Sys:
 
             pygame.draw.circle(shared.screen, (242, 89, 0), [left + cardDim[0], top + cardDim[1]],
                                shared.WIDTH / 150)  # health
-            shared.text(shared.screen, str(card.hp), (0, 0, 0), int(shared.WIDTH / 128),
-                        [left + cardDim[0], top + cardDim[1]], "center")
+            if(sys.curing and card.rect.collidepoint(mouse_pos)):
+                shared.text(shared.screen, str(card.hp+sys.curingAmount), (75, 255, 75), int(shared.WIDTH / 128), [left + cardDim[0], top + cardDim[1]], "center")
+            else:
+                shared.text(shared.screen, str(card.hp), (0, 0, 0), int(shared.WIDTH / 128), [left + cardDim[0], top + cardDim[1]], "center")
 
             left += cardDim[0] + shared.WIDTH / 80
         pygame.draw.circle(shared.screen, (238, 255, 48), [shared.WIDTH / 2, shared.HEIGHT * 0.9],
@@ -401,7 +408,7 @@ class Sys:
                                                   (shared.WIDTH, shared.HEIGHT)), (0, 0))
 
         # after I clicked my hand card
-        if (self.checking):
+        if (self.checking):    # state variable
             my_surface = pygame.Surface((shared.WIDTH, shared.HEIGHT))
             my_surface = my_surface.convert_alpha()
             my_surface.fill((0, 0, 0, 64))
@@ -464,12 +471,16 @@ class Sys:
             ])
 
     def checkingf(self):
+        # state variable
         self.placingCard = False
         self.checking = True
+        self.curing = False
 
     def placingCardf(self, i):
+        # state variable
         self.checking = False
         self.placingCard = True
+        self.curing = False
         self.placingIndex = i
 
     def placeCardTo(self, cardid, targetpos):
@@ -481,14 +492,53 @@ class Sys:
             else:
                 self.cardSet["myCard"].append(temp)
             self.myMana -= temp.cost
+            # placing card with skill
+            if("skill" in temp.ext):
+                if("draw" in temp.ext["skill"]):
+                    for i in range(temp.ext["n"]):
+                        self.giveCard(True)
+                if("freeze" in temp.ext["skill"]):
+                    target = random.sample(range(len(self.cardSet["aiCard"])), temp.ext["n"])
+                    for i in target:
+                        self.freeze(self.cardSet["aiCard"][i])
+
         else:
             temp = self.cardSet["aiHandCard"].pop(cardid)
             if targetpos < len(self.cardSet["aiCard"]):
-                self.cardSet["aiCard"] = self.cardSet["aiCard"][:targetpos] + [temp] + self.cardSet["aiCard"][
-                                                                                       targetpos:]
+                self.cardSet["aiCard"] = self.cardSet["aiCard"][:targetpos] + [temp] + self.cardSet["aiCard"][targetpos:]
             else:
                 self.cardSet["aiCard"].append(temp)
             self.aiMana -= temp.cost
+
+            # placing card with skill
+            if("skill" in temp.ext):
+                if("draw" in temp.ext["skill"]):
+                    for i in range(temp.ext["n"]):
+                        self.giveCard(False)
+                if("freeze" in temp.ext["skill"]):
+                    target = random.sample(range(len(self.cardSet["myCard"])), temp.ext["n"])
+                    for i in target:
+                        self.freeze(self.cardSet["myCard"][i])
+    
+    def freeze(self, card):
+        card.ext["debuff"].append("freeze")
+
+    def cure(self, card, amount):
+        if(card.hp+amount<=card.maxhp):
+            card.hp += amount
+        else:
+            card.hp = card.maxhp
+
+    def fullAtk(self, attackingPlayer, atk):
+        if(attackingPlayer):
+            for card in sys.cardSet["myCard"]:
+                card.hp -= atk
+            self.myhp -= atk
+        else:
+            for card in sys.cardSet["aiCard"]:
+                card.hp -= atk
+            self.aihp -= atk
+        self.checkAlive()
 
 
 sys = Sys()
@@ -525,30 +575,26 @@ while running:
 
                 # clicking my card
                 sys.clickedCard = -1
-                if (sys.isPlayerTurn and not (sys.checking or sys.placingCard)):
+                if (sys.isPlayerTurn and not (sys.checking or sys.placingCard or sys.curing)):    # state variable
                     # user clicked game board card
                     for i in range(len(sys.cardSet["myCard"])):
-                        if sys.cardSet["myCard"][i].rect.collidepoint(mouse_pos) and sys.cardSet["myCard"][
-                            i].attacked == False:
+                        if sys.cardSet["myCard"][i].rect.collidepoint(mouse_pos) and sys.cardSet["myCard"][i].attacked == False:
                             sys.clickedCard = i
                             break
 
                 # switchTurn (!!!!!!!!!!!!!!need put inside player turn after ai is done!!!!!!!!!!)
-                if not (sys.checking or sys.placingCard):
-                    if click_circle(mouse_pos, [shared.WIDTH * 0.95, shared.HEIGHT / 2], shared.WIDTH / 24) or (
-                            shared.WIDTH * 0.94 <= mouse_pos[
-                        0] <= shared.WIDTH * 0.94 + 2 * shared.WIDTH / 24 and shared.HEIGHT / 2 - shared.WIDTH / 24 <=
-                            mouse_pos[1] <= shared.HEIGHT / 2 - shared.WIDTH / 24 + 2 * shared.WIDTH / 24):
+                if not (sys.checking or sys.placingCard or sys.curing):    # state variable
+                    if click_circle(mouse_pos, [shared.WIDTH * 0.95, shared.HEIGHT / 2], shared.WIDTH / 24) or (shared.WIDTH * 0.94 <= mouse_pos[0] <= shared.WIDTH * 0.94 + 2 * shared.WIDTH / 24 and shared.HEIGHT / 2 - shared.WIDTH / 24 <= mouse_pos[1] <= shared.HEIGHT / 2 - shared.WIDTH / 24 + 2 * shared.WIDTH / 24):
                         sys.switchTurn()
 
             if event.type == pygame.MOUSEBUTTONUP:
                 sys.releasedCard = -1
                 # switch checking
-                if (sys.checking):
-                    if (0 <= mouse_pos[1] <= shared.HEIGHT * 0.3 or shared.HEIGHT * 0.7 <= mouse_pos[
-                        1] <= shared.HEIGHT):
+                if (sys.checking):    # state variable
+                    if (0 <= mouse_pos[1] <= shared.HEIGHT * 0.3 or shared.HEIGHT * 0.7 <= mouse_pos[1] <= shared.HEIGHT):
                         sys.checking = False
-                elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking) and len(sys.cardSet["myCard"]) < 7 and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
+                # state variable
+                elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking) and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                     sys.checkingf()
                                     
                 # place card to desk
@@ -559,21 +605,18 @@ while running:
                             sys.placeCardTo(sys.placingIndex, 0)
                         else:
                             for i in range(len(sys.cardSet["myCard"])):
-                                if (sys.cardSet["myCard"][i].rect.left - cardDim[0] / 2 - shared.WIDTH / 80 <=
-                                        mouse_pos[0] < sys.cardSet["myCard"][i].rect.left + cardDim[0] / 2):
+                                if (sys.cardSet["myCard"][i].rect.left - cardDim[0] / 2 - shared.WIDTH / 80 <= mouse_pos[0] < sys.cardSet["myCard"][i].rect.left + cardDim[0] / 2):
                                     sys.placingCard = False
                                     sys.placeCardTo(sys.placingIndex, i)
                                     break
-                            if (sys.cardSet["myCard"][-1].rect.left + cardDim[0] / 2 <= mouse_pos[0] <
-                                    sys.cardSet["myCard"][-1].rect.right + shared.WIDTH / 80 + cardDim[0] / 2):
+                            if (sys.cardSet["myCard"][-1].rect.left + cardDim[0] / 2 <= mouse_pos[0] < sys.cardSet["myCard"][-1].rect.right + shared.WIDTH / 80 + cardDim[0] / 2):
                                 sys.placingCard = False
                                 sys.placeCardTo(sys.placingIndex, len(sys.cardSet["myCard"]))
-                    elif (shared.WIDTH * 0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT * 0.7 <= mouse_pos[
-                        1] <= shared.HEIGHT * 0.9):
+                    elif (shared.WIDTH * 0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT * 0.7 <= mouse_pos[1] <= shared.HEIGHT * 0.9):
                         sys.placingCard = False
 
                 # to determine user want to attack who
-                if(sys.isPlayerTurn and not(sys.checking or sys.placingCard)):
+                if(sys.isPlayerTurn and not(sys.checking or sys.placingCard)):    # state variable
                     for i in range(len(sys.cardSet["aiCard"])):
                         if sys.cardSet["aiCard"][i].rect.collidepoint(mouse_pos):
                             sys.releasedCard = i
@@ -588,17 +631,44 @@ while running:
 
                 # selecting card to place in checking mode
                 try:
-                    if (sys.isPlayerTurn and sys.checking):
+                    if (sys.isPlayerTurn and sys.checking):    # state variable
                         for i in range(len(sys.cardSet["myHandCard"])):
                             if sys.cardSet["myHandCard"][i].rectEnlarged.collidepoint(mouse_pos):
                                 if (sys.cardSet["myHandCard"][i].cost <= sys.myMana):
-                                    if(sys.cardSet["myHandCard"][i].ext["type"] == "minion"):
+                                    if(sys.cardSet["myHandCard"][i].ext["type"] == "minion" and len(sys.cardSet["myCard"]) < 7 ):
                                         sys.placingCardf(i)
                                     else:
-                                        pass
+                                        # spell card
+                                        if("skill" in sys.cardSet["myHandCard"][i].ext):
+                                            if("freeze" in sys.cardSet["myHandCard"][i].ext["skill"]):
+                                                target = random.sample(range(len(sys.cardSet["myCard"])), sys.cardSet["myHandCard"][i].ext["n"])
+                                                for i in target:
+                                                    sys.freeze(sys.cardSet["myCard"][i])
+                                            if ("fullAtk" in sys.cardSet["myHandCard"][i].ext["skill"]):
+                                                sys.fullAtk(False, sys.cardSet["myHandCard"][i].ext["atk"])
+                                            if ("draw" in sys.cardSet["myHandCard"][i].ext["skill"]):
+                                                for i in range(sys.cardSet["myHandCard"][i].ext["n"]):
+                                                    sys.giveCard(True)
+                                            if ("cure" in sys.cardSet["myHandCard"][i].ext["skill"]):
+                                                if(sys.cardSet["myHandCard"][i].ext["random"]):
+                                                    target = random.sample(range(len(sys.cardSet["myCard"])), 1)
+                                                    sys.cure(sys.cardSet["myHandCard"][target], sys.cardSet["myHandCard"][i].ext["atk"])
+                                                else:
+                                                    # state variable
+                                                    sys.curing = True
+                                                    sys.curingAmount = sys.cardSet["myHandCard"][i].ext["atk"]
+                                                    
                                 break
                 except:
                     pass
+
+                if (sys.curing):
+                    for i in range(len(sys.cardSet["myCard"])):
+                        if sys.cardSet["myCard"][i].rect.collidepoint(mouse_pos):
+                            sys.cure(sys.cardSet["myCard"][i], sys.curingAmount)
+                            sys.curing = False
+                            sys.curingAmount = 0
+                            break
                 sys.clickTimer = 0
 
         shared.screen.fill((105, 77, 0))
@@ -711,3 +781,4 @@ while running:
 
         pygame.display.update()
         shared.clock.tick(shared.fps)
+    
