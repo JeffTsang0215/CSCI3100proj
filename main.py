@@ -7,7 +7,7 @@ import userSystem
 import copy
 from ai_system import AISystem
 
-debug = False
+debug = True
 
 # pygame.init handled by shared.py
 
@@ -127,13 +127,15 @@ class Sys:
         self.cardSet = {}
         self.cardSet["myCard"] = []
         self.cardSet["aiCard"] = []
-        self.cardSet["myHandCard"] = []
+        self.cardSet["myHandCard"] = [
+            Card(0, 1, 2, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "minion", "skill": "draw", "n": 2})
+        ]
         self.cardSet["aiHandCard"] = []
         self.cardSet["mySetCard"] = cardList.card
         self.cardSet["aiSetCard"] = cardList.card
-        self.myCardOrder = list(range(30))
+        self.myCardOrder = list(range(len(self.cardSet["mySetCard"])))
         random.shuffle(self.myCardOrder)
-        self.aiCardOrder = list(range(30))
+        self.aiCardOrder = list(range(len(self.cardSet["aiSetCard"])))
         random.shuffle(self.aiCardOrder)
         self.myhp = 30
         self.aihp = 30
@@ -214,6 +216,8 @@ class Sys:
     def giveCard(self, isPlayerTurn):
         if isPlayerTurn:
             if len(self.cardSet["mySetCard"]) > 0:
+                if debug: print("isPlayerTurn: T; sys.aiCardOrder: " + str(len(sys.aiCardOrder)) + "; sys.myCardOrder: " + str(len(sys.myCardOrder)))
+                if debug: print("in aiCardOrder: " + str((sys.aiCardOrder)))
                 temp = self.cardSet["mySetCard"][self.myCardOrder.pop(0)]
                 if len(self.cardSet["myHandCard"]) <= 6:
                     self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6], pygame.image.load(shared.path + "image/cardBack.png") if temp[7] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
@@ -221,6 +225,8 @@ class Sys:
                 self.myhp -= 1
         else:
             if len(self.cardSet["aiSetCard"]) > 0:
+                if debug: print("isPlayerTurn: F; sys.aiCardOrder: " + str(len(sys.aiCardOrder)) + "; sys.myCardOrder: " + str(len(sys.myCardOrder)))
+                if debug: print("in aiCardOrder: " + str((sys.aiCardOrder)))
                 temp = self.cardSet["aiSetCard"][self.aiCardOrder.pop(0)]
                 if len(self.cardSet["aiHandCard"]) <= 6:
                     self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6],
@@ -566,7 +572,6 @@ while running:
     #print(shared.WIDTH,shared.HEIGHT)
     #color = shared.screen.get_at(mouse_pos)  # Get (R, G, B, A)
     #print(color[:3])
-    if debug: print("sys.aiCardOrder: " + str(len(sys.aiCardOrder)) + "; sys.myCardOrder: " + str(len(sys.myCardOrder)))
     ###
 
     if shared.renewed == False:
@@ -646,13 +651,10 @@ while running:
                             if sys.cardSet["myHandCard"][i].rectEnlarged.collidepoint(mouse_pos):
                                 if (sys.cardSet["myHandCard"][i].cost <= sys.myMana):
                                     if(sys.cardSet["myHandCard"][i].ext["type"] == "minion" and len(sys.cardSet["myCard"]) < 7 ):
-                                        if debug: print("test a")
                                         sys.placingCardf(i)
                                     else:
                                         # spell card
-                                        if debug: print("test b")
                                         if("skill" in sys.cardSet["myHandCard"][i].ext):
-                                            if debug: print("test c")
                                             if("freeze" in sys.cardSet["myHandCard"][i].ext["skill"]):
                                                 target = range(len(sys.cardSet["aiCard"]))
                                                 if(len(sys.cardSet["aiCard"]) > sys.cardSet["myHandCard"][i].ext["n"]):
@@ -666,14 +668,12 @@ while running:
                                                     sys.giveCard(True)
                                             if ("cure" in sys.cardSet["myHandCard"][i].ext["skill"] and len(sys.cardSet["myCard"]) > 0):
                                                 if(sys.cardSet["myHandCard"][i].ext["random"]):
-                                                    if debug: print("test d")
                                                     target = random.sample(range(len(sys.cardSet["myCard"])), 1)
                                                     sys.cure(sys.cardSet["myHandCard"][target[0]], sys.cardSet["myHandCard"][i].ext["atk"])
                                                 else:
                                                     # state variable
                                                     sys.curing = True
                                                     sys.curingAmount = sys.cardSet["myHandCard"][i].ext["atk"]
-                                            if debug: print("test e")
                                             sys.checking = False
                                             sys.myMana -= sys.cardSet["myHandCard"][i].cost
                                             sys.rubbishBin = sys.cardSet["myHandCard"].pop(i)
