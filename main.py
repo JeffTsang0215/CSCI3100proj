@@ -135,7 +135,6 @@ class Sys:
         if isPlayerTurn:
             if target != 99:
                 self.cardSet["aiCard"][target].hp -= self.cardSet["myCard"][attacker].atk
-                self.cardSet["myCard"][attacker].hp -= self.cardSet["aiCard"][target].atk
             else:
                 self.aihp -= self.cardSet["myCard"][attacker].atk
             
@@ -143,7 +142,6 @@ class Sys:
         else:
             if target != 99:
                 self.cardSet["myCard"][target].hp -= self.cardSet["aiCard"][attacker].atk
-                self.cardSet["aiCard"][attacker].hp -= self.cardSet["myCard"][target].atk
             else:
                 self.myhp -= self.cardSet["aiCard"][attacker].atk
 
@@ -234,8 +232,21 @@ class Sys:
         top = shared.HEIGHT * 0.55
 
         for card in self.cardSet["myCard"]:
+            # drawing attacked indicator
+            if(card.attacked == False):
+                pygame.draw.rect(shared.screen, (0, 0, 255), [left-2, top-2, cardDim[0]+4, cardDim[1]+4])
+
+            # drawing card image
             shared.screen.blit(card.image, [left, top])
             card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
+
+            # drawing freeze debuff
+            if("debuff" in card.ext):
+                if("freeze" in card.ext["debuff"]):
+                    my_surface = pygame.Surface((cardDim[0], cardDim[1]))
+                    my_surface = my_surface.convert_alpha()
+                    my_surface.fill((100, 100, 255, 64))
+                    shared.screen.blit(my_surface, [left, top])
 
             pygame.draw.circle(shared.screen, (200, 200, 100), [left, top + cardDim[1]], shared.WIDTH / 150)  # attack
             shared.text(shared.screen, str(card.atk), (0, 0, 0), int(shared.WIDTH / 128), [left, top + cardDim[1]],
@@ -270,13 +281,25 @@ class Sys:
                 angle += 9
 
         # card graphic ai
-        left = shared.WIDTH / 2 - (
-                    len(self.cardSet["aiCard"]) * (cardDim[0] + shared.WIDTH / 80) - shared.WIDTH / 80) / 2
+        left = shared.WIDTH / 2 - (len(self.cardSet["aiCard"]) * (cardDim[0] + shared.WIDTH / 80) - shared.WIDTH / 80) / 2
         top = shared.HEIGHT * 0.30
 
         for card in self.cardSet["aiCard"]:
+            # drawing attacked indicator
+            if(card.attacked == False):
+                pygame.draw.rect(shared.screen, (255, 0, 0), [left-2, top-2, cardDim[0]+4, cardDim[1]+4])
+                
+            # drawing card image
             shared.screen.blit(card.image, [left, top])
             card.rect = pygame.Rect(left, top, cardDim[0], cardDim[1])
+
+            # drawing freeze debuff
+            if("debuff" in card.ext):
+                if("freeze" in card.ext["debuff"]):
+                    my_surface = pygame.Surface((cardDim[0], cardDim[1]))
+                    my_surface = my_surface.convert_alpha()
+                    my_surface.fill((100, 100, 255, 64))
+                    shared.screen.blit(my_surface, [left, top])
 
             pygame.draw.circle(shared.screen, (200, 200, 100), [left, top + cardDim[1]], shared.WIDTH / 150)  # attack
             shared.text(shared.screen, str(card.atk), (0, 0, 0), int(shared.WIDTH / 128), [left, top + cardDim[1]],
@@ -378,19 +401,21 @@ class Sys:
             for card in self.cardSet["myHandCard"]:
                 shared.screen.blit(pygame.transform.smoothscale(card.image, cardDimEnlarged), [left, top])
                 card.rectEnlarged = pygame.Rect(left, top, cardDimEnlarged[0], cardDimEnlarged[1])
-
-                pygame.draw.circle(shared.screen, (200, 200, 100), [left, top + cardDimEnlarged[1]],
-                                   shared.WIDTH / 75)  # attack
-                shared.text(shared.screen, str(card.atk), (0, 0, 0), int(shared.WIDTH / 64),
-                            [left, top + cardDimEnlarged[1]], "center")
+                
+                if(card.atk != 0):
+                    pygame.draw.circle(shared.screen, (200, 200, 100), [left, top + cardDimEnlarged[1]],
+                                    shared.WIDTH / 75)  # attack
+                    shared.text(shared.screen, str(card.atk), (0, 0, 0), int(shared.WIDTH / 64),
+                                [left, top + cardDimEnlarged[1]], "center")
 
                 pygame.draw.circle(shared.screen, (0, 181, 172), [left, top], shared.WIDTH / 75)  # cost
                 shared.text(shared.screen, str(card.cost), (0, 0, 0), int(shared.WIDTH / 64), [left, top], "center")
 
-                pygame.draw.circle(shared.screen, (242, 89, 0), [left + cardDimEnlarged[0], top + cardDimEnlarged[1]],
-                                   shared.WIDTH / 75)  # health
-                shared.text(shared.screen, str(card.hp), (0, 0, 0), int(shared.WIDTH / 64),
-                            [left + cardDimEnlarged[0], top + cardDimEnlarged[1]], "center")
+                if(card.hp != 0):
+                    pygame.draw.circle(shared.screen, (242, 89, 0), [left + cardDimEnlarged[0], top + cardDimEnlarged[1]],
+                                    shared.WIDTH / 75)  # health
+                    shared.text(shared.screen, str(card.hp), (0, 0, 0), int(shared.WIDTH / 64),
+                                [left + cardDimEnlarged[0], top + cardDimEnlarged[1]], "center")
 
                 left += cardDimEnlarged[0] + shared.WIDTH / 40
 
@@ -465,7 +490,7 @@ while running:
    # handle_click = pygame.MOUSEBUTTONDOWN()
 
     #Use to track mouse position
-    print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    # print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     #print(mouse_pos[0],mouse_pos[1])
     #print(shared.WIDTH,shared.HEIGHT)
     #color = shared.screen.get_at(mouse_pos)  # Get (R, G, B, A)
@@ -555,7 +580,10 @@ while running:
                         for i in range(len(sys.cardSet["myHandCard"])):
                             if sys.cardSet["myHandCard"][i].rectEnlarged.collidepoint(mouse_pos):
                                 if (sys.cardSet["myHandCard"][i].cost <= sys.myMana):
-                                    sys.placingCardf(i)
+                                    if(sys.cardSet["myHandCard"][i].ext["type"] == "minion"):
+                                        sys.placingCardf(i)
+                                    else:
+                                        pass
                                 break
                 except:
                     pass

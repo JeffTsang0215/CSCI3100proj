@@ -27,7 +27,7 @@ clock = pygame.time.Clock()
 fps = 60
 
 # game_state = "playing" | "menu" | "login" | "lost" | "win"
-game_state = "login"
+game_state = "menu"
 
 def text(screen, text, color, size, pos, align="left", font=None):
     text = text.encode("utf-8").decode("utf-8")

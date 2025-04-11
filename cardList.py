@@ -4,13 +4,13 @@ import shared
 #    minion
 #    spell
 #  skill:
-#    summon n
 #    fullAtk
 #    freeze n
 #    draw n
 #    cure n 
 #  n: int
 #  atk: int
+#  debuff: [string]list
 
 # card.append([cost, atk, hp, name, rarity, scale factor, description, image, ext])
 card = []
