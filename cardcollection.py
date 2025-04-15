@@ -1,7 +1,7 @@
 import pygame
 import shared
 from card import CardTemplate, DeckCard
-from cardList import card
+import cardList
 import decks
 from collections import Counter
 
@@ -35,7 +35,7 @@ click_button_image = pygame.transform.scale(click_button_image, return_button_si
 CARDS_PER_PAGE = 8
 current_page = 0
 last_button_press = 0  # Prevents multiple quick clicks
-total_pages = (len(card) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE  # Total number of pages
+total_pages = (len(cardList.card) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE  # Total number of pages
 
 # Navigation buttons
 page_button_size = (25 * scale1 , 45 * scale1)
@@ -342,7 +342,7 @@ def draw_deck_view(mouse_pos, mouse_click):
                     # Check if the card is legendary
                 is_legendary = card_obj.rarity.lower() == "legendary"
                 contains_legendary = any(
-                    card_info[4].lower() == "legendary" for card_info in card if card_info[3] in deck["cards"]
+                    card_info[4].lower() == "legendary" for card_info in cardList.card if card_info[3] in deck["cards"]
                 )
 
                 if len(deck["cards"]) < 30:  # Ensure deck size limit of 30 cards
@@ -407,7 +407,7 @@ def display_cards(mouse_pos, mouse_click):
     start_index = current_page * CARDS_PER_PAGE
     end_index = start_index + CARDS_PER_PAGE
 
-    for i, card_info in enumerate(card[start_index:end_index]):  
+    for i, card_info in enumerate(cardList.card[start_index:end_index]):
         row = i // cards_per_row  
         col = i % cards_per_row  
         x = start_x + col * card_spacing_x
@@ -425,6 +425,8 @@ def display_cards(mouse_pos, mouse_click):
     shared.text(shared.screen, page_number, (70, 70, 70), int(16 * scale2), [shared.WIDTH - 650 * scale1, shared.HEIGHT - 110 * scale2], "center", font=custom_font)
 
 def cardcollection_main(mouse_pos, mouse_click):
+    global total_pages
+    total_pages = (len(cardList.card) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE
 
     shared.screen.blit(cardcollection_bg, (0, 0))  # Draw background
     shared.text(shared.screen, "My Decks", (30, 30, 30), int(9 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center", font=custom_font)

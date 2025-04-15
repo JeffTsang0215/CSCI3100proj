@@ -1,24 +1,64 @@
 import shared
 import json
+import sqlite3
 import os
 
-# File path for storing deck data
-DECKS_FILE = "decks.json"
+# Database setup
+conn = sqlite3.connect(shared.path + 'database/database.db')
+cursor = conn.cursor()
+
+# starter deck data
+starter_deck = [
+    {
+        "name": "Starter Deck",
+        "cards": [
+            "Goblin",
+            "Goblin",
+            "Goblin",
+            "Archer",
+            "Archer",
+            "Archer",
+            "SkeletalMinion",
+            "SkeletalMinion",
+            "Frost",
+            "Frost",
+            "ForestDryad",
+            "ForestDryad",
+            "Arcane",
+            "Arcane",
+            "Assassin",
+            "Assassin",
+            "Medic",
+            "Medic",
+            "Paladin",
+            "Paladin",
+            "Berserker",
+            "Berserker",
+            "Panther",
+            "FlameCaller",
+            "FrenziedBerserker",
+            "FrenziedBerserker",
+            "Blizzard",
+            "Blizzard",
+            "Firestorm",
+            "Firestorm"
+        ]
+    }
+]
+
+starter_deck_json = json.dumps(starter_deck)
 
 # Default deck data
 decks = []
 
-# Load decks from file
-if os.path.exists(DECKS_FILE):
-    with open(DECKS_FILE, "r") as f:
-        try:
-            decks = json.load(f)
-        except json.JSONDecodeError:
-            decks = []  # Reset if file is corrupted
-else:
-    decks = []  # Initialize empty if no file exists
+# load decks from database
+def load_decks():
+    global decks
+    cursor.execute("SELECT decks FROM user_card_collection WHERE username = ?", (shared.user_name,))
+    decks_data = cursor.fetchone()
+    decks = json.loads(decks_data[0])
 
 # Save function to update file when decks change
 def save_decks():
-    with open(DECKS_FILE, "w") as f:
-        json.dump(decks, f, indent=4)
+    cursor.execute("UPDATE user_card_collection SET decks = ? WHERE username = ?", (json.dumps(decks), shared.user_name))
+    conn.commit()

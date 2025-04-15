@@ -1,6 +1,8 @@
 import pygame
 
+import cardList
 import shared
+import decks
 import sqlite3
 import bcrypt
 
@@ -53,6 +55,16 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS users
                  security_answer1 TEXT NOT NULL,
                  security_question2 TEXT NOT NULL,
                  security_answer2 TEXT NOT NULL)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS user_card_collection
+                (username TEXT PRIMARY KEY UNIQUE,
+                 unlock_cards TEXT NOT NULL,
+                 decks TEXT NOT NULL)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS user_progress
+                (username TEXT PRIMARY KEY UNIQUE,
+                 gold INT NOT NULL,
+                 battle_record TEXT NOT NULL)''')
 conn.commit()
 
 class InputBox:
@@ -261,6 +273,9 @@ def login_user(username, password):
             if bcrypt.checkpw(password.encode('utf-8'), stored_password):
                 # Clear messages and change state immediately
                 error_message = ""
+                shared.user_name = username
+                cardList.load_unlock_cards()
+                decks.load_decks()
                 shared.game_state = "menu"
                 return  # Exit function immediately
             else:
@@ -276,6 +291,8 @@ def login_user(username, password):
 
 def register_user(username, password, security_question1, security_answer1, security_question2, security_answer2):
     global error_message, error_color
+    # some default setting of a new user account
+    default_gold = 500
 
     def verify_password(password):
         """Helper function to check password validity"""
@@ -327,8 +344,13 @@ def register_user(username, password, security_question1, security_answer1, secu
     hashed_security_answer1 = bcrypt.hashpw(security_answer1.encode('utf-8'), bcrypt.gensalt())
     hashed_security_answer2 = bcrypt.hashpw(security_answer2.encode('utf-8'), bcrypt.gensalt())
     try:
+        # initialize the account
         cursor.execute('INSERT INTO users (username, password, security_question1, security_answer1, security_question2, security_answer2) VALUES (?, ?, ?, ?, ?, ?)',
                        (username, hashed_password.decode('utf-8'), security_question1, hashed_security_answer1.decode('utf-8'), security_question2, hashed_security_answer2.decode('utf-8')))
+        cursor.execute('INSERT INTO user_card_collection (username, unlock_cards, decks) VALUES (?, ?, ?)',
+                       (username, cardList.starter_card_json, decks.starter_deck_json))
+        cursor.execute('INSERT INTO user_progress (username, gold, battle_record) VALUES (?, ?, ?)',
+                       (username, default_gold, ""))
         conn.commit()
         error_message = "Registration successful!"
         error_color = GREEN
