@@ -254,7 +254,7 @@ def draw_deck_view(mouse_pos, mouse_click):
         card_counts[card_name] = card_counts.get(card_name, 0) + 1
 
     # Create a dictionary for quick lookups
-    card_dict = {c[3]: (c[0], c[4]) for c in card}  # Maps name -> (cost, rarity)
+    card_dict = {c[3]: (c[0], c[4]) for c in cardList.card}  # Maps name -> (cost, rarity)
 
     # Collect deck cards with cost
     deck_cards_data = [

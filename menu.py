@@ -34,6 +34,7 @@ def menu_main(mouse_pos, mouse_click):
                     shared.game_state = "settings"
                 elif (i==3):
                     shared.game_state = "login"
+                    shared.user_name = ""
 
     # Write text on buttons
     shared.text(shared.screen, "Play Game", (0, 0, 0), int(shared.WIDTH/64), (0.50*shared.WIDTH, 0.305*shared.HEIGHT), "center")
