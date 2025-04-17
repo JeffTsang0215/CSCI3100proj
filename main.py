@@ -8,6 +8,7 @@ import copy
 from ai_system import AISystem
 
 debug = True
+data = shared.load_game_data()
 
 # pygame.init handled by shared.py
 
@@ -170,6 +171,8 @@ class Sys:
         for i in reversed(temp):
             self.cardSet["aiCard"].pop(i)
         if self.aihp <= 0:
+            data['money'] += 100
+            shared.save_game_data(data)
             shared.game_state = "win"
         if self.myhp <= 0:
             shared.game_state = "lost"

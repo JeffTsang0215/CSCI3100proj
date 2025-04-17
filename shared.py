@@ -1,4 +1,4 @@
-import pygame, os, math, random
+import pygame, os, math, random, json
 
 pygame.init()
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
@@ -94,3 +94,15 @@ def draw_text(surface, text, font, text_color, position, align="center"):
 
 
 
+game_data = { 'username': "", 'money': 0 }
+
+def save_game_data(data):
+    with open("data.json", "w") as write_file:
+        json.dump(data, write_file)
+
+def load_game_data():
+    try:
+        with open("data.json", "r") as read_file:
+            return json.load(read_file)
+    except FileNotFoundError:
+        return game_data
