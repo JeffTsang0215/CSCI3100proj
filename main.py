@@ -724,9 +724,6 @@ while running:
         pygame.display.update()
         shared.clock.tick(shared.fps)
 
-        pygame.display.update()
-        shared.clock.tick(shared.fps)
-
     elif shared.game_state == "settings":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

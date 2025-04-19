@@ -51,9 +51,9 @@ card_dict[18] = [3, 1, 8, "FrenziedBerserker", "epic", scale1, "description", "c
 card_dict[19] = [4, 2, 6, "Dragon", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
 card_dict[20] = [4, 4, 5, "DarkKnight", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
 card_dict[21] = [5, 5, 6, "DesertKing", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[22] = [5, 5, 5, "ElderSage", "epic", scale1, "draw 2 cards", "cardTemp.png", {"type": "minion", "skill": "draw", "n": 2}]
-card_dict[23] = [3, 0, 0, "Blizzard", "epic", scale1, "freeze 2 enemies", "cardTemp.png", {"type": "spell", "skill": "freeze", "n": 2}]
-card_dict[24] = [4, 0, 0, "Firestorm", "epic", scale1, "deal 2 damage to all enemy", "cardTemp.png", {"type": "spell", "skill": "fullAtk", "atk": 2}]
+card_dict[22] = [5, 5, 5, "ElderSage", "epic", scale1, "Draw 2 cards", "cardTemp.png", {"type": "minion", "skill": "draw", "n": 2}]
+card_dict[23] = [3, 0, 0, "Blizzard", "epic", scale1, "Freeze 2 enemies", "cardTemp.png", {"type": "spell", "skill": "freeze", "n": 2}]
+card_dict[24] = [4, 0, 0, "Firestorm", "epic", scale1, "Deal 2 damage \n to all enemy", "cardTemp.png", {"type": "spell", "skill": "fullAtk", "atk": 2}]
 
 # LEGENDARY CARDS (5000 gold)
 card_dict[25] = [4, 6, 6, "Infernal", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}] #25
