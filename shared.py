@@ -78,20 +78,48 @@ def draw_text_with_border(surface, text, font, text_color, border_color, positio
     surface.blit(text_surface, text_rect)
 
 
-def draw_text(surface, text, font, text_color, position, align="center"):
-    """Draws normal text without a border."""
-    text_surface = font.render(text, True, text_color)
-    text_rect = text_surface.get_rect()
+# def draw_text(surface, text, font, text_color, position, align="center"):
+#     """Draws normal text without a border."""
+#     text_surface = font.render(text, True, text_color)
+#     text_rect = text_surface.get_rect()
 
+#     if align == "center":
+#         text_rect.center = position
+#     elif align == "left":
+#         text_rect.topleft = position
+#     elif align == "right":
+#         text_rect.topright = position
+
+#     surface.blit(text_surface, text_rect)
+
+def draw_text(surface, text, font, text_color, position, align="center", line_spacing = HEIGHT/300):
+    """Draws multiline text with optional alignment and line spacing."""
+    lines = text.split('\n')
+    line_surfaces = [font.render(line, True, text_color) for line in lines]
+    line_heights = [surf.get_height() for surf in line_surfaces]
+    total_height = sum(line_heights) + line_spacing * (len(lines) - 1)
+
+    # Start y-coordinate depending on alignment
+    x, y = position
     if align == "center":
-        text_rect.center = position
-    elif align == "left":
-        text_rect.topleft = position
-    elif align == "right":
-        text_rect.topright = position
+        y -= total_height // 2
+    elif align == "bottom":
+        y -= total_height
+    # If align == "top", we don't modify y
 
-    surface.blit(text_surface, text_rect)
+    for i, line_surface in enumerate(line_surfaces):
+        line_rect = line_surface.get_rect()
+        line_y = y + sum(line_heights[:i]) + i * line_spacing
 
+        if align == "center":
+            line_rect.centerx = x
+        elif align == "left":
+            line_rect.x = x
+        elif align == "right":
+            line_rect.right = x
+
+        line_rect.y = line_y
+        surface.blit(line_surface, line_rect)
 
 
 game_data = { 'username': "", 'money': 0 }

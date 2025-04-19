@@ -26,44 +26,44 @@ card_dict = {}
 card = []
 
 # COMMON CARDS (100 gold)
-card_dict[1] = [0, 1, 3, "Goblin", "common", scale1, "description", "Bob the undying.png", {"type": "minion"}] #1
-card_dict[2] = [1, 2, 4, "Archer", "common", scale1, "description", "ninja.png", {"type": "minion"}]
-card_dict[3] = [1, 1, 5, "SkeletalMinion", "common", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[4] = [1, 1, 6, "Frost", "common", scale1, "freeze 1 enemy", "cardTemp.png", {"type": "minion", "skill": "freeze", "n": 1}]
-card_dict[5] = [1, 2, 3, "ForestDryad", "common", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[6] = [2, 3, 6, "Arcane", "common", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[7] = [2, 2, 3, "Ice", "common", scale1, "freeze 1 enemy", "cardTemp.png", {"type": "minion", "skill": "freeze", "n": 1}]
-card_dict[8] = [2, 4, 5, "Warrior", "common", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[1] = [0, 1, 1, "Goblin", "common", scale1, "description", "Bob the undying.png", {"type": "minion"}] #1
+card_dict[2] = [1, 2, 1, "Archer", "common", scale1, "description", "ninja.png", {"type": "minion"}]
+card_dict[3] = [1, 1, 3, "SkeletalMinion", "common", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[4] = [1, 1, 2, "Frost", "common", scale1, "freeze 1 enemy", "cardTemp.png", {"type": "minion", "skill": "freeze", "n": 1}]
+card_dict[5] = [1, 1, 3, "ForestDryad", "common", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[6] = [2, 2, 3, "Arcane", "common", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[7] = [2, 2, 2, "Ice", "common", scale1, "freeze 1 enemy", "cardTemp.png", {"type": "minion", "skill": "freeze", "n": 1}]
+card_dict[8] = [2, 2, 3, "Warrior", "common", scale1, "description", "cardTemp.png", {"type": "minion"}]
 
 # RARE CARDS (500 gold)
-card_dict[9] = [2, 5, 3, "Assassin", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}] #9
-card_dict[10] = [2, 0, 0, "Medic", "rare", scale1, "ramdomly\n  cure one\n    CARD\n  by 3 hp", "cardTemp.png", {"type": "spell", "skill": "cure", "atk": 3, "random": True}]
-card_dict[11] = [3, 3, 6, "Paladin", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[12] = [3, 4, 5, "Berserker", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[13] = [3, 5, 6, "Panther", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[14] = [4, 4, 8, "FlameCaller", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[15] = [4, 3, 9, "Guardian", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[16] = [5, 5, 7, "Champion", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[9] = [2, 3, 2, "Assassin", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}] #9
+card_dict[10] = [2, 0, 0, "Medic", "rare", scale1, "Ramdomly cure \n 1 CARD by \n 3 hp", "cardTemp.png", {"type": "spell", "skill": "cure", "atk": 3, "random": True}]
+card_dict[11] = [3, 3, 4, "Paladin", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[12] = [4, 4, 5, "Berserker", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[13] = [3, 5, 2, "Panther", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[14] = [4, 3, 6, "FlameCaller", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[15] = [4, 2, 7, "Guardian", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[16] = [5, 5, 6, "Champion", "rare", scale1, "description", "cardTemp.png", {"type": "minion"}]
 
 # EPIC CARDS (1000 gold)
-card_dict[17] = [3, 4, 7, "Vampire", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}] #17
-card_dict[18] = [3, 5, 5, "FrenziedBerserker", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[19] = [4, 5, 6, "Dragon", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[20] = [4, 4, 9, "DarkKnight", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[21] = [5, 5, 8, "DesertKing", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[22] = [5, 5, 10, "ElderSage", "epic", scale1, "draw 2 cards", "cardTemp.png", {"type": "minion", "skill": "draw", "n": 2}]
+card_dict[17] = [3, 4, 3, "Vampire", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}] #17
+card_dict[18] = [3, 1, 8, "FrenziedBerserker", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[19] = [4, 2, 6, "Dragon", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[20] = [4, 4, 5, "DarkKnight", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[21] = [5, 5, 6, "DesertKing", "epic", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[22] = [5, 5, 5, "ElderSage", "epic", scale1, "draw 2 cards", "cardTemp.png", {"type": "minion", "skill": "draw", "n": 2}]
 card_dict[23] = [3, 0, 0, "Blizzard", "epic", scale1, "freeze 2 enemies", "cardTemp.png", {"type": "spell", "skill": "freeze", "n": 2}]
 card_dict[24] = [4, 0, 0, "Firestorm", "epic", scale1, "deal 2 damage to all enemy", "cardTemp.png", {"type": "spell", "skill": "fullAtk", "atk": 2}]
 
 # LEGENDARY CARDS (5000 gold)
-card_dict[25] = [4, 5, 8, "Infernal", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}] #25
-card_dict[26] = [5, 5, 10, "Wizard", "legendary", scale1, "draw 2 cards", "cardTemp.png", {"type": "minion", "skill": "draw", "n": 2}]
-card_dict[27] = [5, 5, 10, "StormTitan", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[28] = [5, 5, 10, "Titan", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[29] = [5, 5, 10, "ElderDragon", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[30] = [4, 5, 9, "FireGolem", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[31] = [4, 4, 9, "Phoenix", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
-card_dict[32] = [5, 5, 9, "Void", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[25] = [4, 6, 6, "Infernal", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}] #25
+card_dict[26] = [5, 5, 6, "Wizard", "legendary", scale1, "draw 2 cards", "cardTemp.png", {"type": "minion", "skill": "draw", "n": 2}]
+card_dict[27] = [5, 8, 8, "StormTitan", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[28] = [5, 7, 9, "Titan", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[29] = [5, 3, 10, "ElderDragon", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[30] = [4, 5, 8, "FireGolem", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[31] = [4, 7, 5, "Phoenix", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
+card_dict[32] = [5, 7, 9, "Void", "legendary", scale1, "description", "cardTemp.png", {"type": "minion"}]
 
 
 # default cards that are unlocked for each new user
