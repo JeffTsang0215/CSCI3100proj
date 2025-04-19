@@ -67,49 +67,56 @@ card_dict[32] = [5, 7, 9, "Void", "legendary", scale1, "description", "cardTemp.
 
 
 # default cards that are unlocked for each new user
-starter_card = []
+starter_card = [
+    # 14 common cards
+    1,  # Goblin 1
+    1,  # Goblin 2
+    1,  # Goblin 3
+    2,  # Archer 1
+    2,  # Archer 2
+    2,  # Archer 3
+    3,  # SkeletalMinion 1
+    3,  # SkeletalMinion 2
+    4,  # Frost 1
+    4,  # Frost 2
+    5,  # ForestDryad 1
+    5,  # ForestDryad 2
+    6,  # Arcane 1
+    6,  # Arcane 2
 
-# 14 common cards
-starter_card.append(card_dict[1]) # Goblin 1
-starter_card.append(card_dict[1]) # Goblin 2
-starter_card.append(card_dict[1]) # Goblin 3
-starter_card.append(card_dict[2]) # Archer 1
-starter_card.append(card_dict[2]) # Archer 2
-starter_card.append(card_dict[2]) # Archer 3
-starter_card.append(card_dict[3]) # SkeletalMinion 1
-starter_card.append(card_dict[3]) # SkeletalMinion 2
-starter_card.append(card_dict[4]) # Frost 1
-starter_card.append(card_dict[4]) # Frost 2
-starter_card.append(card_dict[5]) # ForestDryad 1
-starter_card.append(card_dict[5]) # ForestDryad 2
-starter_card.append(card_dict[6]) # Arcane 1
-starter_card.append(card_dict[6]) # Arcane 2
+    # 10 rare cards
+    9,  # Assassin 1
+    9,  # Assassin 2
+    10, # Medic 1
+    10, # Medic 2
+    11, # Paladin 1
+    11, # Paladin 2
+    12, # Berserker 1
+    12, # Berserker 2
+    13, # Panther 1
+    14, # FlameCaller 1
 
-# 10 rare cards
-starter_card.append(card_dict[9]) # Assassin 1
-starter_card.append(card_dict[9]) # Assassin 2
-starter_card.append(card_dict[10]) # Medic 1
-starter_card.append(card_dict[10]) # Medic 2
-starter_card.append(card_dict[11]) # Paladin 1
-starter_card.append(card_dict[11]) # Paladin 2
-starter_card.append(card_dict[12]) # Berserker 1
-starter_card.append(card_dict[12]) # Berserker 2
-starter_card.append(card_dict[13]) # Panther 1
-starter_card.append(card_dict[14]) # FlameCaller 1
-
-# 6 epic cards
-starter_card.append(card_dict[18]) # FrenziedBerserker 1
-starter_card.append(card_dict[18]) # FrenziedBerserker 1
-starter_card.append(card_dict[23])# Blizzard 1
-starter_card.append(card_dict[23])# Blizzard 2
-starter_card.append(card_dict[24]) # Firestorm 1
-starter_card.append(card_dict[24]) # Firestorm 2
+    # 6 epic cards
+    18, # FrenziedBerserker 1
+    18, # FrenziedBerserker 2
+    23, # Blizzard 1
+    23, # Blizzard 2
+    24, # Firestorm 1
+    24, # Firestorm 2
+]
 
 # store start cards in database with json format
 starter_card_json = json.dumps(starter_card)
+
+def load_cards_from_json(cards_json: str):  # input should be (unlock_cards_data[0])
+    card_id_list = json.loads(cards_json)
+    card = [] # return this card set at the end
+    for card_id in card_id_list:
+        card.append(card_dict[card_id])
+    return card
 
 def load_unlock_cards():
     global card
     cursor.execute("SELECT unlock_cards FROM user_card_collection WHERE username = ?", (shared.user_name,))
     unlock_cards_data = cursor.fetchone()
-    card = json.loads(unlock_cards_data[0])
+    card = load_cards_from_json(unlock_cards_data[0])
