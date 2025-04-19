@@ -76,7 +76,7 @@ input_text = ""
 
 card_objects = []
 
-def draw_deck_list(mouse_pos, mouse_click):
+def draw_deck_list(mouse_pos, mouse_click, events):
     global deck_rects, cancel_buttons
     global selected_deck_index, last_click_time, typing_active, input_text, current_view
     
@@ -187,10 +187,8 @@ def draw_deck_list(mouse_pos, mouse_click):
     border_thickness=2, align="left"
     )
     
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False  
-        elif event.type in [pygame.KEYDOWN, pygame.TEXTINPUT]:  # Capture typing events
+    for event in events:
+        if event.type in [pygame.KEYDOWN, pygame.TEXTINPUT]:  # Capture typing events
             handle_text_input(event)
 
     # Back button
@@ -424,7 +422,7 @@ def display_cards(mouse_pos, mouse_click):
     page_number = f"Page {current_page + 1}"
     shared.text(shared.screen, page_number, (70, 70, 70), int(16 * scale2), [shared.WIDTH - 650 * scale1, shared.HEIGHT - 110 * scale2], "center", font=custom_font)
 
-def cardcollection_main(mouse_pos, mouse_click):
+def cardcollection_main(mouse_pos, mouse_click, events):
     global total_pages
     total_pages = (len(cardList.card) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE
 
@@ -432,7 +430,7 @@ def cardcollection_main(mouse_pos, mouse_click):
     shared.text(shared.screen, "My Decks", (30, 30, 30), int(9 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center", font=custom_font)
 
     display_cards(mouse_pos,mouse_click)
-    draw_deck_list(mouse_pos, mouse_click)
+    draw_deck_list(mouse_pos, mouse_click, events)
     draw_deck_view(mouse_pos, mouse_click)
 
 

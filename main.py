@@ -716,11 +716,12 @@ while running:
         shared.clock.tick(shared.fps)
 
     elif shared.game_state == "card_collection":
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 running = False
 
-        cardcollection.cardcollection_main(mouse_pos, mouse_click)
+        cardcollection.cardcollection_main(mouse_pos, mouse_click, events)
         pygame.display.update()
         shared.clock.tick(shared.fps)
 
