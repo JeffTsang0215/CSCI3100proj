@@ -40,7 +40,7 @@ class CardTemplate:
 
         self.card_image = None
         if image:
-            raw_image = pygame.image.load(shared.path + f"image/{image}")
+            raw_image = pygame.image.load(shared.path + f"image/{image}").convert_alpha()
             image_width = int(self.card_width * 0.65)
             image_height = int(self.card_height * 0.6)
             raw_image = pygame.transform.scale(raw_image, (image_width, image_height))

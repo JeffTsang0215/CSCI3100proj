@@ -12,39 +12,25 @@ starter_deck = [
     {
         "name": "Starter Deck",
         "cards": [
-            "Goblin",
-            "Goblin",
-            "Goblin",
-            "Archer",
-            "Archer",
-            "Archer",
-            "SkeletalMinion",
-            "SkeletalMinion",
-            "Frost",
-            "Frost",
-            "ForestDryad",
-            "ForestDryad",
-            "Arcane",
-            "Arcane",
-            "Assassin",
-            "Assassin",
-            "Medic",
-            "Medic",
-            "Paladin",
-            "Paladin",
-            "Berserker",
-            "Berserker",
-            "Panther",
-            "FlameCaller",
-            "FrenziedBerserker",
-            "FrenziedBerserker",
-            "Blizzard",
-            "Blizzard",
-            "Firestorm",
-            "Firestorm"
+            "Goblin", "Goblin",
+            "Archer", "Archer",
+            "SkeletalMinion", "SkeletalMinion",
+            "Frost", "Frost",
+            "Forest Guide", "Forest Guide",
+            "Body Bagger", "Body Bagger",
+            "Ice", "Ice",
+            "Air guitarlist", "Air guitarlist",
+            "Abusive Sergeant", "Abusive Sergeant",
+            "Fire Fly", "Fire Fly",
+            "Blazing Battlemage", "Blazing Battlemage",
+            "Medic", "Medic",
+            "Elven Archer", "Elven Archer",
+            "Dancing Swords", "Dancing Swords",
+            "Devilsaur Egg", "Devilsaur Egg",
         ]
     }
 ]
+
 
 starter_deck_json = json.dumps(starter_deck)
 
