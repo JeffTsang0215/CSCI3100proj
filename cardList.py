@@ -47,13 +47,13 @@ card_dict[12] = [4, 4, 5, "Dancing Swords", "rare", scale1, "", "Dancing_Swords_
 card_dict[13] = [3, 5, 2, "Devilsaur Egg", "rare", scale1, "", "Devilsaur Egg.png", {"type": "minion"}]
 card_dict[14] = [4, 3, 6, "Dragonslayer", "rare", scale1, "", "Dragonslayer_full.png", {"type": "minion"}]
 card_dict[15] = [4, 2, 7, "Forest Guide", "rare", scale1, "", "Forest_Guide_full.png", {"type": "minion"}]
-card_dict[16] = [5, 5, 6, "Champion", "rare", scale1, "", "cardTemp.png", {"type": "minion"}]
+card_dict[16] = [5, 5, 6, "Champion", "rare", scale1, "", "Lone_Champion_full.png", {"type": "minion"}]
 
 # EPIC CARDS (1000 gold)
-card_dict[17] = [3, 4, 3, "Vampire", "epic", scale1, "", "cardTemp.png", {"type": "minion"}] #17
-card_dict[18] = [3, 1, 8, "FrenziedBerserker", "epic", scale1, "", "cardTemp.png", {"type": "minion"}]
-card_dict[19] = [4, 2, 6, "Dragon", "epic", scale1, "", "cardTemp.png", {"type": "minion"}]
-card_dict[20] = [4, 4, 5, "DarkKnight", "epic", scale1, "", "cardTemp.png", {"type": "minion"}]
+card_dict[17] = [3, 4, 3, "Vampire", "epic", scale1, "", "Blood_of_huun_full.png", {"type": "minion"}] #17
+card_dict[18] = [3, 1, 8, "Scaleworm", "epic", scale1, "", "Scaleworm_full.png", {"type": "minion"}]
+card_dict[19] = [4, 2, 6, "Cobalt Scalebane", "epic", scale1, "", "Cobalt_Scalebane_full.png", {"type": "minion"}]
+card_dict[20] = [4, 4, 5, "DarkKnight", "epic", scale1, "", "The_Black_Knight_full.png", {"type": "minion"}]
 card_dict[21] = [5, 5, 6, "DesertKing", "epic", scale1, "", "cardTemp.png", {"type": "minion"}]
 card_dict[22] = [5, 5, 5, "ElderSage", "epic", scale1, "Draw 2 cards", "cardTemp.png", {"type": "minion", "skill": "draw", "n": 2}]
 card_dict[23] = [3, 0, 0, "Blizzard", "epic", scale1, "Freeze 2 enemies", "cardTemp.png", {"type": "spell", "skill": "freeze", "n": 2}]
