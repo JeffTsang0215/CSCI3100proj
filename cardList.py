@@ -38,6 +38,9 @@ card_dict[8] = [2, 2, 3, "Air guitarlist", "common", scale1, "", "air_guitarlist
 #new common cards
 card_dict[33] = [6, 6, 6, "Abusive Sergeant", "common", scale1, "", "Abusive_Sergeant.png", {"type": "minion"}]
 card_dict[34] = [6, 5, 7, "Fire Fly", "common", scale1, "", "Fire_Fly_full.png", {"type": "minion"}]
+card_dict[35] = [0, 1, 1, "Snowflipper Penguin", "common", scale1, "", "Snowflipper_Penguin_full.png", {"type": "minion"}]
+card_dict[36] = [3, 3, 5, "Tar Creeper", "common", scale1, "", "Tar_Creeper_full.png", {"type": "minion"}]
+card_dict[37] = [4, 3, 3, "Arena Treasure Chest", "common", scale1, "Draw 2 cards", "Arena_Treasure_Chest_full.png", {"type": "minion", "skill": "draw", "n": 2}]
 
 # RARE CARDS (500 gold)
 card_dict[9] = [2, 3, 2, "Blazing Battlemage", "rare", scale1, "", "Blazing_Battlemage_full.png", {"type": "minion"}] #9
@@ -54,20 +57,20 @@ card_dict[17] = [3, 4, 3, "Vampire", "epic", scale1, "", "Blood_of_huun_full.png
 card_dict[18] = [3, 1, 8, "Scaleworm", "epic", scale1, "", "Scaleworm_full.png", {"type": "minion"}]
 card_dict[19] = [4, 2, 6, "Cobalt Scalebane", "epic", scale1, "", "Cobalt_Scalebane_full.png", {"type": "minion"}]
 card_dict[20] = [4, 4, 5, "DarkKnight", "epic", scale1, "", "The_Black_Knight_full.png", {"type": "minion"}]
-card_dict[21] = [5, 5, 6, "DesertKing", "epic", scale1, "", "cardTemp.png", {"type": "minion"}]
-card_dict[22] = [5, 5, 5, "ElderSage", "epic", scale1, "Draw 2 cards", "cardTemp.png", {"type": "minion", "skill": "draw", "n": 2}]
-card_dict[23] = [3, 0, 0, "Blizzard", "epic", scale1, "Freeze 2 enemies", "cardTemp.png", {"type": "spell", "skill": "freeze", "n": 2}]
-card_dict[24] = [4, 0, 0, "Firestorm", "epic", scale1, "Deal 2 damage \n to all enemy", "cardTemp.png", {"type": "spell", "skill": "fullAtk", "atk": 2}]
+card_dict[21] = [5, 5, 6, "Rotten Applebaum", "epic", scale1, "", "Rotten_Applebaum_full.png", {"type": "minion"}]
+card_dict[22] = [5, 5, 5, "Tormented Dreadwing", "epic", scale1, "Draw 2 cards", "Tormented_Dreadwing_full.png", {"type": "minion", "skill": "draw", "n": 2}]
+card_dict[23] = [3, 0, 0, "Blizzard", "epic", scale1, "Freeze 2 enemies", "Blizzard_full.png", {"type": "spell", "skill": "freeze", "n": 2}]
+card_dict[24] = [4, 0, 0, "Firestorm", "epic", scale1, "Deal 2 damage \n to all enemy", "Wildfire_full.png", {"type": "spell", "skill": "fullAtk", "atk": 2}]
 
 # LEGENDARY CARDS (5000 gold)
-card_dict[25] = [4, 6, 6, "Infernal", "legendary", scale1, "", "cardTemp.png", {"type": "minion"}] #25
-card_dict[26] = [5, 5, 6, "Wizard", "legendary", scale1, "draw 2 cards", "cardTemp.png", {"type": "minion", "skill": "draw", "n": 2}]
-card_dict[27] = [5, 8, 8, "StormTitan", "legendary", scale1, "", "cardTemp.png", {"type": "minion"}]
-card_dict[28] = [5, 7, 9, "Titan", "legendary", scale1, "", "cardTemp.png", {"type": "minion"}]
-card_dict[29] = [5, 3, 10, "ElderDragon", "legendary", scale1, "", "cardTemp.png", {"type": "minion"}]
-card_dict[30] = [4, 5, 8, "FireGolem", "legendary", scale1, "", "cardTemp.png", {"type": "minion"}]
-card_dict[31] = [4, 7, 5, "Phoenix", "legendary", scale1, "", "cardTemp.png", {"type": "minion"}]
-card_dict[32] = [5, 7, 9, "Void", "legendary", scale1, "", "cardTemp.png", {"type": "minion"}]
+card_dict[25] = [10, 12, 12, "Deathwing the Destroyer", "legendary", scale1, "", "Deathwing_the_Destroyer_full.png", {"type": "minion"}] #25
+card_dict[26] = [5, 5, 6, "Dr. Boom", "legendary", scale1, "draw 2 cards", "Dr._Boom_full.png", {"type": "minion", "skill": "draw", "n": 2}]
+card_dict[27] = [5, 8, 8, "StormTitan", "legendary", scale1, "", "Amitus,_the_Peacekeeper_full.png", {"type": "minion"}]
+card_dict[28] = [9, 6, 12, "Sargeras, the Destroyer", "legendary", scale1, "", "Sargeras,_the_Destroyer_full.png", {"type": "minion"}]
+card_dict[29] = [5, 3, 10, "ElderDragon", "legendary", scale1, "", "Temporus_full.png", {"type": "minion"}]
+card_dict[30] = [4, 5, 8, "FireGolem", "legendary", scale1, "", "Saruun_full.png", {"type": "minion"}]
+card_dict[31] = [4, 7, 5, "Phoenix", "legendary", scale1, "", "Pyros_full.png", {"type": "minion"}]
+card_dict[32] = [5, 7, 9, "Gaia, the Techtonic", "legendary", scale1, "", "Gaia,_the_Techtonic_full.png", {"type": "minion"}]
 
 
 # default cards that are unlocked for each new user
@@ -113,6 +116,10 @@ starter_card = [
     30, # FireGolem
     31, # Phoenix
     32, # Void
+
+    #New common cards
+    33,34,35,36,37
+    
 ]
 
 
