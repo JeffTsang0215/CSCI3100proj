@@ -145,6 +145,7 @@ class Sys:
         if isPlayerTurn:
             if target != 99:
                 self.cardSet["aiCard"][target].hp -= self.cardSet["myCard"][attacker].atk
+                self.cardSet["myCard"][attacker].hp -= self.cardSet["aiCard"][target].atk
             else:
                 self.aihp -= self.cardSet["myCard"][attacker].atk
             
@@ -152,6 +153,7 @@ class Sys:
         else:
             if target != 99:
                 self.cardSet["myCard"][target].hp -= self.cardSet["aiCard"][attacker].atk
+                self.cardSet["aiCard"][attacker].hp -= self.cardSet["myCard"][target].atk
             else:
                 self.myhp -= self.cardSet["aiCard"][attacker].atk
 

@@ -72,27 +72,49 @@ card_dict[32] = [5, 7, 9, "Void", "legendary", scale1, "", "cardTemp.png", {"typ
 
 # default cards that are unlocked for each new user
 starter_card = [
-    # 14 common cards
-    1,  # Goblin 1
-    2,  # Archer 1
-    3,  # SkeletalMinion 1
-    4,  # Frost 1
-    5,  # ForestDryad 1
-    6,  # Arcane 1
+    # Common cards
+    1,  # Goblin
+    2,  # Archer
+    3,  # SkeletalMinion
+    4,  # Frost
+    5,  # Forest Guide
+    6,  # Body Bagger
+    7,  # Ice
+    8,  # Air guitarlist
+    33, # Abusive Sergeant
+    34, # Fire Fly
 
-    # 10 rare cards
-    9,  # Assassin 1
-    10, # Medic 1
-    11, # Paladin 1
-    12, # Berserker 1
-    13, # Panther 1
-    14, # FlameCaller 1
+    # Rare cards
+    9,  # Blazing Battlemage
+    10, # Medic
+    11, # Elven Archer
+    12, # Dancing Swords
+    13, # Devilsaur Egg
+    14, # Dragonslayer
+    15, # Forest Guide
+    16, # Champion
 
-    # 6 epic cards
-    18, # FrenziedBerserker 1
-    23, # Blizzard 1
-    24, # Firestorm 1
+    # Epic cards
+    17, # Vampire
+    18, # FrenziedBerserker
+    19, # Dragon
+    20, # DarkKnight
+    21, # DesertKing
+    22, # ElderSage
+    23, # Blizzard
+    24, # Firestorm
+
+    # Legendary cards
+    25, # Infernal
+    26, # Wizard
+    27, # StormTitan
+    28, # Titan
+    29, # ElderDragon
+    30, # FireGolem
+    31, # Phoenix
+    32, # Void
 ]
+
 
 # store start cards in database with json format
 starter_card_json = json.dumps(starter_card)
