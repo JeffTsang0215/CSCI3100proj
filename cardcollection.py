@@ -73,11 +73,12 @@ last_click_time = 0
 double_click_delay = 400  # Time in milliseconds for double-click detection
 typing_active = False
 input_text = ""
+selected_cost = None
 
 card_objects = []
 
 def draw_deck_list(mouse_pos, mouse_click, events):
-    global deck_rects, cancel_buttons
+    global deck_rects, cancel_buttons, selected_cost, current_page
     global selected_deck_index, last_click_time, typing_active, input_text, current_view
     
     if current_view != "deck_list":
@@ -201,7 +202,9 @@ def draw_deck_list(mouse_pos, mouse_click, events):
         pygame.draw.rect(shared.screen, (255, 226, 199), back_rect)
         shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
         if mouse_click[0]:
-            shared.game_state = "menu"           
+            shared.game_state = "menu"
+            selected_cost = None    
+            current_page = 0       
 
 def handle_text_input(event):
     global input_text, typing_active, selected_deck_index
@@ -379,50 +382,100 @@ def draw_deck_view(mouse_pos, mouse_click):
     )
 
 def display_cards(mouse_pos, mouse_click):
-    global current_page, last_button_press, card_objects
+    global current_page, last_button_press, card_objects, selected_cost
 
-    # Clear previous page's cards to prevent accumulation
-    card_objects = [] 
 
+    # Clear previous page's card objects
+    card_objects = []
+
+    # Draw filter buttons
+    filter_button_width = 26 * scale1
+    filter_button_height = 25 * scale2
+    filter_button_margin = 2 * scale1
+    manaT_image = pygame.image.load(shared.path + f"image/ManaT.png")
+    manaT_image = pygame.transform.scale(manaT_image, (21*scale1, 20*scale1))
+    manaF_image = pygame.image.load(shared.path + f"image/ManaF.png")
+    manaF_image = pygame.transform.scale(manaF_image, (21*scale1, 20*scale1))
+    filter_x = 221 * scale1
+    filter_y = 608 * scale2
+
+    for cost in range(8):  # Cost 0–6 and 7+
+        label = str(cost)
+        x = filter_x + cost * (filter_button_width + filter_button_margin)
+        button_rect = pygame.Rect(x, filter_y, filter_button_width, filter_button_height)
+        # Highlight if selected
+        if selected_cost == cost:
+            shared.screen.blit(manaF_image, (x, filter_y))
+            shared.text(shared.screen, label, (150, 150, 150), int(16 * scale1), button_rect.center, "center", font=custom_font)
+        else:
+            shared.screen.blit(manaT_image, (x, filter_y))
+            shared.text(shared.screen, label, (255, 255, 255), int(16 * scale1), button_rect.center, "center", font=custom_font)
+
+        # Toggle filter on click
+        if button_rect.collidepoint(mouse_pos) and mouse_click[0] and not last_button_press:
+            if selected_cost == cost:
+                selected_cost = None  # Turn off filter
+                print(selected_cost)
+            else:
+                selected_cost = cost
+                print(selected_cost)
+            current_page = 0  # Reset page
+    
+
+    # Apply filtering
     sorted_cards = sorted(cardList.card, key=lambda c: c[0])
-        # Handle next button (only if NOT on the last page)
-    if current_page < total_pages - 1:
-        if next_button.collidepoint(mouse_pos):
-            shared.screen.blit(next_button_image, (next_button.left + 3, next_button.top))  # Hover effect
-            if mouse_click[0]:
-                current_page += 1  
+    if selected_cost is not None:
+        if selected_cost < 7:
+            sorted_cards = [card for card in sorted_cards if card[0] == selected_cost]
         else:
-            shared.screen.blit(next_button_image, next_button.topleft)
+            sorted_cards = [card for card in sorted_cards if card[0] >= 7]
 
-    # Handle back button (only if NOT on the first page)
-    if current_page > 0:
-        if back_button.collidepoint(mouse_pos):
-            shared.screen.blit(back_button_image, (back_button.left - 3, back_button.top))
-            if mouse_click[0]:  
-                current_page -= 1  
-        else:
-            shared.screen.blit(back_button_image, back_button.topleft)
-
-    # Draw only the cards for the current page
+    # Pagination logic
+    total_pages = (len(sorted_cards) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE
     start_index = current_page * CARDS_PER_PAGE
     end_index = start_index + CARDS_PER_PAGE
 
+    # Handle Next button
+    if current_page < total_pages - 1:
+        if next_button.collidepoint(mouse_pos):
+            shared.screen.blit(next_button_image, (next_button.left + 3, next_button.top))  # Hover
+            if mouse_click[0]:
+                current_page += 1
+        else:
+            shared.screen.blit(next_button_image, next_button.topleft)
+
+    # Handle Back button
+    if current_page > 0:
+        if back_button.collidepoint(mouse_pos):
+            shared.screen.blit(back_button_image, (back_button.left - 3, back_button.top))  # Hover
+            if mouse_click[0]:
+                current_page -= 1
+        else:
+            shared.screen.blit(back_button_image, back_button.topleft)
+
+    # Draw current page's cards
     for i, card_info in enumerate(sorted_cards[start_index:end_index]):
-        row = i // cards_per_row  
-        col = i % cards_per_row  
+        row = i // cards_per_row
+        col = i % cards_per_row
         x = start_x + col * card_spacing_x
         y = start_y + row * card_spacing_y
+
         cost, atk, hp, name, rarity, scale_factor, description, image, ext = card_info
 
         card_obj = CardTemplate(cost, atk, hp, name, rarity, x, y, description, scale_factor, image, ext)
         card_obj.draw()
         if current_view == "deck_view":
             card_obj.draw_plus_button(mouse_pos)
-        card_objects.append(card_obj)  # Store only cards from the current page
+        card_objects.append(card_obj)
 
-     # Display page number at the bottom center
+    # Display current page number
     page_number = f"Page {current_page + 1}"
-    shared.text(shared.screen, page_number, (70, 70, 70), int(16 * scale2), [shared.WIDTH - 650 * scale1, shared.HEIGHT - 110 * scale2], "center", font=custom_font)
+    shared.text(shared.screen, page_number, (70, 70, 70), int(16 * scale2),
+                [shared.WIDTH - 650 * scale1, shared.HEIGHT - 110 * scale2],
+                "center", font=custom_font)
+    
+    last_button_press = mouse_click[0]
+
 
 def cardcollection_main(mouse_pos, mouse_click, events):
     global total_pages
