@@ -5,6 +5,7 @@ import shared
 import menu
 import userSystem
 import copy
+import choosedeck
 from ai_system import AISystem
 
 debug = True
@@ -811,6 +812,15 @@ while running:
         
         shared.text(shared.screen, "Back", (0, 0, 0), int(shared.WIDTH/30), [0.50*shared.WIDTH, 0.84*shared.HEIGHT], "center")
 
+        pygame.display.update()
+        shared.clock.tick(shared.fps)
+
+    elif shared.game_state  == "choosedeck":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        choosedeck.main(mouse_pos, mouse_click)
         pygame.display.update()
         shared.clock.tick(shared.fps)
     
