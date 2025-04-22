@@ -5,7 +5,7 @@ scale1 = shared.WIDTH / 1080
 scale2 = shared.HEIGHT / 675
 
 class CardTemplate:
-    BASE_SIZE = (140, 196)  # Base card size
+    BASE_SIZE = (140, 196)
 
     def __init__(self, cost, atk, hp, name, rarity, x, y, description, scale_factor=1.0, image=None, ext=None):
         self.cost = cost
@@ -16,18 +16,14 @@ class CardTemplate:
         self.description = description
         self.scale_factor = scale_factor
         self.ext = ext or {}
+        self.x, self.y = x, y
 
-        # Scale the card dimensions
         self.card_width = int(self.BASE_SIZE[0] * scale_factor)
         self.card_height = int(self.BASE_SIZE[1] * scale_factor)
-
-        # Card position
-        self.x = x
-        self.y = y
-
         self.rect = pygame.Rect(self.x, self.y, self.card_width, self.card_height)
         self.add_rect = pygame.Rect(self.x + self.BASE_SIZE[0] // 2 , self.y + self.BASE_SIZE[1] + int(25 * scale2), int(25 * scale1), int(25 * scale2))
-        # Load and scale card background based on rarity
+
+        # Prepare static background
         rarity_images = {
             "common": "CommonCard.png",
             "rare": "RareCard.png",
@@ -44,70 +40,62 @@ class CardTemplate:
             image_width = int(self.card_width * 0.65)
             image_height = int(self.card_height * 0.6)
             raw_image = pygame.transform.scale(raw_image, (image_width, image_height))
-
-            # Create an oval mask
             mask = pygame.Surface((image_width, image_height), pygame.SRCALPHA)
             pygame.draw.ellipse(mask, (255, 255, 255, 255), (0, 0, image_width, image_height))
-
-            # Apply the mask to the image
             self.card_image = raw_image.copy()
             self.card_image.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            self.image_x = (self.card_width - image_width) // 2 + 3
+            self.image_y = int(13 * self.scale_factor)
 
-            # Position image on the card
-            self.image_x = self.x + (self.card_width - image_width) // 2 + 3
-            self.image_y = self.y + int(13 * self.scale_factor)
+        self.cached_surface = None
+        self.generate_surface()
 
+    def generate_surface(self):
+        """Pre-renders the card into a surface."""
+        self.cached_surface = pygame.Surface((self.card_width, self.card_height), pygame.SRCALPHA)
+        if not os.path.exists(shared.path + "fonts/belwe-bold-bt.ttf"):
+            print("Missing font.")
+            return
 
-    def draw(self):
-        """Draws the card with its image, background, and text indicators."""
-        if self.card_image:
-            shared.screen.blit(self.card_image, (self.image_x, self.image_y))
-
-        if self.card_bg:
-            shared.screen.blit(self.card_bg, (self.x, self.y))
-
-        # Load font
         font_path = os.path.join(shared.path, "fonts", "belwe-bold-bt.ttf")
-        if not os.path.exists(font_path):
-            print(f"Error: Font not found at {font_path}")  # Debugging message
-            return  # Stop execution if font is missing
-
         card_data_font = pygame.font.Font(font_path, int(28 * self.scale_factor))
         name_font = pygame.font.Font(font_path, int(10 * self.scale_factor))
         description_font = pygame.font.Font(font_path, int(10 * self.scale_factor))
 
-        text_color = (255, 255, 255)  # White text
-        border_color = (0, 0, 0)  # Black outline
+        text_color = (255, 255, 255)
+        border_color = (0, 0, 0)
         description_color = (0, 0, 0)
 
-        # Scale positions
-        cost_pos = (self.x + int(20 * self.scale_factor), self.y + int(28 * self.scale_factor))
-        atk_pos = (self.x + int(22 * self.scale_factor), self.y + self.card_height - int(20 * self.scale_factor))
-        hp_pos = (self.x + self.card_width - int(18 * self.scale_factor), self.y + self.card_height - int(18 * self.scale_factor))
-        name_pos = (self.x + self.card_width // 2, self.y + int(107 * self.scale_factor))
-        description_pos = (self.x + self.card_width // 2, self.y + int(150 * self.scale_factor))
+        cost_pos = (int(20 * self.scale_factor), int(28 * self.scale_factor))
+        atk_pos = (int(22 * self.scale_factor), self.card_height - int(20 * self.scale_factor))
+        hp_pos = (self.card_width - int(18 * self.scale_factor), self.card_height - int(18 * self.scale_factor))
+        name_pos = (self.card_width // 2, int(107 * self.scale_factor))
+        description_pos = (self.card_width // 2, int(150 * self.scale_factor))
 
-        # Draw text with border effect using shared function
-        shared.draw_text_with_border(shared.screen, str(self.cost), card_data_font, text_color, border_color, cost_pos, align="center")
-        shared.draw_text_with_border(shared.screen, str(self.atk), card_data_font, text_color, border_color, atk_pos, align="center")
-        shared.draw_text_with_border(shared.screen, str(self.hp), card_data_font, text_color, border_color, hp_pos, align="center")
-        shared.draw_text_with_border(shared.screen, self.name, name_font, text_color, border_color, name_pos, align="center")
-        shared.draw_text(shared.screen, self.description, description_font, description_color, description_pos, align="center")
+        
+        if self.card_image:
+            self.cached_surface.blit(self.card_image, (self.image_x, self.image_y))
+        self.cached_surface.blit(self.card_bg, (0, 0))
 
-    def draw_plus_button(self, mouse_pos):  
-            if self.add_rect.collidepoint(mouse_pos):
-                add_rect_color = (180, 220, 180)  # Lighter green when hovered
-            else:
-                add_rect_color = (100, 200, 100)  # Default green
+        shared.draw_text_with_border(self.cached_surface, str(self.cost), card_data_font, text_color, border_color, cost_pos, align="center")
+        shared.draw_text_with_border(self.cached_surface, str(self.atk), card_data_font, text_color, border_color, atk_pos, align="center")
+        shared.draw_text_with_border(self.cached_surface, str(self.hp), card_data_font, text_color, border_color, hp_pos, align="center")
+        shared.draw_text_with_border(self.cached_surface, self.name, name_font, text_color, border_color, name_pos, align="center")
+        shared.draw_text(self.cached_surface, self.description, description_font, description_color, description_pos, align="center")
 
-            pygame.draw.rect(shared.screen, add_rect_color, self.add_rect)  # Draw button
+    def draw(self, surface=None):
+        if surface is None:
+            surface = shared.screen
+        surface.blit(self.cached_surface, (self.x, self.y))
 
-            # Render the "+" text
-            font = pygame.font.Font(None, 24)
-            plus_text = font.render("+", True, (255, 255, 255))  # White text
-            plus_text_rect = plus_text.get_rect(center=self.add_rect.center)  # Center text
+    def draw_plus_button(self, mouse_pos):
+        color = (180, 220, 180) if self.add_rect.collidepoint(mouse_pos) else (100, 200, 100)
+        pygame.draw.rect(shared.screen, color, self.add_rect)
+        font = pygame.font.Font(None, 24)
+        plus_text = font.render("+", True, (255, 255, 255))
+        plus_text_rect = plus_text.get_rect(center=self.add_rect.center)
+        shared.screen.blit(plus_text, plus_text_rect)
 
-            shared.screen.blit(plus_text, plus_text_rect)  # Draw text on button
 
 
 
