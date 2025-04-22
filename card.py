@@ -48,10 +48,14 @@ class CardTemplate:
             self.image_y = int(13 * self.scale_factor)
 
         self.cached_surface = None
+        self._surface_generated = False  # Flag to check if surface has been generated already
         self.generate_surface()
 
     def generate_surface(self):
         """Pre-renders the card into a surface."""
+        if self._surface_generated:  # Avoid regenerating if it's already done
+            return
+        
         self.cached_surface = pygame.Surface((self.card_width, self.card_height), pygame.SRCALPHA)
         if not os.path.exists(shared.path + "fonts/belwe-bold-bt.ttf"):
             print("Missing font.")
@@ -72,7 +76,6 @@ class CardTemplate:
         name_pos = (self.card_width // 2, int(107 * self.scale_factor))
         description_pos = (self.card_width // 2, int(150 * self.scale_factor))
 
-        
         if self.card_image:
             self.cached_surface.blit(self.card_image, (self.image_x, self.image_y))
         self.cached_surface.blit(self.card_bg, (0, 0))
@@ -82,6 +85,8 @@ class CardTemplate:
         shared.draw_text_with_border(self.cached_surface, str(self.hp), card_data_font, text_color, border_color, hp_pos, align="center")
         shared.draw_text_with_border(self.cached_surface, self.name, name_font, text_color, border_color, name_pos, align="center")
         shared.draw_text(self.cached_surface, self.description, description_font, description_color, description_pos, align="center")
+
+        self._surface_generated = True  # Mark the surface as generated
 
     def draw(self, surface=None):
         if surface is None:
