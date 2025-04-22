@@ -139,3 +139,31 @@ def load_unlock_cards():
     cursor.execute("SELECT unlock_cards FROM user_card_collection WHERE username = ?", (shared.user_name,))
     unlock_cards_data = cursor.fetchone()
     card = load_cards_from_json(unlock_cards_data[0])
+
+def load_deck_from_names(deck_data: dict):
+    """
+    Transforms a named deck into a card list with full card data from card_dict.
+
+    Args:
+        deck_data (dict): A deck with structure like:
+            {
+                "name": "Deck Name",
+                "cards": ["Goblin", "Goblin", "Archer", ...]
+            }
+
+    Returns:
+        list: A list of full card data matching the names.
+    """
+    card = []
+
+    # Build a reverse lookup for name → id
+    name_to_id = {data[3]: card_id for card_id, data in card_dict.items()}
+
+    for name in deck_data["cards"]:
+        card_id = name_to_id.get(name)
+        if card_id:
+            card.append(card_dict[card_id])
+        else:
+            print(f"Warning: card name '{name}' not found in card_dict.")
+
+    return card

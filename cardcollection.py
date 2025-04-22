@@ -431,9 +431,10 @@ def cardcollection_main(mouse_pos, mouse_click, events):
     shared.screen.blit(cardcollection_bg, (0, 0))  # Draw background
     shared.text(shared.screen, "My Decks", (30, 30, 30), int(9 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center", font=custom_font)
 
-    display_cards(mouse_pos,mouse_click)
+    display_cards(mouse_pos, mouse_click)
     draw_deck_list(mouse_pos, mouse_click, events)
     draw_deck_view(mouse_pos, mouse_click)
+
 
 
 

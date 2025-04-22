@@ -31,6 +31,53 @@ starter_deck = [
     }
 ]
 
+#AI deck 1
+AI_deck_1 = [
+    {
+        "name": "Creeper Core",
+        "cards": [
+            "Penguin", "Penguin",
+            "Goblin", "Goblin",
+            "Tar Creeper", "Tar Creeper",
+            "Fen Creeper", "Fen Creeper",
+            "Bog Creeper", "Bog Creeper",
+            "Frost", "Frost",
+            "Ice", "Ice",
+            "Blizzard", "Blizzard",
+            "Firestorm", "Firestorm",
+            "Medic", "Medic",
+            "Treasure Chest", "Treasure Chest",
+            "Gatekeeper", "Gatekeeper",
+            "Cobalt Scalebane", "Cobalt Scalebane",
+            "Forest Guide", "Forest Guide",
+            "DarkKnight", "DarkKnight",
+        ]
+    }
+]
+
+#AI_deck_2
+AI_deck_2 = [
+    {
+        "name": "Aggro Squad",
+        "cards": [
+            "Archer", "Archer",
+            "SkeletalMinion", "SkeletalMinion",
+            "Air guitarlist", "Air guitarlist",
+            "Battlemage", "Battlemage",
+            "Elven Archer", "Elven Archer",
+            "Vampire", "Vampire",
+            "Scaleworm", "Scaleworm",
+            "Dragonslayer", "Dragonslayer",
+            "Devilsaur Egg", "Devilsaur Egg",
+            "Fire Fly", "Fire Fly",
+            "Sergeant", "Sergeant",
+            "Dancing Swords", "Dancing Swords",
+            "Dr. Boom", "Dr. Boom",
+            "StormTitan", "StormTitan",
+            "Phoenix", "Phoenix"
+        ]
+    }
+]
 
 starter_deck_json = json.dumps(starter_deck)
 
