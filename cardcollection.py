@@ -332,22 +332,22 @@ def draw_deck_view(mouse_pos, mouse_click):
     for card_obj in card_objects:
         if card_obj.add_rect.collidepoint(mouse_pos):
             if mouse_click[0]:  # Left mouse button clicked
-                print("testing")
+
                 #if selected_deck_index is not None and selected_deck_index < len(decks.decks):
                 deck = decks.decks[selected_deck_index]  # Get the selected deck
                 card_count = deck["cards"].count(card_obj.name)  # Count occurrences of the card
 
                     # Check if the card is legendary
                 is_legendary = card_obj.rarity.lower() == "legendary"
-                contains_legendary = any(
-                    card_info[4].lower() == "legendary" for card_info in cardList.card if card_info[3] in deck["cards"]
-                )
+                # contains_legendary = any(
+                #     card_info[4].lower() == "legendary" for card_info in cardList.card if card_info[3] in deck["cards"]
+                # )
 
                 if len(deck["cards"]) < 30:  # Ensure deck size limit of 30 cards
                     # If the card is legendary, check if there is already one in the deck
-                    if is_legendary and contains_legendary:
+                    if is_legendary and card_count == 1:
                         print("You can only have one legendary card in the deck!")
-                    elif card_count < 2:  # Each card can only appear up to 2 times
+                    elif card_count < 2 or (is_legendary and card_count< 1):  # Each card can only appear up to 2 times
                         deck["cards"].append(card_obj.name)  
                         decks.save_decks()
                         # Recalculate card counts and sort deck cards
@@ -383,6 +383,8 @@ def display_cards(mouse_pos, mouse_click):
 
     # Clear previous page's cards to prevent accumulation
     card_objects = [] 
+
+    sorted_cards = sorted(cardList.card, key=lambda c: c[0])
         # Handle next button (only if NOT on the last page)
     if current_page < total_pages - 1:
         if next_button.collidepoint(mouse_pos):
@@ -405,7 +407,7 @@ def display_cards(mouse_pos, mouse_click):
     start_index = current_page * CARDS_PER_PAGE
     end_index = start_index + CARDS_PER_PAGE
 
-    for i, card_info in enumerate(cardList.card[start_index:end_index]):
+    for i, card_info in enumerate(sorted_cards[start_index:end_index]):
         row = i // cards_per_row  
         col = i % cards_per_row  
         x = start_x + col * card_spacing_x
