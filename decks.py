@@ -3,10 +3,6 @@ import json
 import sqlite3
 import os
 
-# Database setup
-conn = sqlite3.connect(shared.path + 'database/database.db')
-cursor = conn.cursor()
-
 # starter deck data
 starter_deck = [
     {
@@ -84,14 +80,24 @@ starter_deck_json = json.dumps(starter_deck)
 # Default deck data
 decks = []
 
-# load decks from database
+# Load decks from database
 def load_decks():
     global decks
-    cursor.execute("SELECT decks FROM user_card_collection WHERE username = ?", (shared.user_name,))
-    decks_data = cursor.fetchone()
-    decks = json.loads(decks_data[0])
+    with sqlite3.connect(shared.path + 'database/database.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT decks FROM user_card_collection WHERE username = ?", (shared.user_name,))
+        decks_data = cursor.fetchone()
+        if decks_data:
+            decks = json.loads(decks_data[0])
+        else:
+            decks = []
 
-# Save function to update file when decks change
+# Save decks to database
 def save_decks():
-    cursor.execute("UPDATE user_card_collection SET decks = ? WHERE username = ?", (json.dumps(decks), shared.user_name))
-    conn.commit()
+    with sqlite3.connect(shared.path + 'database/database.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE user_card_collection SET decks = ? WHERE username = ?",
+            (json.dumps(decks), shared.user_name)
+        )
+        conn.commit()

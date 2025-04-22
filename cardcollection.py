@@ -4,6 +4,8 @@ from card import CardTemplate, DeckCard
 import cardList
 import decks
 from collections import Counter
+import sqlite3
+import json
 
 scale1 = shared.WIDTH / 1080
 scale2 = shared.HEIGHT / 675
