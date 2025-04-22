@@ -4,8 +4,6 @@ from card import CardTemplate, DeckCard
 import cardList
 import decks
 from collections import Counter
-import sqlite3
-import json
 
 scale1 = shared.WIDTH / 1080
 scale2 = shared.HEIGHT / 675
@@ -76,12 +74,17 @@ double_click_delay = 400  # Time in milliseconds for double-click detection
 typing_active = False
 input_text = ""
 selected_cost = None
+search_text = ""
+active_input = False
+show_confirmation = False
+deck_to_delete = None
 
 card_objects = []
 
 def draw_deck_list(mouse_pos, mouse_click, events):
     global deck_rects, cancel_buttons, selected_cost, current_page
     global selected_deck_index, last_click_time, typing_active, input_text, current_view
+    global show_confirmation, deck_to_delete
     
     if current_view != "deck_list":
         return
@@ -159,9 +162,51 @@ def draw_deck_list(mouse_pos, mouse_click, events):
     if mouse_click[0]:  
         for i, cancel_rect in enumerate(cancel_buttons):
             if cancel_rect.collidepoint(mouse_pos):
-                del decks.decks[i]  # Remove deck
-                decks.save_decks()  # Save updated decks
-                return  
+                show_confirmation = True
+                deck_to_delete = i
+                return   
+            
+    if show_confirmation:
+        # Draw confirmation box
+        confirmation_box_width = 300 * scale1
+        confirmation_box_height = 200 * scale2
+        confirmation_box_x = (shared.WIDTH - confirmation_box_width) // 2
+        confirmation_box_y = (shared.HEIGHT - confirmation_box_height) // 2
+
+        pygame.draw.rect(shared.screen, (50, 50, 50), (confirmation_box_x, confirmation_box_y, confirmation_box_width, confirmation_box_height))
+        pygame.draw.rect(shared.screen, (0, 0, 0), (confirmation_box_x, confirmation_box_y, confirmation_box_width, confirmation_box_height), 2)
+
+        # Draw text
+        shared.text(shared.screen, "Do you want to delete this deck?", (255, 255, 255), int(20 * scale1), 
+                    [confirmation_box_x + confirmation_box_width // 2, confirmation_box_y + 50 * scale2], "center", font=custom_font)
+        
+         # Yes button
+        yes_button_rect = pygame.Rect(confirmation_box_x + 50 * scale1, confirmation_box_y + 120 * scale2, 80 * scale1, 30 * scale2)
+        yes_button_color = (100, 200, 100)  # Default color for Yes button
+        if yes_button_rect.collidepoint(mouse_pos):
+            yes_button_color = (150, 250, 150)  # Change color when hovered
+        pygame.draw.rect(shared.screen, yes_button_color, yes_button_rect)
+        shared.text(shared.screen, "Yes", (255, 255, 255), int(16 * scale1), yes_button_rect.center, "center", font=custom_font)
+
+        # No button
+        no_button_rect = pygame.Rect(confirmation_box_x + 170 * scale1, confirmation_box_y + 120 * scale2, 80 * scale1, 30 * scale2)
+        no_button_color = (255, 100, 100)  # Default color for No button
+        if no_button_rect.collidepoint(mouse_pos):
+            no_button_color = (255, 150, 150)  # Change color when hovered
+        pygame.draw.rect(shared.screen, no_button_color, no_button_rect)
+        shared.text(shared.screen, "No", (255, 255, 255), int(16 * scale1), no_button_rect.center, "center", font=custom_font)
+
+        # Handle clicks on Yes/No buttons
+        if mouse_click[0]:
+            if yes_button_rect.collidepoint(mouse_pos):
+                # Delete the deck
+                del decks.decks[deck_to_delete]
+                decks.save_decks()
+                show_confirmation = False  # Close the confirmation dialog
+                return
+            elif no_button_rect.collidepoint(mouse_pos):
+                show_confirmation = False  # Close the confirmation dialog
+                return
 
     # Draw "+" button
     if len(decks.decks) < max_decks:
@@ -383,9 +428,11 @@ def draw_deck_view(mouse_pos, mouse_click):
         border_thickness=2, align="left"
     )
 
-def display_cards(mouse_pos, mouse_click):
-    global current_page, last_button_press, card_objects, selected_cost
+def display_cards(mouse_pos, mouse_click, events):
+    global current_page, last_button_press, card_objects, selected_cost, search_text, active_input
 
+    if 'cross_clicked' not in globals():
+        cross_clicked = False
 
     # Clear previous page's card objects
     card_objects = []
@@ -423,14 +470,57 @@ def display_cards(mouse_pos, mouse_click):
                 print(selected_cost)
             current_page = 0  # Reset page
     
+    input_rect = pygame.Rect(490 * scale1, 606 * scale2, 135 * scale1, 23 * scale2)
+    color_active = pygame.Color(204, 134, 76)
+    color_inactive = pygame.Color(0, 0, 0)
+    color = color_active if active_input else color_inactive
+    font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(14 * scale2))
+    pygame.draw.rect(shared.screen, color, input_rect, width=2, border_radius=8)
+    text_surface = font.render(search_text, True, (255, 255, 255))
+    shared.screen.blit(text_surface, (input_rect.x + 28*scale1, input_rect.y + 3*scale2))
+    # Draw the cross icon to clear the search bar
+    cross_size = 8  # Adjust size of the cross
+    cross_x = input_rect.x + input_rect.width - cross_size - 7*scale1  # Position the cross at the top right of the input box
+    cross_y = input_rect.y + 7*scale2
+    cross_rect = pygame.Rect(cross_x, cross_y, cross_size, cross_size)
+    cross_color = (150, 150, 150)
 
+    pygame.draw.line(shared.screen, cross_color, (cross_x, cross_y), (cross_x + cross_size, cross_y + cross_size), 2)  # Draw first line
+    pygame.draw.line(shared.screen, cross_color, (cross_x + cross_size, cross_y), (cross_x, cross_y + cross_size), 2)  # Draw second line
+
+    for event in events:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # If clicked outside the input box, deactivate it
+            if not input_rect.collidepoint(event.pos):
+                active_input = False
+            else:
+                if cross_rect.collidepoint(event.pos):
+                    search_text = ""  # Clear the search text
+                else:
+                    active_input = True
+
+        elif active_input and event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_BACKSPACE:
+                search_text = search_text[:-1]
+            elif event.key == pygame.K_RETURN:
+                active_input = False
+            else:
+                search_text += event.unicode
+
+    
     # Apply filtering
     sorted_cards = sorted(cardList.card, key=lambda c: c[0])
+
+    # If cost filter is active, apply it
     if selected_cost is not None:
         if selected_cost < 7:
             sorted_cards = [card for card in sorted_cards if card[0] == selected_cost]
         else:
             sorted_cards = [card for card in sorted_cards if card[0] >= 7]
+
+    # Apply search within the current filtered list (or full list if no cost filter)
+    if search_text:
+        sorted_cards = [card for card in sorted_cards if search_text.lower() in card[3].lower()]
 
     # Pagination logic
     total_pages = (len(sorted_cards) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE
@@ -478,7 +568,6 @@ def display_cards(mouse_pos, mouse_click):
     
     last_button_press = mouse_click[0]
 
-
 def cardcollection_main(mouse_pos, mouse_click, events):
     global total_pages
     total_pages = (len(cardList.card) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE
@@ -486,7 +575,7 @@ def cardcollection_main(mouse_pos, mouse_click, events):
     shared.screen.blit(cardcollection_bg, (0, 0))  # Draw background
     shared.text(shared.screen, "My Decks", (30, 30, 30), int(9 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center", font=custom_font)
 
-    display_cards(mouse_pos, mouse_click)
+    display_cards(mouse_pos, mouse_click, events)
     draw_deck_list(mouse_pos, mouse_click, events)
     draw_deck_view(mouse_pos, mouse_click)
 
