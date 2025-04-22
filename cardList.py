@@ -88,6 +88,51 @@ starter_card = [
     6,  # Body Bagger
     7,  # Ice
     8,  # Air guitarlist
+    #33, # Abusive Sergeant
+    #34, # Fire Fly
+    #35,36,37,38,39,40, #new common cards
+
+    # Rare cards
+    9,  # Blazing Battlemage
+    10, # Medic
+    11, # Elven Archer
+    12, # Dancing Swords
+    13, # Devilsaur Egg
+    14, # Dragonslayer
+    15, # Forest Guide
+    #16, # Champion
+
+    # Epic cards
+    17, # Vampire
+    18, # FrenziedBerserker
+    19, # Dragon
+    20, # DarkKnight
+    21, # DesertKing
+    22, # ElderSage
+    #23, # Blizzard
+    #24, # Firestorm
+
+    # Legendary cards
+    25, # Infernal
+    26, # Wizard
+    27, # StormTitan
+    28, # Titan
+    29, # ElderDragon
+    30, # FireGolem
+    #31, # Phoenix
+    #32, # Void  
+]
+
+all_cards = [
+    # Common cards
+    1,  # Goblin
+    2,  # Archer
+    3,  # SkeletalMinion
+    4,  # Frost
+    5,  # Forest Guide
+    6,  # Body Bagger
+    7,  # Ice
+    8,  # Air guitarlist
     33, # Abusive Sergeant
     34, # Fire Fly
     35,36,37,38,39,40, #new common cards
@@ -123,22 +168,23 @@ starter_card = [
     32, # Void  
 ]
 
-
 # store start cards in database with json format
 starter_card_json = json.dumps(starter_card)
+all_cards_json = json.dumps(all_cards)
 
 def load_cards_from_json(cards_json: str):  # input should be (unlock_cards_data[0])
     card_id_list = json.loads(cards_json)
     card = [] # return this card set at the end
     for card_id in card_id_list:
-        card.append(card_dict[card_id])
+        card_data = card_dict[card_id]
+        card.append((card_id, card_data))
     return card
 
 def load_unlock_cards():
     global card
-    cursor.execute("SELECT unlock_cards FROM user_card_collection WHERE username = ?", (shared.user_name,))
-    unlock_cards_data = cursor.fetchone()
+    unlock_cards_data = [all_cards_json]
     card = load_cards_from_json(unlock_cards_data[0])
+
 
 def load_deck_from_names(deck_data: dict):
     """

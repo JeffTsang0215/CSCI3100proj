@@ -5,6 +5,7 @@ import cardList
 import decks
 from collections import Counter
 
+
 scale1 = shared.WIDTH / 1080
 scale2 = shared.HEIGHT / 675
 
@@ -302,11 +303,11 @@ def draw_deck_view(mouse_pos, mouse_click):
         card_counts[card_name] = card_counts.get(card_name, 0) + 1
 
     # Create a dictionary for quick lookups
-    card_dict = {c[3]: (c[0], c[4]) for c in cardList.card}  # Maps name -> (cost, rarity)
+    current_card_dict = {c[1][3]: (c[1][0], c[1][4]) for c in cardList.card} 
 
     # Collect deck cards with cost
     deck_cards_data = [
-        (card_name, count, *card_dict.get(card_name, ("?", "?"))) 
+        (card_name, count, *current_card_dict.get(card_name, ("?", "?"))) 
         for card_name, count in card_counts.items()
     ]
 
@@ -403,7 +404,7 @@ def draw_deck_view(mouse_pos, mouse_click):
                         # Recalculate card counts and sort deck cards
                         card_counts = Counter(deck["cards"])  # Count occurrences of each card
                         deck_cards_data = [
-                            (card_name, count, *card_dict.get(card_name, ("?", "?"))) 
+                            (card_name, count, *current_card_dict.get(card_name, ("?", "?"))) 
                             for card_name, count in card_counts.items()
                         ]
                         deck_cards_data.sort(key=lambda x: x[2] if isinstance(x[2], int) else float('inf'))
@@ -429,13 +430,12 @@ def draw_deck_view(mouse_pos, mouse_click):
     )
 
 def display_cards(mouse_pos, mouse_click, events):
-    global current_page, last_button_press, card_objects, selected_cost, search_text, active_input
-
-    if 'cross_clicked' not in globals():
-        cross_clicked = False
+    global current_page, last_button_press, card_objects, selected_cost, search_text, active_input, unlocked_cards
 
     # Clear previous page's card objects
     card_objects = []
+    unlocked_cards = cardList.starter_card
+    lock = False
 
     # Draw filter buttons
     filter_button_width = 26 * scale1
@@ -464,10 +464,8 @@ def display_cards(mouse_pos, mouse_click, events):
         if button_rect.collidepoint(mouse_pos) and mouse_click[0] and not last_button_press:
             if selected_cost == cost:
                 selected_cost = None  # Turn off filter
-                print(selected_cost)
             else:
                 selected_cost = cost
-                print(selected_cost)
             current_page = 0  # Reset page
     
     input_rect = pygame.Rect(490 * scale1, 606 * scale2, 135 * scale1, 23 * scale2)
@@ -509,7 +507,7 @@ def display_cards(mouse_pos, mouse_click, events):
 
     
     # Apply filtering
-    sorted_cards = sorted(cardList.card, key=lambda c: c[0])
+    sorted_cards = sorted(cardList.card, key=lambda c: c[1][0])
 
     # If cost filter is active, apply it
     if selected_cost is not None:
@@ -546,19 +544,20 @@ def display_cards(mouse_pos, mouse_click, events):
             shared.screen.blit(back_button_image, back_button.topleft)
 
     # Draw current page's cards
-    for i, card_info in enumerate(sorted_cards[start_index:end_index]):
+    for i, (card_id, card_data) in enumerate(sorted_cards[start_index:end_index]):
         row = i // cards_per_row
         col = i % cards_per_row
         x = start_x + col * card_spacing_x
         y = start_y + row * card_spacing_y
 
-        cost, atk, hp, name, rarity, scale_factor, description, image, ext = card_info
-
-        card_obj = CardTemplate(cost, atk, hp, name, rarity, x, y, description, scale_factor, image, ext)
+        cost, atk, hp, name, rarity, scale_factor, description, image, ext = card_data
+        lock = card_id not in unlocked_cards
+        card_obj = CardTemplate(cost, atk, hp, name, rarity, x, y, description, scale_factor, image, ext, darkened = lock)
         card_obj.draw()
-        if current_view == "deck_view":
+        if not lock and current_view == "deck_view":
             card_obj.draw_plus_button(mouse_pos)
         card_objects.append(card_obj)
+
 
     # Display current page number
     page_number = f"Page {current_page + 1}"

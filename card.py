@@ -7,7 +7,7 @@ scale2 = shared.HEIGHT / 675
 class CardTemplate:
     BASE_SIZE = (140, 196)
 
-    def __init__(self, cost, atk, hp, name, rarity, x, y, description, scale_factor=1.0, image=None, ext=None):
+    def __init__(self, cost, atk, hp, name, rarity, x, y, description, scale_factor=1.0, image=None, ext=None, darkened = False):
         self.cost = cost
         self.atk = atk
         self.hp = hp
@@ -17,6 +17,7 @@ class CardTemplate:
         self.scale_factor = scale_factor
         self.ext = ext or {}
         self.x, self.y = x, y
+        self.darkened = darkened
 
         self.card_width = int(self.BASE_SIZE[0] * scale_factor)
         self.card_height = int(self.BASE_SIZE[1] * scale_factor)
@@ -86,7 +87,18 @@ class CardTemplate:
         shared.draw_text_with_border(self.cached_surface, self.name, name_font, text_color, border_color, name_pos, align="center")
         shared.draw_text(self.cached_surface, self.description, description_font, description_color, description_pos, align="center")
 
+        # Apply darkening effect if the card is locked (darkened flag is True)
+        if self.darkened:
+            # Create a transparent surface the same size as the card
+            darken_overlay = pygame.Surface(self.cached_surface.get_size(), pygame.SRCALPHA)
+            darken_overlay.fill((0, 0, 0, 150))  # Semi-transparent black overlay
+            card_mask = self.cached_surface.convert_alpha()  # Ensure it's in RGBA format
+            card_mask = card_mask.convert_alpha()  # Make sure it has alpha transparency
+            darken_overlay.blit(card_mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+            self.cached_surface.blit(darken_overlay, (0, 0))
+
         self._surface_generated = True  # Mark the surface as generated
+
 
     def draw(self, surface=None):
         if surface is None:

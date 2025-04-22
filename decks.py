@@ -11,18 +11,18 @@ starter_deck = [
             "Goblin", "Goblin",
             "Archer", "Archer",
             "SkeletalMinion", "SkeletalMinion",
-            "Frost", "Frost",
-            "Forest Guide", "Forest Guide",
-            "Body Bagger", "Body Bagger",
-            "Ice", "Ice",
-            "Air guitarlist", "Air guitarlist",
-            "Abusive Sergeant", "Abusive Sergeant",
-            "Fire Fly", "Fire Fly",
-            "Blazing Battlemage", "Blazing Battlemage",
-            "Medic", "Medic",
+            "Frost","Frost",
+            "Body Bagger","Body Bagger",
+            "Ice","Ice",
+            "Air guitarlist","Air guitarlist",
+            "Battlemage","Battlemage",
+            "Medic","Medic",
             "Elven Archer", "Elven Archer",
             "Dancing Swords", "Dancing Swords",
             "Devilsaur Egg", "Devilsaur Egg",
+            "Dragonslayer","Dragonslayer",
+            "Forest Guide","Forest Guide",
+            "Vampire","Vampire",
         ]
     }
 ]
@@ -80,7 +80,7 @@ starter_deck_json = json.dumps(starter_deck)
 # Default deck data
 decks = []
 
-# Load decks from database
+# load decks from database
 def load_decks():
     global decks
     with sqlite3.connect(shared.path + 'database/database.db') as conn:
@@ -92,7 +92,7 @@ def load_decks():
         else:
             decks = []
 
-# Save decks to database
+# Save function to update file when decks change
 def save_decks():
     with sqlite3.connect(shared.path + 'database/database.db') as conn:
         cursor = conn.cursor()
