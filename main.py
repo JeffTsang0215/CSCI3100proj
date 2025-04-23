@@ -147,7 +147,7 @@ class Sys:
         paladin = pygame.image.load(shared.path + "image/Heroes_Paladin_Uther.png")
         rogue =  pygame.image.load(shared.path + "image/rogue_hero.png")
 
-        hero_size = (40*2.4*scale1, 45.3*2.4*scale1)
+        hero_size = (40*2.3*scale1, 45.3*2.3*scale1)
         self.priest = pygame.transform.scale(priest,hero_size)
         self.paladin = pygame.transform.scale(paladin,hero_size)
         self.rogue = pygame.transform.scale(rogue,hero_size)
@@ -329,7 +329,7 @@ class Sys:
 
         # card graphic ai
         left = shared.WIDTH / 2 - (len(self.cardSet["aiCard"]) * (cardDim[0] + shared.WIDTH / 80) - shared.WIDTH / 80) / 2
-        top = shared.HEIGHT * 0.30
+        top = shared.HEIGHT * 0.35
 
         for card in self.cardSet["aiCard"]:
             # drawing attacked indicator
