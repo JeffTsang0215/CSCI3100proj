@@ -126,7 +126,7 @@ class AISystem:
         # Generate move combinations using a capped generator
         move_combinations = list(move_combo_generator(play_moves, attack_moves, self.MaxCombinations))
         print("Move combinations generated")
-
+        print(f"Move combinations are {move_combinations}")
         if not move_combinations:
             print("Too many move combinations or none found. Entering emergency mode.")
             emergency_moves = [("attack", i, 99) for i in range(len(self.sys.cardSet["aiCard"]))]
