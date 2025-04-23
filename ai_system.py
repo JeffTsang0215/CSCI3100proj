@@ -70,6 +70,35 @@ class AISystem:
         return moves
 
     def execute_best_move(self):
+        def move_combo_generator(play_moves, attack_moves, max_combos):
+            count = 0
+            if play_moves:
+                for play_combo in play_moves:
+                    for attack_combo in itertools.permutations(attack_moves):
+                        used_minions = set()
+                        valid_attack_combo = []
+                        for attack in attack_combo:
+                            if attack[1] not in used_minions:
+                                valid_attack_combo.append(attack)
+                                used_minions.add(attack[1])
+                        for i in range(len(valid_attack_combo) + 1):
+                            yield list(valid_attack_combo[:i]) + [play_combo] + list(valid_attack_combo[i:])
+                            count += 1
+                            if count >= max_combos:
+                                return
+            else:
+                for attack_combo in itertools.permutations(attack_moves):
+                    used_minions = set()
+                    valid_attack_combo = []
+                    for attack in attack_combo:
+                        if attack[1] not in used_minions:
+                            valid_attack_combo.append(attack)
+                            used_minions.add(attack[1])
+                    yield valid_attack_combo
+                    count += 1
+                    if count >= max_combos:
+                        return
+
         # Store initial game state
         original_state = copy.deepcopy(self.sys.cardSet)
         original_mana = self.sys.aiMana
@@ -79,77 +108,39 @@ class AISystem:
         best_score = self.calculate_board_score()
         best_move_sequence = None
 
-        # Generate separate lists for play (mana-consuming) and attack (free) moves
         play_moves = []
         attack_moves = []
         
         possible_moves = self.generate_possible_moves()
+
         for move in possible_moves:
             if move[0] == "play_combo":
                 play_moves.append(move)
             elif move[0] == "attack":
                 attack_moves.append(move)
-        
-        # Sort play_moves by highest mana usage first
+
         play_moves.sort(key=lambda m: sum(card.cost for card in m[1]), reverse=True)
 
-        # Generate all possible interleaved combinations of play and attack moves
-        move_combinations = []
-        emergency = False
-        if play_moves:
-            for play_combo in play_moves:
-                for attack_combo in itertools.permutations(attack_moves):
-                    used_minions = set()
-                    valid_attack_combo = []
-                    for attack in attack_combo:
-                        if attack[1] not in used_minions:
-                            valid_attack_combo.append(attack)
-                            used_minions.add(attack[1])
-                    for i in range(len(valid_attack_combo) + 1):
-                        combined_moves = list(valid_attack_combo[:i]) + [play_combo] + list(valid_attack_combo[i:])
-                        move_combinations.append(combined_moves)
-                        if len(move_combinations) > self.MaxCombinations:
-                            emergency = True
-                            break
-                if len(move_combinations) > self.MaxCombinations:
-                    emergency = True
-                    break
-        else:
-            # If no play_moves, just store attack permutations with unique minion attacks
-            for attack_combo in itertools.permutations(attack_moves):
-                used_minions = set()
-                valid_attack_combo = []
-                for attack in attack_combo:
-                    if attack[1] not in used_minions:
-                        valid_attack_combo.append(attack)
-                        used_minions.add(attack[1])
-                move_combinations.append(valid_attack_combo)
-                if len(move_combinations) > self.MaxCombinations:
-                    emergency = True
-                    break
-        
-        # Handle excessive move combinations
-        if emergency == True:
-            # Force all minions to attack the player hero
+        # Generate move combinations using a capped generator
+        move_combinations = list(move_combo_generator(play_moves, attack_moves, self.MaxCombinations))
+
+        #Emergency moves for decoration
+        if not move_combinations:
+            print("Too many move combinations or none found. Entering emergency mode.")
             emergency_moves = [("attack", i, 99) for i in range(len(self.sys.cardSet["aiCard"]))]
-            
-            # Place the highest mana card AI has
             if play_moves:
                 highest_mana_play = max(play_moves, key=lambda m: sum(card.cost for card in m[1]))
                 emergency_moves.append(highest_mana_play)
-            
             move_combinations = [emergency_moves]
-        
+
         random.shuffle(move_combinations)
-        
+
         for move_sequence in move_combinations:
-            # Restore original game state before testing a move sequence
             self.sys.cardSet = copy.deepcopy(original_state)
             self.sys.aiMana = original_mana
             self.sys.aihp = original_ai_hp
             self.sys.myhp = original_player_hp
-            
-            # Execute all moves in the sequence
+
             for move in move_sequence:
                 if move[0] == "play_combo":
                     for card in move[1]:
@@ -159,39 +150,36 @@ class AISystem:
                 elif move[0] == "attack":
                     if not self.sys.cardSet["aiCard"][move[1]].attacked:
                         self.sys.attack(move[1], move[2], False)
-            
+
             self.sys.checkAlive()
 
-            #temporary solution for preventing numbers of minions exceeding 7
             if len(self.sys.cardSet["aiCard"]) > 7:
                 new_score = -9999
             else:
                 new_score = self.calculate_board_score()
-            
+
             if new_score > best_score:
                 best_score = new_score
                 best_move_sequence = move_sequence
-        
-        # Restore original game state before executing best move sequence
+
+        # Final execution of best sequence
         self.sys.cardSet = copy.deepcopy(original_state)
         self.sys.aiMana = original_mana
         self.sys.aihp = original_ai_hp
         self.sys.myhp = original_player_hp
-        
-        
-        
-        # Execute the best move sequence found
+
         if best_move_sequence:
-            print(f"In best move, the best move sequence is {best_move_sequence}")
+            print(f"Best move sequence selected: {best_move_sequence}")
             for move in best_move_sequence:
                 if move[0] == "play_combo":
                     for card in move[1]:
                         if self.sys.aiMana >= card.cost:
                             placing_index = self.getPlacingIndex(card)
-                            self.sys.placeCardTo(placing_index,len(self.sys.cardSet["aiCard"]))
+                            self.sys.placeCardTo(placing_index, len(self.sys.cardSet["aiCard"]))
                 elif move[0] == "attack":
                     if not self.sys.cardSet["aiCard"][move[1]].attacked:
                         self.sys.attack(move[1], move[2], False)
-        
+
         self.sys.checkAlive()
         self.sys.switchTurn()
+
