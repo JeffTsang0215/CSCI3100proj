@@ -508,18 +508,17 @@ def display_cards(mouse_pos, mouse_click, events):
     
     # Apply filtering
     sorted_cards = sorted(cardList.card, key=lambda c: c[1][0])
-
     # If cost filter is active, apply it
     if selected_cost is not None:
         if selected_cost < 7:
-            sorted_cards = [card for card in sorted_cards if card[0] == selected_cost]
+            sorted_cards = [card for card in sorted_cards if card[1][0] == selected_cost]
         else:
-            sorted_cards = [card for card in sorted_cards if card[0] >= 7]
+            sorted_cards = [card for card in sorted_cards if card[1][0] >= 7]
 
     # Apply search within the current filtered list (or full list if no cost filter)
     if search_text:
-        sorted_cards = [card for card in sorted_cards if search_text.lower() in card[3].lower()]
-
+        sorted_cards = [card for card in sorted_cards if search_text.lower() in card[1][3].lower()]
+    
     # Pagination logic
     total_pages = (len(sorted_cards) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE
     start_index = current_page * CARDS_PER_PAGE
