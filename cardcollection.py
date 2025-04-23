@@ -5,7 +5,7 @@ import cardList
 import decks
 from collections import Counter
 
-
+card_cache_by_page = {}
 scale1 = shared.WIDTH / 1080
 scale2 = shared.HEIGHT / 675
 
@@ -431,6 +431,7 @@ def draw_deck_view(mouse_pos, mouse_click):
 
 def display_cards(mouse_pos, mouse_click, events):
     global current_page, last_button_press, card_objects, selected_cost, search_text, active_input, unlocked_cards
+    global card_cache_by_page
 
     # Clear previous page's card objects
     card_objects = []
@@ -549,20 +550,34 @@ def display_cards(mouse_pos, mouse_click, events):
         else:
             shared.screen.blit(back_button_image, back_button.topleft)
 
-    # Draw current page's cards
-    for i, (card_id, card_data) in enumerate(sorted_cards[start_index:end_index]):
-        row = i // cards_per_row
-        col = i % cards_per_row
-        x = start_x + col * card_spacing_x
-        y = start_y + row * card_spacing_y
+    # --- CACHING: only build CardTemplate list once per page ---
+    if current_page not in card_cache_by_page:
+        page_templates = []
+        for i, (card_id, card_data) in enumerate(sorted_cards[start_index:end_index]):
+            row = i // cards_per_row
+            col = i % cards_per_row
+            x = start_x + col * card_spacing_x
+            y = start_y + row * card_spacing_y
 
-        cost, atk, hp, name, rarity, scale_factor, description, image, ext = card_data
-        lock = card_id not in unlocked_cards
-        card_obj = CardTemplate(cost, atk, hp, name, rarity, x, y, description, scale_factor, image, ext, darkened = lock)
+            cost, atk, hp, name, rarity, scale_factor, description, image, ext = card_data
+            lock = card_id not in unlocked_cards
+
+            tpl = CardTemplate(cost, atk, hp, name, rarity, x, y, description,
+                               scale_factor, image, ext, darkened=lock)
+            page_templates.append(tpl)
+
+        card_cache_by_page[current_page] = page_templates
+    else:
+        page_templates = card_cache_by_page[current_page]
+
+    # Clear and reuse card_objects
+    card_objects = page_templates
+
+    # --- DRAW ---
+    for card_obj in card_objects:
         card_obj.draw()
-        if not lock and current_view == "deck_view":
+        if not getattr(card_obj, "darkened", False) and current_view == "deck_view":
             card_obj.draw_plus_button(mouse_pos)
-        card_objects.append(card_obj)
 
 
     # Display current page number
