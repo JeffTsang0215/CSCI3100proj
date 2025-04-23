@@ -5,6 +5,9 @@ import decks
 # Load background
 bg = pygame.image.load(shared.path + "image/choosedeck.png")
 bg = pygame.transform.scale(bg, (shared.WIDTH, shared.HEIGHT))
+
+
+#Scale
 scale2 = shared.HEIGHT / 675
 scale1 = shared.WIDTH / 1080
 
@@ -32,6 +35,8 @@ DECKS_PER_PAGE = DECKS_PER_ROW * ROWS
 selected_index = None
 page = 0
 
+def click_circle(mouse_pos, center, radius):
+    return (mouse_pos[0] - center[0]) ** 2 + (mouse_pos[1] - center[1]) ** 2 <= radius ** 2
 
 def draw_decks(mouse_pos, mouse_click):
     global selected_index
@@ -141,7 +146,39 @@ def draw_button(mouse_pos, mouse_click):
                 page = 1  # Go to the previous page
         else:
             shared.screen.blit(next_button_image, next_button.topleft)
+    
+    #Start button
+    circle_center = (0.73*shared.WIDTH, 0.824*shared.HEIGHT)
+    circle_radius = 0.075*shared.HEIGHT
+    start_hovered = click_circle(mouse_pos, circle_center,circle_radius)
 
+    if start_hovered:
+        start_colour = HOVER_COLOR
+    else:
+        start_colour = BUTTON_COLOR
+    
+    pygame.draw.circle(shared.screen, start_colour,circle_center,circle_radius)
+
+    if start_hovered and mouse_click[0]:
+        shared.game_state = "playing"
+
+    shared.text(shared.screen, "Play",BLACK,int(20 * scale2),circle_center, "center")
+
+    #Draw two AI
+    #Load image
+    priest = pygame.image.load(shared.path + "image/Heroes_Priest.png")
+    paladin = pygame.image.load(shared.path + "image/Heroes_Paladin_Uther.png")
+
+    #Determine Size
+    AI_size = (40*3*scale1, 45.3*3*scale1)
+    priest = pygame.transform.scale(priest,AI_size)
+    paladin = pygame.transform.scale(paladin,AI_size)
+    priest_button = priest.get_rect(topleft = (0.69*shared.WIDTH, 0.18*shared.HEIGHT))
+    paladin_button = priest.get_rect(topleft = (0.69*shared.WIDTH, 0.45*shared.HEIGHT))
+
+    # Draw images
+    shared.screen.blit(priest, priest_button)
+    shared.screen.blit(paladin, paladin_button)
 
 def main(mouse_pos, mouse_click):
     shared.screen.blit(bg, (0, 0))
