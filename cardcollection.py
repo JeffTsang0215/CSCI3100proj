@@ -486,14 +486,15 @@ def display_cards(mouse_pos, mouse_click, events):
     pygame.draw.line(shared.screen, cross_color, (cross_x, cross_y), (cross_x + cross_size, cross_y + cross_size), 2)  # Draw first line
     pygame.draw.line(shared.screen, cross_color, (cross_x + cross_size, cross_y), (cross_x, cross_y + cross_size), 2)  # Draw second line
 
+    prev_search_text = getattr(display_cards, "prev_search_text", "")
+
     for event in events:
         if event.type == pygame.MOUSEBUTTONDOWN:
-            # If clicked outside the input box, deactivate it
             if not input_rect.collidepoint(event.pos):
                 active_input = False
             else:
                 if cross_rect.collidepoint(event.pos):
-                    search_text = ""  # Clear the search text
+                    search_text = ""
                 else:
                     active_input = True
 
@@ -504,6 +505,12 @@ def display_cards(mouse_pos, mouse_click, events):
                 active_input = False
             else:
                 search_text += event.unicode
+
+    # Reset page if search text changed
+    if search_text != prev_search_text:
+        current_page = 0
+
+    display_cards.prev_search_text = search_text
 
     
     # Apply filtering
