@@ -1,11 +1,14 @@
 import pygame, os, math, random
 import shared
 import decks
+import cardList
 
 # Load background
 bg = pygame.image.load(shared.path + "image/choosedeck.png")
 bg = pygame.transform.scale(bg, (shared.WIDTH, shared.HEIGHT))
 
+# Track selection
+selected_ai = None
 
 #Scale
 scale2 = shared.HEIGHT / 675
@@ -34,12 +37,14 @@ DECKS_PER_PAGE = DECKS_PER_ROW * ROWS
 # Track selected and page state
 selected_index = None
 page = 0
+user_card = None
+ai_card = None
 
 def click_circle(mouse_pos, center, radius):
     return (mouse_pos[0] - center[0]) ** 2 + (mouse_pos[1] - center[1]) ** 2 <= radius ** 2
 
 def draw_decks(mouse_pos, mouse_click):
-    global selected_index
+    global selected_index, user_card
     start_index = page * DECKS_PER_PAGE
     end_index = min(start_index + DECKS_PER_PAGE, len(decks.decks))
 
@@ -83,9 +88,10 @@ def draw_decks(mouse_pos, mouse_click):
         # Handle click
         if hovered and mouse_click[0]:
             selected_index = i
+            user_card = cardList.load_deck_from_names(decks.decks[i])
 
 def draw_button(mouse_pos, mouse_click):
-    global page
+    global page, selected_ai, ai_card
     #Back_button
     back_rect = pygame.Rect(0.808*shared.WIDTH,0.905*shared.HEIGHT,0.04*shared.WIDTH, 0.03*shared.HEIGHT)
     back_hovered = back_rect.collidepoint(mouse_pos)
@@ -146,7 +152,43 @@ def draw_button(mouse_pos, mouse_click):
                 page = 1  # Go to the previous page
         else:
             shared.screen.blit(next_button_image, next_button.topleft)
-    
+
+    #Draw two AI
+    #Load image
+    priest = pygame.image.load(shared.path + "image/Heroes_Priest.png")
+    paladin = pygame.image.load(shared.path + "image/Heroes_Paladin_Uther.png")
+
+    #Determine Size
+    AI_size = (40*3*scale1, 45.3*3*scale1)
+    priest = pygame.transform.scale(priest,AI_size)
+    paladin = pygame.transform.scale(paladin,AI_size)
+    priest_button = priest.get_rect(topleft = (0.675*shared.WIDTH, 0.18*shared.HEIGHT))
+    paladin_button = priest.get_rect(topleft = (0.675*shared.WIDTH, 0.45*shared.HEIGHT))
+
+    # Draw images
+    shared.screen.blit(priest, priest_button)
+    shared.screen.blit(paladin, paladin_button)
+
+    # Check for click with mouse_click[0] (left button)
+    if mouse_click[0]:  # Left mouse button is held down
+        if priest_button.collidepoint(mouse_pos):
+            selected_ai = "priest"
+        elif paladin_button.collidepoint(mouse_pos):
+            selected_ai = "paladin"
+
+    # Draw border if selected
+    if selected_ai == "priest":
+        pygame.draw.rect(shared.screen, BORDER_COLOR, priest_button.inflate(int(10*scale1), int(10*scale1)), int(4*scale1))
+        ai_card = cardList.load_deck_from_names(decks.AI_deck_1[0])
+
+    elif selected_ai == "paladin":
+        pygame.draw.rect(shared.screen, BORDER_COLOR, paladin_button.inflate(int(10*scale1), int(10*scale1)), int(4*scale1))
+        ai_card = cardList.load_deck_from_names(decks.AI_deck_2[0])
+
+    #Some text
+    shared.text(shared.screen, "Choose Your Deck",WHITE, int(16 * scale2),(0.37*shared.WIDTH, 0.125*shared.HEIGHT), "center")
+    shared.text(shared.screen, "Choose Your Opponent",WHITE, int(16 * scale2),(0.73*shared.WIDTH, 0.14*shared.HEIGHT), "center")
+
     #Start button
     circle_center = (0.73*shared.WIDTH, 0.824*shared.HEIGHT)
     circle_radius = 0.075*shared.HEIGHT
@@ -163,22 +205,6 @@ def draw_button(mouse_pos, mouse_click):
         shared.game_state = "playing"
 
     shared.text(shared.screen, "Play",BLACK,int(20 * scale2),circle_center, "center")
-
-    #Draw two AI
-    #Load image
-    priest = pygame.image.load(shared.path + "image/Heroes_Priest.png")
-    paladin = pygame.image.load(shared.path + "image/Heroes_Paladin_Uther.png")
-
-    #Determine Size
-    AI_size = (40*3*scale1, 45.3*3*scale1)
-    priest = pygame.transform.scale(priest,AI_size)
-    paladin = pygame.transform.scale(paladin,AI_size)
-    priest_button = priest.get_rect(topleft = (0.69*shared.WIDTH, 0.18*shared.HEIGHT))
-    paladin_button = priest.get_rect(topleft = (0.69*shared.WIDTH, 0.45*shared.HEIGHT))
-
-    # Draw images
-    shared.screen.blit(priest, priest_button)
-    shared.screen.blit(paladin, paladin_button)
 
 def main(mouse_pos, mouse_click):
     shared.screen.blit(bg, (0, 0))

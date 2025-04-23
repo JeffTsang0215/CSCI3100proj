@@ -133,8 +133,8 @@ class Sys:
             Card(0, 1, 2, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "minion", "skill": "draw", "n": 2})
         ]
         self.cardSet["aiHandCard"] = []
-        self.cardSet["mySetCard"] = cardList.card
-        self.cardSet["aiSetCard"] = cardList.card
+        self.cardSet["mySetCard"] = choosedeck.user_card or []
+        self.cardSet["aiSetCard"] = choosedeck.ai_card or []
         self.myCardOrder = list(range(len(self.cardSet["mySetCard"])))
         random.shuffle(self.myCardOrder)
         self.aiCardOrder = list(range(len(self.cardSet["aiSetCard"])))
@@ -561,6 +561,13 @@ class Sys:
             self.aihp -= atk
         self.checkAlive()
 
+    def setup_cards(self, user_card, ai_card):
+        self.cardSet["mySetCard"] = user_card
+        self.cardSet["aiSetCard"] = ai_card
+        self.myCardOrder = list(range(len(self.cardSet["mySetCard"])))
+        random.shuffle(self.myCardOrder)
+        self.aiCardOrder = list(range(len(self.cardSet["aiSetCard"])))
+        random.shuffle(self.aiCardOrder)
 
 sys = Sys()
 
@@ -573,7 +580,7 @@ while running:
    # handle_click = pygame.MOUSEBUTTONDOWN()
 
     #Use to track mouse position
-    print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     #print(mouse_pos[0],mouse_pos[1])
     #print(shared.WIDTH,shared.HEIGHT)
     #color = shared.screen.get_at(mouse_pos)  # Get (R, G, B, A)
@@ -821,6 +828,8 @@ while running:
                 running = False
 
         choosedeck.main(mouse_pos, mouse_click)
+        if not (choosedeck.user_card is None or choosedeck.ai_card is None):
+            sys.setup_cards(choosedeck.user_card, choosedeck.ai_card)
         pygame.display.update()
         shared.clock.tick(shared.fps)
     

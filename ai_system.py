@@ -5,7 +5,7 @@ import random
 class AISystem:
     def __init__(self, sys):
         self.sys = sys
-        self.MaxCombinations = 10000  # Reference to the game system
+        self.MaxCombinations = 1000  # Reference to the game system
 
     def getPlacingIndex(self, card):
         """Find the index of a card in aiHandCard based on cost, attack, and HP."""
