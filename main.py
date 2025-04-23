@@ -142,6 +142,19 @@ class Sys:
         self.myhp = 30
         self.aihp = 30
 
+        #Load hero image
+        priest = pygame.image.load(shared.path + "image/Heroes_Priest.png")
+        paladin = pygame.image.load(shared.path + "image/Heroes_Paladin_Uther.png")
+        rogue =  pygame.image.load(shared.path + "image/rogue_hero.png")
+
+        hero_size = (40*2.4*scale1, 45.3*2.4*scale1)
+        self.priest = pygame.transform.scale(priest,hero_size)
+        self.paladin = pygame.transform.scale(paladin,hero_size)
+        self.rogue = pygame.transform.scale(rogue,hero_size)
+        self.priest_button = priest.get_rect(topleft = (0.46*shared.WIDTH, 0.13*shared.HEIGHT))
+        self.paladin_button = paladin.get_rect(topleft = (0.46*shared.WIDTH, 0.13*shared.HEIGHT))
+        self.rogue_button = rogue.get_rect(topleft = (0.46*shared.WIDTH, 0.725*shared.HEIGHT))
+
     def attack(self, attacker, target, isPlayerTurn = True):
         if isPlayerTurn:
             if target != 99:
@@ -299,9 +312,9 @@ class Sys:
 
             left += cardDim[0] + shared.WIDTH / 80
 
-        pygame.draw.circle(shared.screen, (238, 255, 48), [shared.WIDTH / 2, shared.HEIGHT * 0.9], shared.HEIGHT * 0.05)  # me
-        pygame.draw.circle(shared.screen, (242, 89, 0), [shared.WIDTH / 2 + shared.HEIGHT * 0.05, shared.HEIGHT * 0.9 + shared.HEIGHT * 0.05], shared.HEIGHT * 0.025)
-        shared.text(shared.screen, str(self.myhp), (0, 0, 0), int(shared.WIDTH / 64), [shared.WIDTH / 2 + shared.HEIGHT * 0.05, shared.HEIGHT * 0.9 + shared.HEIGHT * 0.05], "center")
+        shared.screen.blit(self.rogue, self.rogue_button)
+        pygame.draw.circle(shared.screen, (242, 89, 0), [0.54*shared.WIDTH, 0.88*shared.HEIGHT], shared.HEIGHT * 0.025)
+        shared.text(shared.screen, str(self.myhp), (0, 0, 0), int(shared.WIDTH / 64), [0.54*shared.WIDTH, 0.88*shared.HEIGHT], "center")
 
         # my hand card
         angle = -45
@@ -349,13 +362,18 @@ class Sys:
             # description
             shared.text(shared.screen, str(card.description), (0, 0, 0), int(shared.WIDTH / 128), [left + cardDim[0]/2, top + cardDim[1]/1.95], "center")
             left += cardDim[0] + shared.WIDTH / 80
-        pygame.draw.circle(shared.screen, (238, 255, 48), [shared.WIDTH / 2, shared.HEIGHT * 0.1],
-                           shared.HEIGHT * 0.05)  # ai
+        
+
+        if (choosedeck.selected_ai == "priest"):
+            shared.screen.blit(self.priest, self.priest_button)
+        else:
+            shared.screen.blit(self.paladin, self.paladin_button)
+
         pygame.draw.circle(shared.screen, (242, 89, 0),
-                           [shared.WIDTH / 2 + shared.HEIGHT * 0.05, shared.HEIGHT * 0.1 + shared.HEIGHT * 0.05],
+                           [0.54*shared.WIDTH, 0.28*shared.HEIGHT],
                            shared.HEIGHT * 0.025)
         shared.text(shared.screen, str(self.aihp), (0, 0, 0), int(shared.WIDTH / 64),
-                    [shared.WIDTH / 2 + shared.HEIGHT * 0.05, shared.HEIGHT * 0.1 + shared.HEIGHT * 0.05], "center")
+                    [0.54*shared.WIDTH, 0.28*shared.HEIGHT], "center")
 
         # ai hand card
         angle = -45
@@ -580,7 +598,7 @@ while running:
    # handle_click = pygame.MOUSEBUTTONDOWN()
 
     #Use to track mouse position
-    #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     #print(mouse_pos[0],mouse_pos[1])
     #print(shared.WIDTH,shared.HEIGHT)
     #color = shared.screen.get_at(mouse_pos)  # Get (R, G, B, A)
@@ -649,8 +667,13 @@ while running:
                         if sys.cardSet["aiCard"][i].rect.collidepoint(mouse_pos):
                             sys.releasedCard = i
                             break
-                if click_circle(mouse_pos, [shared.WIDTH / 2, shared.HEIGHT * 0.1], shared.HEIGHT * 0.05):
-                    sys.releasedCard = 99
+
+                if (choosedeck.selected_ai == "priest"):
+                    if sys.priest_button.collidepoint(mouse_pos):
+                        sys.releasedCard = 99
+                else:
+                    if sys.paladin_button.collidepoint(mouse_pos):
+                        sys.releasedCard = 99
 
                 # attack
                 if (sys.clickedCard != -1 and sys.releasedCard != -1):

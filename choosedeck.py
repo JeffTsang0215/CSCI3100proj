@@ -8,7 +8,7 @@ bg = pygame.image.load(shared.path + "image/choosedeck.png")
 bg = pygame.transform.scale(bg, (shared.WIDTH, shared.HEIGHT))
 
 # Track selection
-selected_ai = None
+selected_ai = "priest"
 
 #Scale
 scale2 = shared.HEIGHT / 675
@@ -35,7 +35,7 @@ ROWS = 3
 DECKS_PER_PAGE = DECKS_PER_ROW * ROWS
 
 # Track selected and page state
-selected_index = None
+selected_index = 0
 page = 0
 user_card = None
 ai_card = None

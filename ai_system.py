@@ -112,7 +112,6 @@ class AISystem:
         attack_moves = []
         
         possible_moves = self.generate_possible_moves()
-        print("Moves generated successfully")
 
         for move in possible_moves:
             if move[0] == "play_combo":
@@ -121,12 +120,11 @@ class AISystem:
                 attack_moves.append(move)
 
         play_moves.sort(key=lambda m: sum(card.cost for card in m[1]), reverse=True)
-        print("Moves sorted successfully")
 
         # Generate move combinations using a capped generator
         move_combinations = list(move_combo_generator(play_moves, attack_moves, self.MaxCombinations))
-        print("Move combinations generated")
-        print(f"Move combinations are {move_combinations}")
+
+        #Emergency moves for decoration
         if not move_combinations:
             print("Too many move combinations or none found. Entering emergency mode.")
             emergency_moves = [("attack", i, 99) for i in range(len(self.sys.cardSet["aiCard"]))]
