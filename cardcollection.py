@@ -4,6 +4,7 @@ from card import CardTemplate, DeckCard
 import cardList
 import decks
 from collections import Counter
+import sqlite3
 
 
 scale1 = shared.WIDTH / 1080
@@ -302,6 +303,7 @@ def draw_deck_view(mouse_pos, mouse_click):
     for card_name in deck["cards"]:
         card_counts[card_name] = card_counts.get(card_name, 0) + 1
 
+
     # Create a dictionary for quick lookups
     current_card_dict = {c[1][3]: (c[1][0], c[1][4]) for c in cardList.card} 
 
@@ -383,40 +385,41 @@ def draw_deck_view(mouse_pos, mouse_click):
     for card_obj in card_objects:
         if card_obj.add_rect.collidepoint(mouse_pos):
             if mouse_click[0]:  # Left mouse button clicked
+                if not card_obj.darkened:
 
-                #if selected_deck_index is not None and selected_deck_index < len(decks.decks):
-                deck = decks.decks[selected_deck_index]  # Get the selected deck
-                card_count = deck["cards"].count(card_obj.name)  # Count occurrences of the card
+                    #if selected_deck_index is not None and selected_deck_index < len(decks.decks):
+                    deck = decks.decks[selected_deck_index]  # Get the selected deck
+                    card_count = deck["cards"].count(card_obj.name)  # Count occurrences of the card
 
-                    # Check if the card is legendary
-                is_legendary = card_obj.rarity.lower() == "legendary"
-                # contains_legendary = any(
-                #     card_info[4].lower() == "legendary" for card_info in cardList.card if card_info[3] in deck["cards"]
-                # )
+                        # Check if the card is legendary
+                    is_legendary = card_obj.rarity.lower() == "legendary"
+                    # contains_legendary = any(
+                    #     card_info[4].lower() == "legendary" for card_info in cardList.card if card_info[3] in deck["cards"]
+                    # )
 
-                if len(deck["cards"]) < 30:  # Ensure deck size limit of 30 cards
-                    # If the card is legendary, check if there is already one in the deck
-                    if is_legendary and card_count == 1:
-                        print("You can only have one legendary card in the deck!")
-                    elif card_count < 2 or (is_legendary and card_count< 1):  # Each card can only appear up to 2 times
-                        deck["cards"].append(card_obj.name)  
-                        decks.save_decks()
-                        # Recalculate card counts and sort deck cards
-                        card_counts = Counter(deck["cards"])  # Count occurrences of each card
-                        deck_cards_data = [
-                            (card_name, count, *current_card_dict.get(card_name, ("?", "?"))) 
-                            for card_name, count in card_counts.items()
-                        ]
-                        deck_cards_data.sort(key=lambda x: x[2] if isinstance(x[2], int) else float('inf'))
+                    if len(deck["cards"]) < 30:  # Ensure deck size limit of 30 cards
+                        # If the card is legendary, check if there is already one in the deck
+                        if is_legendary and card_count == 1:
+                            print("You can only have one legendary card in the deck!")
+                        elif card_count < 2 or (is_legendary and card_count< 1):  # Each card can only appear up to 2 times
+                            deck["cards"].append(card_obj.name)  
+                            decks.save_decks()
+                            # Recalculate card counts and sort deck cards
+                            card_counts = Counter(deck["cards"])  # Count occurrences of each card
+                            deck_cards_data = [
+                                (card_name, count, *current_card_dict.get(card_name, ("?", "?"))) 
+                                for card_name, count in card_counts.items()
+                            ]
+                            deck_cards_data.sort(key=lambda x: x[2] if isinstance(x[2], int) else float('inf'))
 
-                            # After sorting, reapply pagination logic (if you are paginating)
-                        unique_cards = list(card_counts.keys())  # Get unique card names
-                        total_pages = (len(unique_cards) - 1) // cards_per_page + 1  # Calculate total pages
-                        start_idx = current_card_page * cards_per_page
-                        end_idx = start_idx + cards_per_page
-                        page_cards = unique_cards[start_idx:end_idx]
-                        break
-            
+                                # After sorting, reapply pagination logic (if you are paginating)
+                            unique_cards = list(card_counts.keys())  # Get unique card names
+                            total_pages = (len(unique_cards) - 1) // cards_per_page + 1  # Calculate total pages
+                            start_idx = current_card_page * cards_per_page
+                            end_idx = start_idx + cards_per_page
+                            page_cards = unique_cards[start_idx:end_idx]
+                            break
+      
 
     card_counts = Counter(deck["cards"])  # Count occurrences of each card
     total_cards = sum(card_counts.values())  # Sum up all card counts
@@ -430,11 +433,43 @@ def draw_deck_view(mouse_pos, mouse_click):
     )
 
 def display_cards(mouse_pos, mouse_click, events):
-    global current_page, last_button_press, card_objects, selected_cost, search_text, active_input, unlocked_cards
+    global current_page, last_button_press, card_objects, selected_cost, search_text, active_input, unlocked_cards, show_confirmation
 
     # Clear previous page's card objects
     card_objects = []
-    unlocked_cards = cardList.starter_card
+    conn = sqlite3.connect(shared.DB_PATH)
+    cursor = conn.cursor()
+
+    # Fetch existing unlocked cards
+    cursor.execute("SELECT unlock_cards FROM user_card_collection WHERE username = ?", (shared.user_name,))
+    result = cursor.fetchone()
+    if result and result[0]:
+        # Clean the string by removing the square brackets and extra spaces
+        clean_str = result[0].strip("[] ")  # removes brackets and spaces
+        # Convert the cleaned string into a set of integers
+        unlocked_cards = set(map(int, clean_str.split(','))) if clean_str else set()
+    else:
+        unlocked_cards = set()
+
+    # Fetch the user's gold amount from the database
+    cursor.execute("SELECT gold FROM user_progress WHERE username = ?", (shared.user_name,))
+    result = cursor.fetchone()
+    # Check if the result is valid and display the gold amount
+    if result and result[0] is not None:
+        user_gold = result[0]
+    else:
+        user_gold = 0  # Default value if no gold amount is found
+
+    # You can add this code to the relevant part of your game window display function
+    gold_text = f"Gold: {user_gold}"
+    # Render the gold text (assuming you're using Pygame for rendering)
+    font = pygame.font.SysFont(None, 36)
+    gold_display = font.render(gold_text, True, (255, 255, 255))  # White text
+
+    # Display the gold on the screen
+    shared.screen.blit(gold_display, (10, 10))  # Adjust the position (10, 10) as needed
+
+
     lock = False
 
     # Draw filter buttons
@@ -562,7 +597,68 @@ def display_cards(mouse_pos, mouse_click, events):
         card_obj.draw()
         if not lock and current_view == "deck_view":
             card_obj.draw_plus_button(mouse_pos)
+        if lock :
+            card_obj.draw_buy_button(mouse_pos)
+            if card_obj.buy_rect.collidepoint(mouse_pos):
+                if mouse_click[0]:
+                    if shared.update_user_gold(shared.user_name, card_obj.unlock_cost):
+                        show_confirmation = True
+                        card_id_str = str(card_id)
+
+                        # Add new card ID
+                        unlocked_cards.add(card_id_str)
+                        
+                        # Convert the set of unlocked cards to a comma-separated string (ensure all items are strings)
+                        updated_unlock_cards = ",".join(sorted(map(str, unlocked_cards), key=int))
+
+                        # Update the DB
+                        cursor.execute("UPDATE user_card_collection SET unlock_cards = ? WHERE username = ?", (updated_unlock_cards, shared.user_name))
+                        conn.commit()
+                        conn.close()
+
         card_objects.append(card_obj)
+    
+    if show_confirmation:
+        # Draw confirmation box
+        confirmation_box_width = 300 * scale1
+        confirmation_box_height = 200 * scale2
+        confirmation_box_x = (shared.WIDTH - confirmation_box_width) // 2
+        confirmation_box_y = (shared.HEIGHT - confirmation_box_height) // 2
+
+        pygame.draw.rect(shared.screen, (50, 50, 50), (confirmation_box_x, confirmation_box_y, confirmation_box_width, confirmation_box_height))
+        pygame.draw.rect(shared.screen, (0, 0, 0), (confirmation_box_x, confirmation_box_y, confirmation_box_width, confirmation_box_height), 2)
+
+        # Draw text
+        shared.text(shared.screen, "Do you want to delete this deck?", (255, 255, 255), int(20 * scale1), 
+                    [confirmation_box_x + confirmation_box_width // 2, confirmation_box_y + 50 * scale2], "center", font=custom_font)
+        
+         # Yes button
+        yes_button_rect = pygame.Rect(confirmation_box_x + 50 * scale1, confirmation_box_y + 120 * scale2, 80 * scale1, 30 * scale2)
+        yes_button_color = (100, 200, 100)  # Default color for Yes button
+        if yes_button_rect.collidepoint(mouse_pos):
+            yes_button_color = (150, 250, 150)  # Change color when hovered
+        pygame.draw.rect(shared.screen, yes_button_color, yes_button_rect)
+        shared.text(shared.screen, "Yes", (255, 255, 255), int(16 * scale1), yes_button_rect.center, "center", font=custom_font)
+
+        # No button
+        no_button_rect = pygame.Rect(confirmation_box_x + 170 * scale1, confirmation_box_y + 120 * scale2, 80 * scale1, 30 * scale2)
+        no_button_color = (255, 100, 100)  # Default color for No button
+        if no_button_rect.collidepoint(mouse_pos):
+            no_button_color = (255, 150, 150)  # Change color when hovered
+        pygame.draw.rect(shared.screen, no_button_color, no_button_rect)
+        shared.text(shared.screen, "No", (255, 255, 255), int(16 * scale1), no_button_rect.center, "center", font=custom_font)
+
+        # Handle clicks on Yes/No buttons
+        if mouse_click[0]:
+            if yes_button_rect.collidepoint(mouse_pos):
+                # Delete the deck
+                del decks.decks[deck_to_delete]
+                decks.save_decks()
+                show_confirmation = False  # Close the confirmation dialog
+                return
+            elif no_button_rect.collidepoint(mouse_pos):
+                show_confirmation = False  # Close the confirmation dialog
+                return
 
 
     # Display current page number
@@ -572,6 +668,7 @@ def display_cards(mouse_pos, mouse_click, events):
                 "center", font=custom_font)
     
     last_button_press = mouse_click[0]
+
 
 def cardcollection_main(mouse_pos, mouse_click, events):
     global total_pages

@@ -1,4 +1,4 @@
-import pygame, os, math, random, json
+import pygame, os, math, random, json, sqlite3
 
 pygame.init()
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
@@ -8,10 +8,11 @@ renewed = False
 WIDTH = pygame.display.Info().current_w
 HEIGHT = pygame.display.Info().current_h
 fullscreen = False
+DB_PATH = "database/database.db"
 
 if not(fullscreen):
     if WIDTH > HEIGHT:
-        HEIGHT *= 3/4 
+        HEIGHT *= 4/5
         WIDTH = HEIGHT * 16 / 9
         if WIDTH > pygame.display.Info().current_w:
             WIDTH = pygame.display.Info().current_w
@@ -134,3 +135,35 @@ def load_game_data():
             return json.load(read_file)
     except FileNotFoundError:
         return game_data
+
+def update_user_gold(username, amount):
+    """
+    Updates a user's gold by a specific amount.
+    Positive amount = gain gold
+    Negative amount = spend gold
+    """
+    conn = sqlite3.connect("database/database.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT gold FROM user_progress WHERE username = ?", (username,))
+    row = cursor.fetchone()
+
+    if row:
+        current_gold = row[0]
+        new_gold = current_gold + amount
+
+        # Optional: Prevent negative gold
+        if new_gold < 0:
+            print("Not enough gold!")
+            conn.close()
+            return False
+
+        cursor.execute("UPDATE user_progress SET gold = ? WHERE username = ?", (new_gold, username))
+        conn.commit()
+        print(f"Gold updated by {amount}. New balance: {new_gold}")
+        conn.close()
+        return True
+    else:
+        print("User not found.")
+        conn.close()
+        return False

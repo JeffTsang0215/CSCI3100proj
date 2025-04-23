@@ -22,8 +22,12 @@ class CardTemplate:
         self.card_width = int(self.BASE_SIZE[0] * scale_factor)
         self.card_height = int(self.BASE_SIZE[1] * scale_factor)
         self.rect = pygame.Rect(self.x, self.y, self.card_width, self.card_height)
-        self.add_rect = pygame.Rect(self.x + self.BASE_SIZE[0] // 2 , self.y + self.BASE_SIZE[1] + int(25 * scale2), int(25 * scale1), int(25 * scale2))
-
+        if not self.darkened:
+            self.add_rect = pygame.Rect(self.x + int(self.BASE_SIZE[0] * scale1)  // 2 , (self.y + int(self.BASE_SIZE[1] + 25)* scale2), int(25 * scale1), int(25 * scale2))
+            self.buy_rect = pygame.Rect(self.x + int(self.BASE_SIZE[0] * scale1) // 2 - 15 * scale1, (self.y + int(self.BASE_SIZE[1] + 25) * scale2), int(40 * scale1), int(25 * scale2))
+        elif self.darkened:
+            self.buy_rect = pygame.Rect(self.x + int(self.BASE_SIZE[0] * scale1) // 2 - 15 * scale1, (self.y + int(self.BASE_SIZE[1] + 25) * scale2), int(40 * scale1), int(25 * scale2))
+            self.add_rect = pygame.Rect(self.x + int(self.BASE_SIZE[0] * scale1)  // 2 , (self.y + int(self.BASE_SIZE[1] + 25)* scale2), int(25 * scale1), int(25 * scale2))
         # Prepare static background
         rarity_images = {
             "common": "CommonCard.png",
@@ -34,6 +38,15 @@ class CardTemplate:
         image_path = rarity_images.get(rarity, "Default Card.png")
         self.card_bg = pygame.image.load(shared.path + f"image/{image_path}")
         self.card_bg = pygame.transform.scale(self.card_bg, (self.card_width, self.card_height))
+
+        if self.rarity == "common":
+            self.unlock_cost = -100
+        elif self.rarity == "rare":
+            self.unlock_cost = -200
+        elif self.rarity == "epic":
+            self.unlock_cost = -300
+        elif self.rarity == "legendary":
+            self.unlock_cost = -400
 
         self.card_image = None
         if image:
@@ -106,12 +119,30 @@ class CardTemplate:
         surface.blit(self.cached_surface, (self.x, self.y))
 
     def draw_plus_button(self, mouse_pos):
-        color = (180, 220, 180) if self.add_rect.collidepoint(mouse_pos) else (100, 200, 100)
+        color = (135, 206, 235) if self.add_rect.collidepoint(mouse_pos) else (100, 200, 100)
         pygame.draw.rect(shared.screen, color, self.add_rect)
-        font = pygame.font.Font(None, 24)
+        font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(16* scale1))
         plus_text = font.render("+", True, (255, 255, 255))
         plus_text_rect = plus_text.get_rect(center=self.add_rect.center)
         shared.screen.blit(plus_text, plus_text_rect)
+    
+    def draw_buy_button(self, mouse_pos):
+        color = (173, 216, 230) if self.buy_rect.collidepoint(mouse_pos) else (133, 186, 210)
+        pygame.draw.rect(shared.screen, color, self.buy_rect)
+        font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(16*scale1))
+
+        # Draw "Buy" text with border
+        shared.draw_text_with_border(
+            surface=shared.screen,
+            text="Buy",
+            font=font,
+            text_color=(255, 255, 255),
+            border_color=(0, 0, 0),
+            position=self.buy_rect.center,
+            border_thickness=2,
+            align="center"
+    )
+
 
 
 

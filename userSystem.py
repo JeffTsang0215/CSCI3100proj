@@ -292,7 +292,7 @@ def login_user(username, password):
 def register_user(username, password, security_question1, security_answer1, security_question2, security_answer2):
     global error_message, error_color
     # some default setting of a new user account
-    default_gold = 500
+    default_gold = 5000
 
     def verify_password(password):
         """Helper function to check password validity"""
