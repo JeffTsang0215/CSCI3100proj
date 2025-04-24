@@ -5,7 +5,7 @@ import random
 class AISystem:
     def __init__(self, sys):
         self.sys = sys
-        self.MaxCombinations = 10000  # Reference to the game system
+        self.MaxCombinations = 1000  # Reference to the game system
 
     def getPlacingIndex(self, card):
         try:
@@ -175,10 +175,17 @@ class AISystem:
                                 self.sys.rubbishBin = self.sys.cardSet["aiHandCard"].pop(placing_index)
 
                 elif move[0] == "attack":
-                    print(move)
-                    print(self.sys.cardSet["aiCard"])
-                    if not self.sys.cardSet["aiCard"][move[1]].attacked:
-                        self.sys.attack(move[1], move[2], False)
+                    try:
+                        if not self.sys.cardSet["aiCard"][move[1]].attacked:
+                            self.sys.attack(move[1], move[2], False)
+                    except Exception as e:
+                        print("❌ Error occurred in attack move!")
+                        print(f"move = {move}")
+                        print(f"aiCard list = {self.sys.cardSet['aiCard']}")
+                        print(f"move[1] = {move[1]} (trying to access aiCard[{move[1]}])")
+                        print(f"Length of aiCard = {len(self.sys.cardSet['aiCard'])}")
+                        raise e  # re-raise the error to not hide it
+
 
             self.sys.checkAlive()
 
