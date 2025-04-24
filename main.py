@@ -130,7 +130,7 @@ class Sys:
         self.cardSet["myCard"] = []
         self.cardSet["aiCard"] = []
         self.cardSet["myHandCard"] = [
-            Card(0, 1, 2, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "minion", "skill": "draw", "n": 2})
+            # Card(0, 1, 2, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "minion", "skill": "draw", "n": 2})
         ]
         self.cardSet["aiHandCard"] = []
         self.cardSet["mySetCard"] = choosedeck.user_card or []
@@ -162,7 +162,6 @@ class Sys:
         if isPlayerTurn:
             if target != 99:
                 self.cardSet["aiCard"][target].hp -= self.cardSet["myCard"][attacker].atk
-                self.cardSet["myCard"][attacker].hp -= self.cardSet["aiCard"][target].atk
             else:
                 self.aihp -= self.cardSet["myCard"][attacker].atk
             
@@ -170,7 +169,6 @@ class Sys:
         else:
             if target != 99:
                 self.cardSet["myCard"][target].hp -= self.cardSet["aiCard"][attacker].atk
-                self.cardSet["aiCard"][attacker].hp -= self.cardSet["myCard"][target].atk
             else:
                 self.myhp -= self.cardSet["aiCard"][attacker].atk
 
@@ -241,6 +239,7 @@ class Sys:
             if len(self.cardSet["mySetCard"]) > 0:
                 if debug: print("isPlayerTurn: T; sys.aiCardOrder: " + str(len(sys.aiCardOrder)) + "; sys.myCardOrder: " + str(len(sys.myCardOrder)))
                 if debug: print("in aiCardOrder: " + str((sys.aiCardOrder)))
+                if debug: print("in myCardOrder: " + str((sys.myCardOrder)))
                 temp = self.cardSet["mySetCard"][self.myCardOrder.pop(0)]
                 if len(self.cardSet["myHandCard"]) <= 6:
                     self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6], pygame.image.load(shared.path + "image/cardBack.png") if temp[7] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
@@ -251,6 +250,7 @@ class Sys:
             if len(self.cardSet["aiSetCard"]) > 0:
                 if debug: print("isPlayerTurn: F; sys.aiCardOrder: " + str(len(sys.aiCardOrder)) + "; sys.myCardOrder: " + str(len(sys.myCardOrder)))
                 if debug: print("in aiCardOrder: " + str((sys.aiCardOrder)))
+                if debug: print("in myCardOrder: " + str((sys.myCardOrder)))
                 temp = self.cardSet["aiSetCard"][self.aiCardOrder.pop(0)]
                 if len(self.cardSet["aiHandCard"]) <= 6:
                     self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6],
@@ -649,7 +649,7 @@ while running:
                     if click_circle(mouse_pos, [shared.WIDTH * 0.95, shared.HEIGHT / 2], shared.WIDTH / 24) or (shared.WIDTH * 0.94 <= mouse_pos[0] <= shared.WIDTH * 0.94 + 2 * shared.WIDTH / 24 and shared.HEIGHT / 2 - shared.WIDTH / 24 <= mouse_pos[1] <= shared.HEIGHT / 2 - shared.WIDTH / 24 + 2 * shared.WIDTH / 24):
                         sys.switchTurn()
                 if not (sys.checking or sys.placingCard or sys.curing):    # state variable
-                    if click_circle(mouse_pos, [2 * shared.WIDTH / 24, shared.HEIGHT / 2], shared.WIDTH / 24) or (0 <= mouse_pos[0] <= shared.WIDTH * 0.94 + 2 * shared.WIDTH / 24 and shared.HEIGHT / 2 - shared.WIDTH / 24 <= mouse_pos[1] <= shared.HEIGHT / 2 - shared.WIDTH / 24 + 2 * shared.WIDTH / 24):
+                    if click_circle(mouse_pos, [2 * shared.WIDTH / 24, shared.HEIGHT / 2], shared.WIDTH / 24) or (0 <= mouse_pos[0] <= 2 * shared.WIDTH / 24 and shared.HEIGHT / 2 - shared.WIDTH / 24 <= mouse_pos[1] <= shared.HEIGHT / 2 - shared.WIDTH / 24 + 2 * shared.WIDTH / 24):
                         shared.game_state = "lost"
 
             if event.type == pygame.MOUSEBUTTONUP:
