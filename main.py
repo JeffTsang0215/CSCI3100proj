@@ -422,6 +422,17 @@ class Sys:
                           2 * shared.WIDTH / 25])
         shared.text(shared.screen, "End Turn", (0, 0, 0), int(shared.WIDTH / 55),
                     [shared.WIDTH * 0.96, shared.HEIGHT / 2], "center")
+        
+        pygame.draw.circle(shared.screen, (0, 0, 0), [2 * shared.WIDTH / 24, shared.HEIGHT / 2], shared.WIDTH / 24)
+        pygame.draw.rect(shared.screen, (0, 0, 0),
+                         [0, shared.HEIGHT / 2 - shared.WIDTH / 24, 2 * shared.WIDTH / 24,
+                          2 * shared.WIDTH / 24])
+        pygame.draw.circle(shared.screen, (255, 255, 255), [2 * shared.WIDTH / 24, shared.HEIGHT / 2], shared.WIDTH / 25)
+        pygame.draw.rect(shared.screen, (255, 255, 255),
+                         [0, shared.HEIGHT / 2 - shared.WIDTH / 25, 2 * shared.WIDTH / 25,
+                          2 * shared.WIDTH / 25])
+        shared.text(shared.screen, "Surrender", (0, 0, 0), int(shared.WIDTH / 55),
+                    [shared.WIDTH *0.05, shared.HEIGHT / 2], "center")
 
         # draw mana crystal
         for i in range(self.myMaxMana):
@@ -634,10 +645,12 @@ while running:
                             sys.clickedCard = i
                             break
 
-                # switchTurn (!!!!!!!!!!!!!!need put inside player turn after ai is done!!!!!!!!!!)
                 if not (sys.checking or sys.placingCard or sys.curing):    # state variable
                     if click_circle(mouse_pos, [shared.WIDTH * 0.95, shared.HEIGHT / 2], shared.WIDTH / 24) or (shared.WIDTH * 0.94 <= mouse_pos[0] <= shared.WIDTH * 0.94 + 2 * shared.WIDTH / 24 and shared.HEIGHT / 2 - shared.WIDTH / 24 <= mouse_pos[1] <= shared.HEIGHT / 2 - shared.WIDTH / 24 + 2 * shared.WIDTH / 24):
                         sys.switchTurn()
+                if not (sys.checking or sys.placingCard or sys.curing):    # state variable
+                    if click_circle(mouse_pos, [2 * shared.WIDTH / 24, shared.HEIGHT / 2], shared.WIDTH / 24) or (0 <= mouse_pos[0] <= shared.WIDTH * 0.94 + 2 * shared.WIDTH / 24 and shared.HEIGHT / 2 - shared.WIDTH / 24 <= mouse_pos[1] <= shared.HEIGHT / 2 - shared.WIDTH / 24 + 2 * shared.WIDTH / 24):
+                        shared.game_state = "lost"
 
             if event.type == pygame.MOUSEBUTTONUP:
                 sys.releasedCard = -1
