@@ -92,6 +92,8 @@ def draw_decks(mouse_pos, mouse_click):
 
 def draw_button(mouse_pos, mouse_click):
     global page, selected_ai, ai_card
+    clicked = False
+
     #Back_button
     back_rect = pygame.Rect(0.808*shared.WIDTH,0.905*shared.HEIGHT,0.04*shared.WIDTH, 0.03*shared.HEIGHT)
     back_hovered = back_rect.collidepoint(mouse_pos)
@@ -107,18 +109,19 @@ def draw_button(mouse_pos, mouse_click):
     shared.text(shared.screen, "Back",BLACK,int(16 * scale2),back_rect.center, "center")
 
 
-    #Card collection button
-    card_rect = pygame.Rect(0.31*shared.WIDTH,0.895*shared.HEIGHT,0.135*shared.WIDTH, 0.03*shared.HEIGHT)
+    # Card collection button
+    card_rect = pygame.Rect(0.31 * shared.WIDTH, 0.895 * shared.HEIGHT, 0.135 * shared.WIDTH, 0.03 * shared.HEIGHT)
     card_hovered = card_rect.collidepoint(mouse_pos)
-    if card_hovered:
-        color = HOVER_COLOR
-    else:
-        color = BUTTON_COLOR
-    
-    if card_hovered and mouse_click[0]:
-        shared.game_state = "card_collection"
-        shared.input_blocked_frames = 1
+    color = HOVER_COLOR if card_hovered else BUTTON_COLOR
 
+    pygame.draw.rect(shared.screen, color, card_rect)  # Draw the button (if not already drawn elsewhere)
+
+    if card_hovered and mouse_click[0]:
+        if clicked == False:
+            shared.game_state = "card_collection"
+            clicked = True
+    
+    
     pygame.draw.rect(shared.screen, color, card_rect)
     shared.text(shared.screen, "Card Collections",BLACK,int(16 * scale2),card_rect.center, "center")
 

@@ -80,6 +80,10 @@ search_text = ""
 active_input = False
 show_confirmation = False
 deck_to_delete = None
+pending_unlock_card_id = None
+show_confirmation_buy = False
+pending_card_unlock_cost = 0
+pending_unlock_cost = 0
 
 card_objects = []
 
@@ -173,6 +177,10 @@ def draw_deck_list(mouse_pos, mouse_click, events):
                 return   
             
     if show_confirmation:
+        overlay = pygame.Surface((shared.WIDTH, shared.HEIGHT))
+        overlay.set_alpha(128)
+        overlay.fill((0, 0, 0))
+        shared.screen.blit(overlay, (0, 0))
         # Draw confirmation box
         confirmation_box_width = 300 * scale1
         confirmation_box_height = 200 * scale2
@@ -193,7 +201,7 @@ def draw_deck_list(mouse_pos, mouse_click, events):
             yes_button_color = (150, 250, 150)  # Change color when hovered
         pygame.draw.rect(shared.screen, yes_button_color, yes_button_rect)
         pygame.draw.rect(shared.screen, (0, 0, 0), yes_button_rect, 2)
-        shared.text(shared.screen, "Yes", (255, 255, 255), int(16 * scale1), yes_button_rect.center, "center", font=custom_font)
+        shared.draw_text_with_border(shared.screen, "Yes", custom_font, (255, 255, 255),(0, 0, 0),  yes_button_rect.center, align="center")
 
         # No button
         no_button_rect = pygame.Rect(confirmation_box_x + 170 * scale1, confirmation_box_y + 120 * scale2, 80 * scale1, 30 * scale2)
@@ -202,7 +210,7 @@ def draw_deck_list(mouse_pos, mouse_click, events):
             no_button_color = (255, 150, 150)  # Change color when hovered
         pygame.draw.rect(shared.screen, no_button_color, no_button_rect)
         pygame.draw.rect(shared.screen, (0, 0, 0), no_button_rect, 2)
-        shared.text(shared.screen, "No", (255, 255, 255), int(16 * scale1), no_button_rect.center, "center", font=custom_font)
+        shared.draw_text_with_border(shared.screen, "No", custom_font, (255, 255, 255),(0, 0, 0),  no_button_rect.center, align="center")
 
         # Handle clicks on Yes/No buttons
         if mouse_click[0]:
@@ -476,7 +484,7 @@ def draw_deck_view(mouse_pos, mouse_click, events):
 
 def display_cards(mouse_pos, mouse_click, events):
     global current_page, last_button_press, card_objects, selected_cost, search_text, active_input, unlocked_cards
-    global card_cache_by_page, show_confirmation
+    global card_cache_by_page, show_confirmation_buy, pending_unlock_card_id, pending_card, pending_unlock_cost, pending_card_unlock_cost
 
     # Clear previous page's card objects
     card_objects = []
@@ -583,7 +591,6 @@ def display_cards(mouse_pos, mouse_click, events):
         current_page = 0
 
     display_cards.prev_search_text = search_text
-
     
     # Apply filtering
     sorted_cards = sorted(cardList.card, key=lambda c: c[1][0])
@@ -644,17 +651,66 @@ def display_cards(mouse_pos, mouse_click, events):
             card_obj.draw_plus_button(mouse_pos)
         if lock:
             card_obj.draw_buy_button(mouse_pos)
-            if card_obj.buy_rect.collidepoint(mouse_pos) and mouse_click[0] and not last_button_press:
-                if shared.update_user_gold(shared.user_name, card_obj.unlock_cost):
-                    card_id_str = str(card_id)
-                    unlocked_cards.add(card_id_str)
-                    updated_unlock_cards = ",".join(sorted(map(str, unlocked_cards), key=int))
-                    cursor.execute("UPDATE user_card_collection SET unlock_cards = ? WHERE username = ?", (updated_unlock_cards, shared.user_name))
-                    conn.commit()
-                    conn.close()
+        card_objects.append((card_id, card_obj))
 
-        card_objects.append(card_obj)
+    if mouse_click[0] and not last_button_press:
+        for card_id, card_obj in card_objects:
+            if card_obj.buy_rect.collidepoint(mouse_pos):
+                pending_unlock_card_id = card_id
+                pending_card_unlock_cost = card_obj.unlock_cost
+                show_confirmation_buy = True
+                break
 
+    if show_confirmation_buy:
+        if pending_unlock_card_id is not None :
+            pending_card = pending_unlock_card_id
+            pending_unlock_cost = pending_card_unlock_cost
+        print(pending_card)
+        print(pending_unlock_cost)
+        # Dim the background
+        overlay = pygame.Surface((shared.WIDTH, shared.HEIGHT))
+        overlay.set_alpha(128)
+        overlay.fill((0, 0, 0))
+        shared.screen.blit(overlay, (0, 0))
+
+        # Box settings
+        box_width = 300 * scale1
+        box_height = 200 * scale2
+        box_x = shared.WIDTH // 2 - box_width // 2
+        box_y = shared.HEIGHT // 2 - box_height // 2
+        pygame.draw.rect(shared.screen, (137, 84, 39), (box_x, box_y, box_width, box_height))
+        pygame.draw.rect(shared.screen, (0, 0, 0), (box_x, box_y, box_width, box_height), 3)
+
+        shared.draw_text_with_border(shared.screen, "Confirm Purchase?", custom_font, (255, 255, 255), (0, 0, 0),
+                                    [shared.WIDTH // 2, box_y + 50 * scale2], align="center")
+
+        # Yes/No buttons
+        yes_rect = pygame.Rect(box_x + 50 * scale1, box_y + 120 * scale2, 80 * scale1, 30 * scale2)
+        no_rect = pygame.Rect(box_x + 170 * scale1, box_y + 120 * scale2, 80 * scale1, 30 * scale2)
+        pygame.draw.rect(shared.screen, (100, 200, 100), yes_rect)
+        pygame.draw.rect(shared.screen, (0, 0, 0), yes_rect, 2)
+        pygame.draw.rect(shared.screen, (255, 100, 100), no_rect)
+        pygame.draw.rect(shared.screen, (0, 0, 0), no_rect, 2)
+
+        shared.draw_text_with_border(shared.screen, "Yes", custom_font, (255, 255, 255),(0, 0, 0),  yes_rect.center, align="center")
+        shared.draw_text_with_border(shared.screen, "No", custom_font, (255, 255, 255),(0, 0, 0), no_rect.center, align="center")
+
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if yes_rect.collidepoint(event.pos):
+                    # Confirm 
+                    if shared.update_user_gold(shared.user_name, pending_unlock_cost):
+                        unlocked_cards.add(str(pending_card))
+                        updated_unlock_cards = ",".join(sorted(map(str, unlocked_cards), key=int))
+                        cursor.execute("UPDATE user_card_collection SET unlock_cards = ? WHERE username = ?", (updated_unlock_cards, shared.user_name))
+                        conn.commit()
+                    show_confirmation_buy = False
+                    pending_card = None
+
+                elif no_rect.collidepoint(event.pos):
+                    # Cancel
+                    show_confirmation_buy = False
+                    pending_card = None
 
     # Display current page number
     page_number = f"Page {current_page + 1}"
