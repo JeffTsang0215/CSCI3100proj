@@ -636,11 +636,15 @@ class Sys:
 sys = Sys()
 
 
-
+shared.input_blocked_frames = 0
 while running:
 
     mouse_pos = pygame.mouse.get_pos()
     mouse_click = pygame.mouse.get_pressed()
+
+    if shared.input_blocked_frames > 0:
+        mouse_click = (False, False, False)
+        shared.input_blocked_frames -= 1
    # handle_click = pygame.MOUSEBUTTONDOWN()
 
     #Use to track mouse position

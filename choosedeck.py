@@ -117,7 +117,8 @@ def draw_button(mouse_pos, mouse_click):
     
     if card_hovered and mouse_click[0]:
         shared.game_state = "card_collection"
-    
+        shared.input_blocked_frames = 1
+
     pygame.draw.rect(shared.screen, color, card_rect)
     shared.text(shared.screen, "Card Collections",BLACK,int(16 * scale2),card_rect.center, "center")
 

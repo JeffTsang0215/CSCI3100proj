@@ -4,7 +4,7 @@ pygame.init()
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
 renewed = False
-
+input_blocked_frames = 0
 WIDTH = pygame.display.Info().current_w
 HEIGHT = pygame.display.Info().current_h
 fullscreen = False
