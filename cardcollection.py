@@ -88,7 +88,7 @@ def draw_deck_list(mouse_pos, mouse_click, events):
     global selected_deck_index, last_click_time, typing_active, input_text, current_view
     global show_confirmation, deck_to_delete
 
-    if shared.game_state == 'menu':
+    if shared.game_state != 'card_collection':
         selected_cost = None    
         current_page = 0       
     
@@ -371,14 +371,14 @@ def draw_deck_view(mouse_pos, mouse_click, events):
     if current_card_page > 0:
         if back_button.collidepoint(mouse_pos):
             # Move the back button 2 pixels to the left on hover
-            shared.screen.blit(back_button_image, (back_button.left - 2, back_button.top))
+            shared.screen.blit(back_button_image, (back_button.left - 3, back_button.top))
         else:
             shared.screen.blit(back_button_image, back_button.topleft)
 
     if current_card_page < total_pages - 1:
         if next_button.collidepoint(mouse_pos):
             # Move the next button 2 pixels to the right on hover
-            shared.screen.blit(next_button_image, (next_button.left + 2, next_button.top))
+            shared.screen.blit(next_button_image, (next_button.left + 3, next_button.top))
         else:
             shared.screen.blit(next_button_image, next_button.topleft)
 
@@ -685,12 +685,12 @@ def cardcollection_main(mouse_pos, mouse_click, events):
     # Flag to prevent multiple clicks
     clicked = False
 
+    if back_rect.collidepoint(mouse_pos):
+        pygame.draw.rect(shared.screen, (255, 226, 199), back_rect)
+        shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
     for event in events:
         if event.type == pygame.MOUSEBUTTONDOWN and not clicked:
-            if back_rect.collidepoint(event.pos):
-                pygame.draw.rect(shared.screen, (255, 226, 199), back_rect)
-                shared.screen.blit(back_text, (878 * scale1, 616 * scale2))
-
+            if back_rect.collidepoint(mouse_pos):
                 if event.button == 1:  # Left mouse button click
                     if current_view == "deck_view":
                         current_view = "deck_list"  # Go to deck_list from deck_view
@@ -699,13 +699,14 @@ def cardcollection_main(mouse_pos, mouse_click, events):
                         selected_cost = None    
                         current_page = 0 
 
-                # Mark the button as clicked to avoid multiple triggers
-                clicked = True
+            # Mark the button as clicked to avoid multiple triggers
+            clicked = True
 
     # Reset the clicked flag when the mouse is released
     if any(event.type == pygame.MOUSEBUTTONUP for event in events):
         clicked = False
-    #print(current_view)
+
+    
 
 
 
