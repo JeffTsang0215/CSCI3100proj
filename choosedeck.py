@@ -92,7 +92,6 @@ def draw_decks(mouse_pos, mouse_click):
 
 def draw_button(mouse_pos, mouse_click):
     global page, selected_ai, ai_card
-    clicked = False
 
     #Back_button
     back_rect = pygame.Rect(0.808*shared.WIDTH,0.905*shared.HEIGHT,0.04*shared.WIDTH, 0.03*shared.HEIGHT)
@@ -117,9 +116,8 @@ def draw_button(mouse_pos, mouse_click):
     pygame.draw.rect(shared.screen, color, card_rect)  # Draw the button (if not already drawn elsewhere)
 
     if card_hovered and mouse_click[0]:
-        if clicked == False:
             shared.game_state = "card_collection"
-            clicked = True
+            shared.input_blocked_frames = 5
     
     
     pygame.draw.rect(shared.screen, color, card_rect)
