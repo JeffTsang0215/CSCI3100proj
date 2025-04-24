@@ -175,6 +175,8 @@ class AISystem:
                                 self.sys.rubbishBin = self.sys.cardSet["aiHandCard"].pop(placing_index)
 
                 elif move[0] == "attack":
+                    print(move)
+                    print(self.sys.cardSet["aiCard"])
                     if not self.sys.cardSet["aiCard"][move[1]].attacked:
                         self.sys.attack(move[1], move[2], False)
 
@@ -227,7 +229,7 @@ class AISystem:
                                     if ("cure" in self.sys.cardSet["aiHandCard"][placing_index].ext["skill"] and len(self.sys.cardSet["aiCard"]) > 0):
                                         if(self.sys.cardSet["aiHandCard"][placing_index].ext["random"]):
                                             target = random.sample(range(len(self.sys.cardSet["aiCard"])), 1)
-                                            self.sys.cure(self.sys.cardSet["aiHandCard"][target[0]], self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
+                                            self.sys.cure(self.sys.cardSet["aiCard"][target[0]], self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
                                         else:
                                             target = 0
                                             self.sys.cure(self.sys.cardSet["aiHandCard"][target], self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
