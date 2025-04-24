@@ -8,11 +8,10 @@ class AISystem:
         self.MaxCombinations = 10000  # Reference to the game system
 
     def getPlacingIndex(self, card):
-        """Find the index of a card in aiHandCard based on cost, attack, and HP."""
-        for i, hand_card in enumerate(self.sys.cardSet["aiHandCard"]):
-            if hand_card.cost == card.cost and hand_card.atk == card.atk and hand_card.hp == card.hp:
-                return i  # Return the index if found
-        return -1  # Return -1 if card is not found
+        try:
+            return self.sys.cardSet["aiHandCard"].index(card)
+        except ValueError:
+            return -1
     
     
     def calculate_board_score(self):
@@ -21,9 +20,10 @@ class AISystem:
 
         player_minion_hp = sum(card.hp for card in self.sys.cardSet["myCard"])
 
-        ai_minion_atk = sum(card.atk for card in self.sys.cardSet["aiCard"])
+        player_minion_atk = sum(card.atk for card in self.sys.cardSet["myCard"] if card.ext.get("debuff") != ["freeze"])
 
-        player_minion_atk = sum(card.atk for card in self.sys.cardSet["myCard"])
+        ai_minion_atk = sum(card.atk for card in self.sys.cardSet["aiCard"] if card.ext.get("debuff") != ["freeze"])
+
 
         ai_cards = len(self.sys.cardSet["aiHandCard"])
         player_cards = len(self.sys.cardSet["myHandCard"])
@@ -167,7 +167,7 @@ class AISystem:
                                     if ("cure" in self.sys.cardSet["aiHandCard"][placing_index].ext["skill"] and len(self.sys.cardSet["aiCard"]) > 0):
                                         if(self.sys.cardSet["aiHandCard"][placing_index].ext["random"]):
                                             target = random.sample(range(len(self.sys.cardSet["aiCard"])), 1)
-                                            self.sys.cure(self.sys.cardSet["aiHandCard"][target[0]], self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
+                                            self.sys.cure(self.sys.cardSet["aiCard"][target[0]], self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
                                         else:
                                             target = 0
                                             self.sys.cure(self.sys.cardSet["aiHandCard"][target], self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])

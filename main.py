@@ -117,12 +117,31 @@ class Card:
         return f"Card({self.cost}/{self.atk}/{self.hp})"
 
     def __deepcopy__(self, memo):
-        # Create a copy WITHOUT copying the pygame.Surface
-        new_card = Card(self.cost, self.atk, self.hp, self.description, self.image.copy() if self.image else None,
-                        copy.deepcopy(self.ext, memo))
+        new_card = Card(
+            self.cost,
+            self.atk,
+            self.hp,
+            self.description,
+            self.image.copy() if self.image else None,
+            copy.deepcopy(self.ext, memo)
+        )
+        new_card.maxhp = self.maxhp
         new_card.attacked = self.attacked
         new_card.round = self.round
+        new_card.rect = self.rect.copy() if self.rect else None
+        new_card.rectEnlarged = self.rectEnlarged.copy() if self.rectEnlarged else None
         return new_card
+
+    
+    def __eq__(self, other):
+        return (
+            isinstance(other, Card) and
+            self.cost == other.cost and
+            self.atk == other.atk and
+            self.hp == other.hp and
+            self.ext == other.ext and
+            self.maxhp == other.maxhp
+        )
 
 
 class Sys:
@@ -270,6 +289,11 @@ class Sys:
                 if debug: print("isPlayerTurn: T; sys.aiCardOrder: " + str(len(sys.aiCardOrder)) + "; sys.myCardOrder: " + str(len(sys.myCardOrder)))
                 if debug: print("in aiCardOrder: " + str((sys.aiCardOrder)))
                 if debug: print("in myCardOrder: " + str((sys.myCardOrder)))
+                if debug:
+                    print("Printing all cards in aiHandCard:")
+                    for card in self.cardSet["aiHandCard"]:
+                        print(card)
+
                 temp = self.cardSet["mySetCard"][self.myCardOrder.pop(0)]
                 if len(self.cardSet["myHandCard"]) <= 6:
                     self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6], pygame.image.load(shared.path + "image/cardBack.png") if temp[7] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
@@ -281,6 +305,11 @@ class Sys:
                 if debug: print("isPlayerTurn: F; sys.aiCardOrder: " + str(len(sys.aiCardOrder)) + "; sys.myCardOrder: " + str(len(sys.myCardOrder)))
                 if debug: print("in aiCardOrder: " + str((sys.aiCardOrder)))
                 if debug: print("in myCardOrder: " + str((sys.myCardOrder)))
+                if debug:
+                    print("Printing all cards in aiHandCard:")
+                    for card in self.cardSet["aiHandCard"]:
+                        print(card)
+
                 temp = self.cardSet["aiSetCard"][self.aiCardOrder.pop(0)]
                 if len(self.cardSet["aiHandCard"]) <= 6:
                     self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6],
@@ -759,7 +788,7 @@ while running:
                                             if ("cure" in sys.cardSet["myHandCard"][i].ext["skill"] and len(sys.cardSet["myCard"]) > 0):
                                                 if(sys.cardSet["myHandCard"][i].ext["random"]):
                                                     target = random.sample(range(len(sys.cardSet["myCard"])), 1)
-                                                    sys.cure(sys.cardSet["myHandCard"][target[0]], sys.cardSet["myHandCard"][i].ext["atk"])
+                                                    sys.cure(sys.cardSet["myCard"][target[0]], sys.cardSet["myHandCard"][i].ext["atk"])
                                                 else:
                                                     # state variable
                                                     sys.curing = True
