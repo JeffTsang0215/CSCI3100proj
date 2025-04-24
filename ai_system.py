@@ -7,6 +7,12 @@ class AISystem:
         self.sys = sys
         self.MaxCombinations = 1000  # Reference to the game system
 
+    def get_card_index_by_name(self, card_list, name):
+        for idx, card in enumerate(card_list):
+            if card.name == name:
+                return idx
+        return -1
+
     def getPlacingIndex(self, card):
         try:
             return self.sys.cardSet["aiHandCard"].index(card)
@@ -57,15 +63,13 @@ class AISystem:
             moves.append(("play_combo", list(combo)))  # Store as a list
 
         # Consider attacking with minions
-        for i, ai_card in enumerate(self.sys.cardSet["aiCard"]):
-            if not ai_card.attacked:  # Can attack
-                # Attack player minions first
-                for j, player_card in enumerate(self.sys.cardSet["myCard"]):
-                    if ai_card.atk >= player_card.hp:  # Ensure good trade
-                        moves.append(("attack", i, j))
-                # Attack player hero
-                moves.append(("attack", i, 99))
-        
+        for ai_card in self.sys.cardSet["aiCard"]:
+            if not ai_card.attacked:
+                for player_card in self.sys.cardSet["myCard"]:
+                    if ai_card.atk >= player_card.hp:
+                        moves.append(("attack", ai_card.name, player_card.name))
+                moves.append(("attack", ai_card.name, "hero"))
+                
 
         return moves
 
@@ -175,16 +179,22 @@ class AISystem:
                                 self.sys.rubbishBin = self.sys.cardSet["aiHandCard"].pop(placing_index)
 
                 elif move[0] == "attack":
-                    try:
-                        if not self.sys.cardSet["aiCard"][move[1]].attacked:
-                            self.sys.attack(move[1], move[2], False)
-                    except Exception as e:
-                        print("❌ Error occurred in attack move!")
-                        print(f"move = {move}")
-                        print(f"aiCard list = {self.sys.cardSet['aiCard']}")
-                        print(f"move[1] = {move[1]} (trying to access aiCard[{move[1]}])")
-                        print(f"Length of aiCard = {len(self.sys.cardSet['aiCard'])}")
-                        raise e  # re-raise the error to not hide it
+                    ai_index = self.get_card_index_by_name(self.sys.cardSet["aiCard"], move[1])
+                    if ai_index == -1:
+                        print(f"❌ AI card '{move[1]}' not found.")
+                        continue
+
+                    if move[2] == "hero":
+                        target_index = 99
+                    else:
+                        target_index = self.get_card_index_by_name(self.sys.cardSet["myCard"], move[2])
+                        if target_index == -1:
+                            print(f"❌ Player card '{move[2]}' not found.")
+                            continue
+
+                    if not self.sys.cardSet["aiCard"][ai_index].attacked:
+                        self.sys.attack(ai_index, target_index, False)
+
 
 
             self.sys.checkAlive()
@@ -243,8 +253,21 @@ class AISystem:
                                 self.sys.aiMana -= self.sys.cardSet["aiHandCard"][placing_index].cost
                                 self.sys.rubbishBin = self.sys.cardSet["aiHandCard"].pop(placing_index)
                 elif move[0] == "attack":
-                    if not self.sys.cardSet["aiCard"][move[1]].attacked:
-                        self.sys.attack(move[1], move[2], False)
+                    ai_index = self.get_card_index_by_name(self.sys.cardSet["aiCard"], move[1])
+                    if ai_index == -1:
+                        print(f"❌ AI card '{move[1]}' not found.")
+                        continue
+
+                    if move[2] == "hero":
+                        target_index = 99
+                    else:
+                        target_index = self.get_card_index_by_name(self.sys.cardSet["myCard"], move[2])
+                        if target_index == -1:
+                            print(f"❌ Player card '{move[2]}' not found.")
+                            continue
+
+                    if not self.sys.cardSet["aiCard"][ai_index].attacked:
+                        self.sys.attack(ai_index, target_index, False)
 
         self.sys.checkAlive()
 
