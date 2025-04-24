@@ -142,6 +142,9 @@ class Sys:
         self.myhp = 30
         self.aihp = 30
 
+        self.myEmptyCounter = 0
+        self.aiEmptyCounter = 0
+
         #Load hero image
         priest = pygame.image.load(shared.path + "image/Heroes_Priest.png")
         paladin = pygame.image.load(shared.path + "image/Heroes_Paladin_Uther.png")
@@ -242,7 +245,8 @@ class Sys:
                 if len(self.cardSet["myHandCard"]) <= 6:
                     self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6], pygame.image.load(shared.path + "image/cardBack.png") if temp[7] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
             else:
-                self.myhp -= 1
+                self.myEmptyCounter += 1
+                self.myhp -= self.myEmptyCounter
         else:
             if len(self.cardSet["aiSetCard"]) > 0:
                 if debug: print("isPlayerTurn: F; sys.aiCardOrder: " + str(len(sys.aiCardOrder)) + "; sys.myCardOrder: " + str(len(sys.myCardOrder)))
@@ -254,7 +258,8 @@ class Sys:
                                                            temp[7] == None else pygame.image.load(
                                                                shared.path + "image/" + temp[7]), temp[8]))
             else:
-                self.aihp -= 1
+                self.aiEmptyCounter += 1
+                self.aihp -= self.aiEmptyCounter
 
     def draw(self):
         # bg
