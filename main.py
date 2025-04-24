@@ -147,13 +147,13 @@ class Sys:
         paladin = pygame.image.load(shared.path + "image/Heroes_Paladin_Uther.png")
         rogue =  pygame.image.load(shared.path + "image/rogue_hero.png")
 
-        hero_size = (40*2.3*scale1, 45.3*2.3*scale1)
+        hero_size = (40*2.4*scale1, 45.3*2.4*scale1)
         self.priest = pygame.transform.scale(priest,hero_size)
         self.paladin = pygame.transform.scale(paladin,hero_size)
         self.rogue = pygame.transform.scale(rogue,hero_size)
-        self.priest_button = priest.get_rect(topleft = (0.46*shared.WIDTH, 0.13*shared.HEIGHT))
-        self.paladin_button = paladin.get_rect(topleft = (0.46*shared.WIDTH, 0.13*shared.HEIGHT))
-        self.rogue_button = rogue.get_rect(topleft = (0.46*shared.WIDTH, 0.725*shared.HEIGHT))
+        self.priest_button = priest.get_rect(topleft = (0.455*shared.WIDTH, 0.13*shared.HEIGHT))
+        self.paladin_button = paladin.get_rect(topleft = (0.455*shared.WIDTH, 0.13*shared.HEIGHT))
+        self.rogue_button = rogue.get_rect(topleft = (0.455*shared.WIDTH, 0.725*shared.HEIGHT))
 
     def attack(self, attacker, target, isPlayerTurn = True):
         if isPlayerTurn:
@@ -214,6 +214,7 @@ class Sys:
             self.aiMana = self.aiMaxMana
             #Creating AI system here:
             self.ai.execute_best_move()
+            self.switchTurn()
         # ai to player
         else:
             self.isPlayerTurn = True
@@ -668,12 +669,14 @@ while running:
                             sys.releasedCard = i
                             break
 
-                if (choosedeck.selected_ai == "priest"):
-                    if sys.priest_button.collidepoint(mouse_pos):
-                        sys.releasedCard = 99
-                else:
-                    if sys.paladin_button.collidepoint(mouse_pos):
-                        sys.releasedCard = 99
+                if click_circle(mouse_pos, (0.5*shared.WIDTH, 0.22*shared.HEIGHT), 0.075*shared.HEIGHT):
+                    sys.releasedCard = 99
+                # if (choosedeck.selected_ai == "priest"):
+                #     if sys.priest_button.collidepoint(mouse_pos):
+                #         sys.releasedCard = 99
+                # else:
+                #     if sys.paladin_button.collidepoint(mouse_pos):
+                #         sys.releasedCard = 99
 
                 # attack
                 if (sys.clickedCard != -1 and sys.releasedCard != -1):

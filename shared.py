@@ -12,7 +12,7 @@ DB_PATH = "database/database.db"
 
 if not(fullscreen):
     if WIDTH > HEIGHT:
-        HEIGHT *= 4/5
+        HEIGHT *= 3/4
         WIDTH = HEIGHT * 16 / 9
         if WIDTH > pygame.display.Info().current_w:
             WIDTH = pygame.display.Info().current_w

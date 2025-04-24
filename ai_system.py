@@ -104,6 +104,7 @@ class AISystem:
         original_mana = self.sys.aiMana
         original_ai_hp = self.sys.aihp
         original_player_hp = self.sys.myhp
+        original_aiCardOrder = self.sys.aiCardOrder.copy()
 
         best_score = self.calculate_board_score()
         best_move_sequence = None
@@ -140,6 +141,7 @@ class AISystem:
             self.sys.aiMana = original_mana
             self.sys.aihp = original_ai_hp
             self.sys.myhp = original_player_hp
+            self.sys.aiCardOrder = original_aiCardOrder.copy()
 
             for move in move_sequence:
                 if move[0] == "play_combo":
@@ -158,6 +160,11 @@ class AISystem:
             else:
                 new_score = self.calculate_board_score()
 
+            if self.sys.myhp <= 0:
+                new_score = 9999
+            else:
+                new_score = self.calculate_board_score()
+
             if new_score > best_score:
                 best_score = new_score
                 best_move_sequence = move_sequence
@@ -167,6 +174,7 @@ class AISystem:
         self.sys.aiMana = original_mana
         self.sys.aihp = original_ai_hp
         self.sys.myhp = original_player_hp
+        self.sys.aiCardOrder = original_aiCardOrder.copy()
 
         if best_move_sequence:
             print(f"Best move sequence selected: {best_move_sequence}")
@@ -181,5 +189,5 @@ class AISystem:
                         self.sys.attack(move[1], move[2], False)
 
         self.sys.checkAlive()
-        self.sys.switchTurn()
+
 
