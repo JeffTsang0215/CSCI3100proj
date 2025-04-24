@@ -52,38 +52,12 @@ def text(screen, text, color, size, pos, align="left", font=None):
         text_rect = text_surface.get_rect(center=pos)
         screen.blit(text_surface, text_rect)
 
-def draw_text_with_border(surface, text, font, text_color, border_color, position, border_thickness=2, align="center"):
-    """Draws text with a border (outline effect)."""
-    text_surface = font.render(text, True, text_color)
-    text_rect = text_surface.get_rect()
-
-    # Adjust the position based on alignment
-    if align == "center":
-        text_rect.center = position
-    elif align == "left":
-        text_rect.topleft = position
-    elif align == "right":
-        text_rect.topright = position
-
-    # Draw border (outline effect)
-    for dx in [-border_thickness, 0, border_thickness]:
-        for dy in [-border_thickness, 0, border_thickness]:
-            if dx == 0 and dy == 0:
-                continue
-            border_surface = font.render(text, True, border_color)
-            border_rect = border_surface.get_rect(center=text_rect.center)
-            border_rect.move_ip(dx, dy)
-            surface.blit(border_surface, border_rect)
-
-    # Draw main text on top
-    surface.blit(text_surface, text_rect)
-
-
-# def draw_text(surface, text, font, text_color, position, align="center"):
-#     """Draws normal text without a border."""
+# def draw_text_with_border(surface, text, font, text_color, border_color, position, border_thickness=2, align="center"):
+#     """Draws text with a border (outline effect)."""
 #     text_surface = font.render(text, True, text_color)
 #     text_rect = text_surface.get_rect()
 
+#     # Adjust the position based on alignment
 #     if align == "center":
 #         text_rect.center = position
 #     elif align == "left":
@@ -91,7 +65,60 @@ def draw_text_with_border(surface, text, font, text_color, border_color, positio
 #     elif align == "right":
 #         text_rect.topright = position
 
+#     # Draw border (outline effect)
+#     for dx in [-border_thickness, 0, border_thickness]:
+#         for dy in [-border_thickness, 0, border_thickness]:
+#             if dx == 0 and dy == 0:
+#                 continue
+#             border_surface = font.render(text, True, border_color)
+#             border_rect = border_surface.get_rect(center=text_rect.center)
+#             border_rect.move_ip(dx, dy)
+#             surface.blit(border_surface, border_rect)
+
+#     # Draw main text on top
 #     surface.blit(text_surface, text_rect)
+
+def draw_text_with_border(surface, text, font, text_color, border_color, position, border_thickness=2, align="center", line_spacing=HEIGHT/300):
+    """Draws multiline text with a border (outline effect) and alignment."""
+    lines = text.split('\n')
+    line_surfaces = [font.render(line, True, text_color) for line in lines]
+    border_surfaces = [font.render(line, True, border_color) for line in lines]
+    line_heights = [surf.get_height() for surf in line_surfaces]
+    total_height = sum(line_heights) + line_spacing * (len(lines) - 1)
+
+    x, y = position
+    if align == "center":
+        y -= total_height // 2
+    elif align == "bottom":
+        y -= total_height
+    # align == "top" means keep y unchanged
+
+    for i in range(len(lines)):
+        line_surf = line_surfaces[i]
+        border_surf = border_surfaces[i]
+        line_height = line_heights[i]
+        line_y = y + sum(line_heights[:i]) + i * line_spacing
+
+        text_rect = line_surf.get_rect()
+        if align == "center":
+            text_rect.centerx = x
+        elif align == "left":
+            text_rect.x = x
+        elif align == "right":
+            text_rect.right = x
+        text_rect.y = line_y
+
+        # Draw border for each offset except center
+        for dx in [-border_thickness, 0, border_thickness]:
+            for dy in [-border_thickness, 0, border_thickness]:
+                if dx == 0 and dy == 0:
+                    continue
+                border_rect = border_surf.get_rect(center=text_rect.center)
+                border_rect.move_ip(dx, dy)
+                surface.blit(border_surf, border_rect)
+
+        # Draw main text line
+        surface.blit(line_surf, text_rect)
 
 def draw_text(surface, text, font, text_color, position, align="center", line_spacing = HEIGHT/300):
     """Draws multiline text with optional alignment and line spacing."""

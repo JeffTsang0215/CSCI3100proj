@@ -19,6 +19,7 @@ FONT = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(16 * scale2))
 WHITE = (255, 255, 255)
 GRAY = (200, 200, 200)
 LIGHT_GRAY = (230, 230, 230)
+DARK_GREY = (30, 30, 30)
 HOVER_COLOR = (204, 134, 76)
 SELECTED_COLOR = (100, 149, 237)
 BLACK = (0, 0, 0)
@@ -62,6 +63,9 @@ def draw_decks(mouse_pos, mouse_click):
         color = DECK_COLOR
         if hovered:
             color = HOVER_COLOR
+        
+        if len(decks.decks[i]["cards"]) != 30:
+            color = DARK_GREY
 
         # Draw filled background first
         pygame.draw.rect(shared.screen, color, rect)
@@ -76,7 +80,7 @@ def draw_decks(mouse_pos, mouse_click):
         # Draw deck name with border using shared's function
         shared.draw_text_with_border(
             shared.screen,
-            decks.decks[i]["name"],
+            decks.decks[i]["name"] + "\n" + str(len(decks.decks[i]["cards"])) + "/30",
             FONT,
             WHITE,
             BLACK,
@@ -86,7 +90,7 @@ def draw_decks(mouse_pos, mouse_click):
         )
 
         # Handle click
-        if hovered and mouse_click[0]:
+        if hovered and mouse_click[0] and len(decks.decks[i]["cards"]) == 30:
             selected_index = i
             user_card = cardList.load_deck_from_names(decks.decks[i])
 

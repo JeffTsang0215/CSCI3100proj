@@ -416,7 +416,7 @@ def draw_deck_view(mouse_pos, mouse_click, events):
     # Handle add card clicks
     for event in events:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not card_click_cooldown:
-            for card_obj in card_objects:
+            for _, card_obj in card_objects:
                 if card_obj.add_rect.collidepoint(event.pos) and not card_obj.darkened:
                     deck = decks.decks[selected_deck_index]
                     card_count = deck["cards"].count(card_obj.name)
@@ -655,7 +655,7 @@ def display_cards(mouse_pos, mouse_click, events):
 
     if mouse_click[0] and not last_button_press:
         for card_id, card_obj in card_objects:
-            if card_obj.buy_rect.collidepoint(mouse_pos):
+            if card_obj.darkened and card_obj.buy_rect.collidepoint(mouse_pos):
                 pending_unlock_card_id = card_id
                 pending_card_unlock_cost = card_obj.unlock_cost
                 show_confirmation_buy = True
