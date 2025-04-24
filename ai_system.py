@@ -148,7 +148,32 @@ class AISystem:
                     for card in move[1]:
                         if self.sys.aiMana >= card.cost:
                             placing_index = self.getPlacingIndex(card)
-                            self.sys.placeCardTo(placing_index, len(self.sys.cardSet["aiCard"]))
+                            if(self.sys.cardSet["aiHandCard"][placing_index].ext["type"] == "minion" and len(self.sys.cardSet["aiCard"]) < 7 ):
+                                self.sys.placeCardTo(placing_index, len(self.sys.cardSet["myCard"]))
+                            else:
+                                # spell card
+                                if("skill" in self.sys.cardSet["aiHandCard"][placing_index].ext):
+                                    if("freeze" in self.sys.cardSet["aiHandCard"][placing_index].ext["skill"]):
+                                        target = range(len(self.sys.cardSet["myCard"]))
+                                        if(len(self.sys.cardSet["myCard"]) > self.sys.cardSet["aiHandCard"][placing_index].ext["n"]):
+                                            target = random.sample(range(len(self.sys.cardSet["myCard"])), self.sys.cardSet["aiHandCard"][placing_index].ext["n"])
+                                        for j in target:
+                                            self.sys.freeze(self.sys.cardSet["myCard"][j])
+                                    if ("fullAtk" in self.sys.cardSet["aiHandCard"][placing_index].ext["skill"]):
+                                        self.sys.fullAtk(False, self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
+                                    if ("draw" in self.sys.cardSet["aiHandCard"][placing_index].ext["skill"]):
+                                        for j in range(self.sys.cardSet["aiHandCard"][placing_index].ext["n"]):
+                                            self.sys.giveCard(True)
+                                    if ("cure" in self.sys.cardSet["aiHandCard"][placing_index].ext["skill"] and len(self.sys.cardSet["aiCard"]) > 0):
+                                        if(self.sys.cardSet["aiHandCard"][placing_index].ext["random"]):
+                                            target = random.sample(range(len(self.sys.cardSet["aiCard"])), 1)
+                                            self.sys.cure(self.sys.cardSet["aiHandCard"][target[0]], self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
+                                        else:
+                                            target = 0
+                                            self.sys.cure(self.sys.cardSet["aiHandCard"][target], self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
+                                self.sys.aiMana -= self.sys.cardSet["aiHandCard"][placing_index].cost
+                                self.sys.rubbishBin = self.sys.cardSet["aiHandCard"].pop(placing_index)
+
                 elif move[0] == "attack":
                     if not self.sys.cardSet["aiCard"][move[1]].attacked:
                         self.sys.attack(move[1], move[2], False)
@@ -183,7 +208,31 @@ class AISystem:
                     for card in move[1]:
                         if self.sys.aiMana >= card.cost:
                             placing_index = self.getPlacingIndex(card)
-                            self.sys.placeCardTo(placing_index, len(self.sys.cardSet["aiCard"]))
+                            if(self.sys.cardSet["aiHandCard"][placing_index].ext["type"] == "minion" and len(self.sys.cardSet["aiCard"]) < 7 ):
+                                self.sys.placeCardTo(placing_index, len(self.sys.cardSet["myCard"]))
+                            else:
+                                # spell card
+                                if("skill" in self.sys.cardSet["aiHandCard"][placing_index].ext):
+                                    if("freeze" in self.sys.cardSet["aiHandCard"][placing_index].ext["skill"]):
+                                        target = range(len(self.sys.cardSet["myCard"]))
+                                        if(len(self.sys.cardSet["myCard"]) > self.sys.cardSet["aiHandCard"][placing_index].ext["n"]):
+                                            target = random.sample(range(len(self.sys.cardSet["myCard"])), self.sys.cardSet["aiHandCard"][placing_index].ext["n"])
+                                        for j in target:
+                                            self.sys.freeze(self.sys.cardSet["myCard"][j])
+                                    if ("fullAtk" in self.sys.cardSet["aiHandCard"][placing_index].ext["skill"]):
+                                        self.sys.fullAtk(False, self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
+                                    if ("draw" in self.sys.cardSet["aiHandCard"][placing_index].ext["skill"]):
+                                        for j in range(self.sys.cardSet["aiHandCard"][placing_index].ext["n"]):
+                                            self.sys.giveCard(True)
+                                    if ("cure" in self.sys.cardSet["aiHandCard"][placing_index].ext["skill"] and len(self.sys.cardSet["aiCard"]) > 0):
+                                        if(self.sys.cardSet["aiHandCard"][placing_index].ext["random"]):
+                                            target = random.sample(range(len(self.sys.cardSet["aiCard"])), 1)
+                                            self.sys.cure(self.sys.cardSet["aiHandCard"][target[0]], self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
+                                        else:
+                                            target = 0
+                                            self.sys.cure(self.sys.cardSet["aiHandCard"][target], self.sys.cardSet["aiHandCard"][placing_index].ext["atk"])
+                                self.sys.aiMana -= self.sys.cardSet["aiHandCard"][placing_index].cost
+                                self.sys.rubbishBin = self.sys.cardSet["aiHandCard"].pop(placing_index)
                 elif move[0] == "attack":
                     if not self.sys.cardSet["aiCard"][move[1]].attacked:
                         self.sys.attack(move[1], move[2], False)

@@ -156,7 +156,11 @@ class Sys:
         self.cardSet["myHandCard"] = [
             # Card(0, 1, 2, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "minion", "skill": "draw", "n": 2})
         ]
-        self.cardSet["aiHandCard"] = []
+        self.cardSet["aiHandCard"] = [
+            Card(1, 0, 0, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2}), 
+            Card(1, 0, 0, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2}), 
+            Card(1, 0, 0, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2})
+        ]
         self.cardSet["mySetCard"] = choosedeck.user_card or []
         self.cardSet["aiSetCard"] = choosedeck.ai_card or []
         self.myCardOrder = list(range(len(self.cardSet["mySetCard"])))
