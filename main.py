@@ -93,7 +93,7 @@ class attackEffect:
 
 
 class Card:
-    def __init__(self, cost, atk, hp, description, image=None, ext={}):
+    def __init__(self, cost, atk, hp, name, rarity, description, image=None, ext={}):
         self.maxhp = hp
         self.hp = hp
         self.atk = atk
@@ -102,6 +102,8 @@ class Card:
         self.attacked = True
         self.round = 0
         self.description = description
+        self.name = name
+        self.rarity = rarity
 
         if (image):
             self.image = image.convert_alpha()
@@ -121,6 +123,8 @@ class Card:
             self.cost,
             self.atk,
             self.hp,
+            self.name,
+            self.rarity,
             self.description,
             self.image.copy() if self.image else None,
             copy.deepcopy(self.ext, memo)
@@ -173,12 +177,12 @@ class Sys:
         self.cardSet["myCard"] = []
         self.cardSet["aiCard"] = []
         self.cardSet["myHandCard"] = [
-            # Card(0, 1, 2, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "minion", "skill": "draw", "n": 2})
+            # Card(1, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2})
         ]
         self.cardSet["aiHandCard"] = [
-            Card(1, 0, 0, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2}), 
-            Card(1, 0, 0, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2}), 
-            Card(1, 0, 0, "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2})
+            Card(4, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2}), 
+            Card(1, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2}), 
+            Card(1, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2})
         ]
         self.cardSet["mySetCard"] = choosedeck.user_card or []
         self.cardSet["aiSetCard"] = choosedeck.ai_card or []
@@ -296,7 +300,7 @@ class Sys:
 
                 temp = self.cardSet["mySetCard"][self.myCardOrder.pop(0)]
                 if len(self.cardSet["myHandCard"]) <= 6:
-                    self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6], pygame.image.load(shared.path + "image/cardBack.png") if temp[7] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
+                    self.cardSet["myHandCard"].append(Card(temp[0], temp[1], temp[2], temp[3], temp[4], temp[6], pygame.image.load(shared.path + "image/cardBack.png") if temp[7] == None else pygame.image.load(shared.path + "image/" + temp[7]), temp[8]))
             else:
                 self.myEmptyCounter += 1
                 self.myhp -= self.myEmptyCounter
@@ -312,7 +316,7 @@ class Sys:
 
                 temp = self.cardSet["aiSetCard"][self.aiCardOrder.pop(0)]
                 if len(self.cardSet["aiHandCard"]) <= 6:
-                    self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], temp[6],
+                    self.cardSet["aiHandCard"].append(Card(temp[0], temp[1], temp[2], temp[3], temp[4], temp[6],
                                                            pygame.image.load(shared.path + "image/cardBack.png") if
                                                            temp[7] == None else pygame.image.load(
                                                                shared.path + "image/" + temp[7]), temp[8]))
@@ -723,7 +727,7 @@ while running:
                 elif(sys.isPlayerTurn and not(sys.placingCard or sys.checking or sys.curing) and shared.WIDTH*0.8 <= mouse_pos[0] <= shared.WIDTH and shared.HEIGHT*0.7 <= mouse_pos[1] <= shared.HEIGHT*0.9):
                     sys.checkingf()
                                     
-                # place card to desk
+                # placing card to desk (choosing where to place)
                 if (sys.placingCard):
                     if (shared.HEIGHT * 0.55 <= mouse_pos[1] <= shared.HEIGHT * 0.55 + cardDim[1]):
                         if len(sys.cardSet["myCard"]) == 0:
