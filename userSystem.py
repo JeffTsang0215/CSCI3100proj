@@ -22,11 +22,18 @@ ORANGE = (178, 86, 13)
 HOVER_COLOR = (141, 64, 4)
 
 # Fonts
-font = pygame.font.Font(None, int(round(48 * scale)))
+font = pygame.font.SysFont("Arial", int(round(32 * scale)))
 
 # Background of login page
 login_bg = pygame.image.load(shared.path + "image/loginBackground.png")
 login_bg = pygame.transform.scale(login_bg, (shared.WIDTH, shared.HEIGHT))
+
+# button for view and hide password
+view_button_image = pygame.image.load(shared.path + "image/view.png")
+hide_button_image = pygame.image.load(shared.path + "image/hide.png")
+
+view_button_image = pygame.transform.scale(view_button_image, (60 * scale, 60 * scale))
+hide_button_image = pygame.transform.scale(hide_button_image, (60 * scale, 60 * scale))
 
 # Define shifted characters mapping
 shifted_characters = {
@@ -68,7 +75,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS user_progress
 conn.commit()
 
 class InputBox:
-    def __init__(self, x, y, w, h, text = '', empty_text = '', outline = BLACK, alpha = 255, max_length = 16, is_username = False, is_security_question=False):
+    def __init__(self, x, y, w, h, text = '', empty_text = '', outline = BLACK, alpha = 255, max_length = 16, is_username = False, is_password = False, is_security_question=False):
         self.rect = pygame.Rect(x, y, w, h)
         self.color = WHITE
         self.outline = outline
@@ -77,30 +84,94 @@ class InputBox:
         self.empty_text = empty_text
         self.max_length = max_length
         self.is_username = is_username
+        self.is_password = is_password
         self.is_security_question = is_security_question
+        self.show_password = not is_password
         self.active = False
-        self.txt_surface = font.render(self.text, True, WHITE)
+        self.cursor_position = 0
         self.last_backspace_time = 0  # Separate timer for backspace
         self.last_space_time = 0 # Separate timer for space key
         self.key_states = {}  # {key_code: (last_time, repeat_phase)}
+
+        # Eye button for password fields
+        if self.is_password:
+            button_size = int(60 * scale)
+            self.eye_button = pygame.Rect(
+                self.rect.right + 10,
+                self.rect.y + (self.rect.height - button_size) // 2,
+                button_size,
+                button_size
+            )
+            # Load eye button images
+            self.view_button_image = pygame.transform.scale(
+                pygame.image.load(shared.path + "image/view.png"),
+                (button_size, button_size)
+            )
+            self.hide_button_image = pygame.transform.scale(
+                pygame.image.load(shared.path + "image/hide.png"),
+                (button_size, button_size)
+            )
+        else:
+            self.eye_button = None
+            self.view_button_image = None
+            self.hide_button_image = None
 
     def handle_mouse_click(self, mouse_pos):
         if self.rect.collidepoint(mouse_pos):
             self.active = True
             self.color = ACTIVE_COLOR
+            self.cursor_position = len(self.text)
         else:
             self.active = False
             self.color = WHITE
+            self.cursor_position = len(self.text)
+        # Toggle password visibility
+        if self.is_password and self.eye_button and self.eye_button.collidepoint(mouse_pos):
+            self.show_password = not self.show_password
+
+    def _handle_arrow_keys(self, keys, current_time):
+        arrow_repeat_delay = 200  # milliseconds between repeats
+
+        # Left arrow
+        if keys[pygame.K_LEFT]:
+            if pygame.K_LEFT not in self.key_states:
+                self.cursor_position = max(0, self.cursor_position - 1)
+                self.key_states[pygame.K_LEFT] = (current_time, 'initial')
+            else:
+                last_time, phase = self.key_states[pygame.K_LEFT]
+                elapsed = current_time - last_time
+                if (phase == 'initial' and elapsed >= 500) or (phase == 'repeat' and elapsed >= arrow_repeat_delay):
+                    self.cursor_position = max(0, self.cursor_position - 1)
+                    self.key_states[pygame.K_LEFT] = (current_time, 'repeat')
+        elif pygame.K_LEFT in self.key_states:
+            del self.key_states[pygame.K_LEFT]
+
+        # Right arrow
+        if keys[pygame.K_RIGHT]:
+            if pygame.K_RIGHT not in self.key_states:
+                self.cursor_position = min(len(self.text), self.cursor_position + 1)
+                self.key_states[pygame.K_RIGHT] = (current_time, 'initial')
+            else:
+                last_time, phase = self.key_states[pygame.K_RIGHT]
+                elapsed = current_time - last_time
+                if (phase == 'initial' and elapsed >= 500) or (phase == 'repeat' and elapsed >= arrow_repeat_delay):
+                    self.cursor_position = min(len(self.text), self.cursor_position + 1)
+                    self.key_states[pygame.K_RIGHT] = (current_time, 'repeat')
+        elif pygame.K_RIGHT in self.key_states:
+            del self.key_states[pygame.K_RIGHT]
 
     def update(self, current_time):
         if self.active:
             keys = pygame.key.get_pressed()
 
+            # Handle arrow keys
+            self._handle_arrow_keys(keys, current_time)
+
             # Handle backspace
             if keys[pygame.K_BACKSPACE]:
                 if current_time - self.last_backspace_time > 150:
-                    self.text = self.text[:-1]
-                    self.txt_surface = font.render(self.text, True, WHITE)
+                    self.text = self.text[:self.cursor_position-1] + self.text[self.cursor_position:]
+                    self.cursor_position = max(0, self.cursor_position - 1)
                     self.last_backspace_time = current_time
             else:
                 # Reset backspace timer when key is released
@@ -110,8 +181,8 @@ class InputBox:
             if keys[pygame.K_SPACE]:
                 if current_time - self.last_space_time > 1000:
                     if len(self.text) < self.max_length and self.is_security_question:
-                        self.text += ' '
-                        self.txt_surface = font.render(self.text, True, WHITE)
+                        self.text = self.text[:self.cursor_position] + " " + self.text[self.cursor_position:]
+                        self.cursor_position += 1
                     self.last_space_time = current_time
             else:
                 # Reset space timer when key is released
@@ -168,17 +239,45 @@ class InputBox:
     def _add_char(self, char):
         """Safely add character to input"""
         if len(self.text) < self.max_length:
-            self.text += char
-            self.txt_surface = font.render(self.text, True, WHITE)
+            self.text = self.text[:self.cursor_position] + char + self.text[self.cursor_position:]
+            self.cursor_position += 1
 
     def draw(self, screen):
         box_surface = pygame.Surface((self.rect.w, self.rect.h), pygame.SRCALPHA)
         box_surface.fill((*self.color, self.alpha))
         screen.blit(box_surface, (self.rect.x, self.rect.y))
         pygame.draw.rect(screen, self.outline, self.rect, 2)
+
+        # Prepare displayed text
         if self.text == '':
-            self.txt_surface = font.render(self.empty_text, True, DARK_GRAY)
-        screen.blit(self.txt_surface, (self.rect.x + (15 * scale), self.rect.y + (15 * scale)))
+            displayed_text = self.empty_text
+            color = DARK_GRAY
+        else:
+            if self.is_password and not self.show_password:
+                displayed_text = '●' * len(self.text)
+            else:
+                displayed_text = self.text
+            color = WHITE
+
+        # Render text
+        txt_surface = font.render(displayed_text, True, color)
+        screen.blit(txt_surface, (self.rect.x + 15, self.rect.y + 10))
+
+        if self.is_password and self.eye_button:
+            # Draw the appropriate eye button image
+            if self.show_password:
+                screen.blit(self.hide_button_image, self.eye_button)
+            else:
+                screen.blit(self.view_button_image, self.eye_button)
+
+        # Draw cursor
+        if self.active:
+            cursor_text = displayed_text[:self.cursor_position]
+            cursor_x = self.rect.x + 15 + font.size(cursor_text)[0]
+            cursor_y = self.rect.y + 10
+            cursor_height = font.get_height()
+            pygame.draw.line(screen, WHITE, (cursor_x, cursor_y),
+                             (cursor_x, cursor_y + cursor_height), 2)
 
 
 class DropdownMenu:
@@ -292,7 +391,7 @@ def login_user(username, password):
 def register_user(username, password, security_question1, security_answer1, security_question2, security_answer2):
     global error_message, error_color
     # some default setting of a new user account
-    default_gold = 5000
+    default_gold = 500
 
     def verify_password(password):
         """Helper function to check password validity"""
@@ -363,9 +462,9 @@ def register_user(username, password, security_question1, security_answer1, secu
 
 # Initialize input boxes and buttons
 login_username_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (160 * scale), 800 * scale, 60 * scale, empty_text = '<USERNAME>', alpha = 130, max_length = 16, is_username=True)
-login_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (80 * scale), 800 * scale, 60 * scale, empty_text = '<PASSWORD>', alpha = 130, max_length = 32)
+login_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (80 * scale), 800 * scale, 60 * scale, empty_text = '<PASSWORD>', alpha = 130, max_length = 32, is_password=True)
 register_username_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (440 * scale), 800 * scale, 60 * scale, empty_text = '<USERNAME>', alpha = 130, max_length = 16, is_username=True)
-register_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (310 * scale), 800 * scale, 60 * scale, empty_text = '<PASSWORD>', alpha = 130, max_length = 32)
+register_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (310 * scale), 800 * scale, 60 * scale, empty_text = '<PASSWORD>', alpha = 130, max_length = 32, is_password=True)
 security_answer_box1 = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (20 * scale), 800 * scale, 60 * scale, empty_text = '<ANSWER>', alpha = 130, max_length = 32, is_security_question=True)
 security_answer_box2 = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (160 * scale), 800 * scale, 60 * scale, empty_text = '<ANSWER>', alpha = 130, max_length = 32, is_security_question=True)
 login_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (210 * scale), (800 * scale), (60 * scale))
@@ -380,7 +479,7 @@ proceed_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2
 return_to_login_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (370 * scale), (800 * scale), (60 * scale))
 security_answer1_reset = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (160 * scale), 800 * scale, 60 * scale, empty_text='<ANSWER>', alpha=130, max_length=32, is_security_question=True)
 security_answer2_reset = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (40 * scale), 800 * scale, 60 * scale, empty_text='<ANSWER>', alpha=130, max_length=32, is_security_question=True)
-new_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (80 * scale), 800 * scale, 60 * scale, empty_text='<NEW PASSWORD>', alpha=130, max_length=32)
+new_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (80 * scale), 800 * scale, 60 * scale, empty_text='<NEW PASSWORD>', alpha=130, max_length=32, is_password=True)
 confirm_reset_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (290 * scale), (800 * scale), (60 * scale))
 
 # Pre-render guideline text surfaces for register page
