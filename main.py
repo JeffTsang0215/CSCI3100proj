@@ -67,6 +67,30 @@ cardDimEnlarged = [shared.WIDTH / 10, shared.WIDTH / 10 * 4 / 3]
 #  atk: int
 #  debuff: [string]list
 
+class attackEffect:
+    def __init__(self, by, to, isPlayerTurn):
+        self.by = by
+        self.to = to
+        self.isPlayerTurn = isPlayerTurn
+        self.timer = 0
+    def __del__(self):
+        pass
+    def drawEffect(self):
+        if(self.timer <= shared.fps):
+            if(self.isPlayerTurn):
+                # me is by
+                pygame.draw.rect(shared.screen, (255, 0, 0), [shared.WIDTH / 2 - (len(self.cardSet["myCard"]) * (cardDim[0] + shared.WIDTH / 80) - shared.WIDTH / 80) / 2 + (cardDim[0] + shared.WIDTH / 80)*self.by, shared.HEIGHT*0.55, cardDim[0]+4, cardDim[1]+4])
+                # ai is to
+                pygame.draw.rect(shared.screen, (255, 0, 0), [shared.WIDTH / 2 - (len(self.cardSet["myCard"]) * (cardDim[0] + shared.WIDTH / 80) - shared.WIDTH / 80) / 2 + (cardDim[0] + shared.WIDTH / 80)*self.to, shared.HEIGHT*0.35, cardDim[0]+4, cardDim[1]+4])
+            else:
+                # me is to
+                pygame.draw.rect(shared.screen, (255, 0, 0), [shared.WIDTH / 2 - (len(self.cardSet["myCard"]) * (cardDim[0] + shared.WIDTH / 80) - shared.WIDTH / 80) / 2 + (cardDim[0] + shared.WIDTH / 80)*self.to, shared.HEIGHT*0.55, cardDim[0]+4, cardDim[1]+4])
+                # ai is by
+                pygame.draw.rect(shared.screen, (255, 0, 0), [shared.WIDTH / 2 - (len(self.cardSet["myCard"]) * (cardDim[0] + shared.WIDTH / 80) - shared.WIDTH / 80) / 2 + (cardDim[0] + shared.WIDTH / 80)*self.by, shared.HEIGHT*0.35, cardDim[0]+4, cardDim[1]+4])
+            self.timer += 1
+        else:
+            self.__del__()
+
 
 class Card:
     def __init__(self, cost, atk, hp, description, image=None, ext={}):
@@ -162,6 +186,7 @@ class Sys:
         if isPlayerTurn:
             if target != 99:
                 self.cardSet["aiCard"][target].hp -= self.cardSet["myCard"][attacker].atk
+                self.cardSet["myCard"][attacker].hp -= self.cardSet["aiCard"][target].atk
             else:
                 self.aihp -= self.cardSet["myCard"][attacker].atk
             
@@ -169,6 +194,7 @@ class Sys:
         else:
             if target != 99:
                 self.cardSet["myCard"][target].hp -= self.cardSet["aiCard"][attacker].atk
+                self.cardSet["aiCard"][attacker].hp -= self.cardSet["myCard"][target].atk
             else:
                 self.myhp -= self.cardSet["aiCard"][attacker].atk
 
@@ -276,8 +302,7 @@ class Sys:
                               [(0, 0), (shared.WIDTH, 0), (shared.WIDTH, shared.HEIGHT / 2), (0, shared.HEIGHT / 2)], 5)
 
         # card graphic me
-        left = shared.WIDTH / 2 - (
-                    len(self.cardSet["myCard"]) * (cardDim[0] + shared.WIDTH / 80) - shared.WIDTH / 80) / 2
+        left = shared.WIDTH / 2 - (len(self.cardSet["myCard"]) * (cardDim[0] + shared.WIDTH / 80) - shared.WIDTH / 80) / 2
         top = shared.HEIGHT * 0.55
 
         for card in self.cardSet["myCard"]:
