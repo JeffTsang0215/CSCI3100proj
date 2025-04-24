@@ -121,13 +121,12 @@ class InputBox:
             self.active = True
             self.color = ACTIVE_COLOR
             self.cursor_position = len(self.text)
+        elif self.is_password and self.eye_button and self.eye_button.collidepoint(mouse_pos):
+            self.show_password = not self.show_password # Toggle password visibility
         else:
             self.active = False
             self.color = WHITE
             self.cursor_position = len(self.text)
-        # Toggle password visibility
-        if self.is_password and self.eye_button and self.eye_button.collidepoint(mouse_pos):
-            self.show_password = not self.show_password
 
     def _handle_arrow_keys(self, keys, current_time):
         arrow_repeat_delay = 200  # milliseconds between repeats
