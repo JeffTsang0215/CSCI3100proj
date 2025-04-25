@@ -84,6 +84,8 @@ pending_unlock_card_id = None
 show_confirmation_buy = False
 pending_card_unlock_cost = 0
 pending_unlock_cost = 0
+not_enough_gold_timer = 0 
+
 
 card_objects = []
 
@@ -484,7 +486,10 @@ def draw_deck_view(mouse_pos, mouse_click, events):
 
 def display_cards(mouse_pos, mouse_click, events):
     global current_page, last_button_press, card_objects, selected_cost, search_text, active_input, unlocked_cards
-    global card_cache_by_page, show_confirmation_buy, pending_unlock_card_id, pending_card, pending_unlock_cost, pending_card_unlock_cost
+    global card_cache_by_page, show_confirmation_buy, pending_unlock_card_id, pending_card, pending_unlock_cost, pending_card_unlock_cost, not_enough_gold_timer
+    clock = pygame.time.Clock()  # <- This creates an instance of Clock
+
+    dt = clock.tick(60) / 1000
 
     # Clear previous page's card objects
     card_objects = []
@@ -665,8 +670,6 @@ def display_cards(mouse_pos, mouse_click, events):
         if pending_unlock_card_id is not None :
             pending_card = pending_unlock_card_id
             pending_unlock_cost = pending_card_unlock_cost
-        print(pending_card)
-        print(pending_unlock_cost)
         # Dim the background
         overlay = pygame.Surface((shared.WIDTH, shared.HEIGHT))
         overlay.set_alpha(128)
@@ -687,9 +690,11 @@ def display_cards(mouse_pos, mouse_click, events):
         # Yes/No buttons
         yes_rect = pygame.Rect(box_x + 50 * scale1, box_y + 120 * scale2, 80 * scale1, 30 * scale2)
         no_rect = pygame.Rect(box_x + 170 * scale1, box_y + 120 * scale2, 80 * scale1, 30 * scale2)
-        pygame.draw.rect(shared.screen, (100, 200, 100), yes_rect)
+        yes_color = (150, 250, 150) if yes_rect.collidepoint(mouse_pos) else (100, 200, 100)
+        no_color = (255, 150, 150) if no_rect.collidepoint(mouse_pos) else (255, 100, 100)
+        pygame.draw.rect(shared.screen, yes_color, yes_rect)
         pygame.draw.rect(shared.screen, (0, 0, 0), yes_rect, 2)
-        pygame.draw.rect(shared.screen, (255, 100, 100), no_rect)
+        pygame.draw.rect(shared.screen, no_color, no_rect)
         pygame.draw.rect(shared.screen, (0, 0, 0), no_rect, 2)
 
         shared.draw_text_with_border(shared.screen, "Yes", custom_font, (255, 255, 255),(0, 0, 0),  yes_rect.center, align="center")
@@ -704,6 +709,8 @@ def display_cards(mouse_pos, mouse_click, events):
                         updated_unlock_cards = ",".join(sorted(map(str, unlocked_cards), key=int))
                         cursor.execute("UPDATE user_card_collection SET unlock_cards = ? WHERE username = ?", (updated_unlock_cards, shared.user_name))
                         conn.commit()
+                    else :
+                        not_enough_gold_timer = 0.3
                     show_confirmation_buy = False
                     pending_card = None
 
@@ -711,6 +718,23 @@ def display_cards(mouse_pos, mouse_click, events):
                     # Cancel
                     show_confirmation_buy = False
                     pending_card = None
+    if not_enough_gold_timer > 0:
+        overlay = pygame.Surface((shared.WIDTH, shared.HEIGHT))
+        overlay.set_alpha(128)
+        overlay.fill((0, 0, 0))
+        shared.screen.blit(overlay, (0, 0))
+
+        box_width = 300 * scale1
+        box_height = 200 * scale2
+        box_x = shared.WIDTH // 2 - box_width // 2
+        box_y = shared.HEIGHT // 2 - box_height // 2
+        pygame.draw.rect(shared.screen, (137, 84, 39), (box_x, box_y, box_width, box_height))
+        pygame.draw.rect(shared.screen, (0, 0, 0), (box_x, box_y, box_width, box_height), 3)
+
+        shared.draw_text_with_border(shared.screen, "Not Enough Gold!", custom_font, (255, 255, 255), (0, 0, 0),
+                                    [shared.WIDTH // 2, shared.HEIGHT // 2], align="center")
+
+        not_enough_gold_timer -= dt  # dt = time elapsed in seconds
 
     # Display current page number
     page_number = f"Page {current_page + 1}"
