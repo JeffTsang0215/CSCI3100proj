@@ -878,6 +878,15 @@ while running:
         pygame.display.update()
         shared.clock.tick(shared.fps)
 
+    elif shared.game_state == "license_key":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        userSystem.license_key_main(mouse_pos, mouse_click)
+        pygame.display.update()
+        shared.clock.tick(shared.fps)
+
     elif shared.game_state == "register":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

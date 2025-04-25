@@ -5,6 +5,7 @@ import shared
 import decks
 import sqlite3
 import bcrypt
+import re
 
 #scale
 scale = shared.HEIGHT / 1080
@@ -75,7 +76,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS user_progress
 conn.commit()
 
 class InputBox:
-    def __init__(self, x, y, w, h, text = '', empty_text = '', outline = BLACK, alpha = 255, max_length = 16, is_username = False, is_password = False, is_security_question=False):
+    def __init__(self, x, y, w, h, text = '', empty_text = '', outline = BLACK, alpha = 255, max_length = 16, is_username = False, is_password = False, is_license_key = False, is_security_question=False):
         self.rect = pygame.Rect(x, y, w, h)
         self.color = WHITE
         self.outline = outline
@@ -85,6 +86,7 @@ class InputBox:
         self.max_length = max_length
         self.is_username = is_username
         self.is_password = is_password
+        self.is_license_key = is_license_key
         self.is_security_question = is_security_question
         self.show_password = not is_password
         self.active = False
@@ -231,6 +233,8 @@ class InputBox:
         """Validate characters for username and security question fields"""
         if self.is_username:
             return char.isalnum() or char == '_'
+        if self.is_license_key:
+            return char.isalnum() or char == '-'
         if self.is_security_question:
             return char.isalnum() or char == ' ' or char in shifted_characters.values()
         return char.isalnum() or char in shifted_characters.values()
@@ -316,7 +320,7 @@ class DropdownMenu:
         box_surface.fill((*self.color, self.alpha))
         screen.blit(box_surface, self.rect)
         pygame.draw.rect(screen, self.outline, self.rect, 2)
-        screen.blit(self.txt_surface, (self.rect.x + 15 * scale, self.rect.y + 15 * scale))
+        screen.blit(self.txt_surface, (self.rect.x + 15 * scale, self.rect.y + 10 * scale))
 
     def draw_options(self, screen):
         # Draw the dropdown options only when the dropdown is open
@@ -386,6 +390,41 @@ def login_user(username, password):
         error_message = f"Login error: {str(e)}"
         error_color = RED
 
+stored_license_key = ""
+
+def validate_license_key(license_key):
+    global error_message, error_color, stored_license_key
+    if not license_key:
+        error_message = "License key cannot be empty!"
+        error_color = RED
+        return
+
+    if not re.match(r'^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$', license_key):
+        error_message = "Inputted license key has wrong format"
+        error_color = RED
+        return
+
+    try:
+        cursor.execute('SELECT is_consumed FROM licenses WHERE license_key = ?', (license_key,))
+        license_status = cursor.fetchone()
+        if not license_status:
+            error_message = "Inputted license key does not exist!"
+            error_color = RED
+            return
+        is_consumed = bool(license_status[0])
+        if is_consumed:
+            error_message = "Inputted license key is consumed!"
+            error_color = RED
+            return
+        # If the license key is valid go the register page
+        stored_license_key = license_key
+        shared.game_state = "register"
+        error_message = "License key validated!"
+        error_color = GREEN
+        return
+    except Exception as e:
+        error_message = f"Login error: {str(e)}"
+        error_color = RED
 
 def register_user(username, password, security_question1, security_answer1, security_question2, security_answer2):
     global error_message, error_color
@@ -449,6 +488,7 @@ def register_user(username, password, security_question1, security_answer1, secu
                        (username, cardList.starter_card_json, decks.starter_deck_json))
         cursor.execute('INSERT INTO user_progress (username, gold, battle_record) VALUES (?, ?, ?)',
                        (username, default_gold, ""))
+        cursor.execute('UPDATE licenses SET is_consumed = 1 WHERE license_key = ?', (stored_license_key,))
         conn.commit()
         error_message = "Registration successful!"
         error_color = GREEN
@@ -460,22 +500,53 @@ def register_user(username, password, security_question1, security_answer1, secu
         error_color = RED
 
 # Initialize input boxes and buttons
+# login page
 login_username_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (160 * scale), 800 * scale, 60 * scale, empty_text = '<USERNAME>', alpha = 130, max_length = 16, is_username=True)
 login_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (80 * scale), 800 * scale, 60 * scale, empty_text = '<PASSWORD>', alpha = 130, max_length = 32, is_password=True)
+login_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (210 * scale), (800 * scale), (60 * scale))
+forgot_password_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (290 * scale), (800 * scale), (60 * scale))
+createAccount_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (370 * scale), (800 * scale), (60 * scale))
+# input license key page
+license_key_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (160 * scale), 800 * scale, 60 * scale, empty_text = '<LICENSE KEY>', alpha = 130, max_length = 14, is_license_key=True)
+continue_register_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (290 * scale), (800 * scale), (60 * scale))
+return_login_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (370 * scale), (800 * scale), (60 * scale))
+# register page
 register_username_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (440 * scale), 800 * scale, 60 * scale, empty_text = '<USERNAME>', alpha = 130, max_length = 16, is_username=True)
 register_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (310 * scale), 800 * scale, 60 * scale, empty_text = '<PASSWORD>', alpha = 130, max_length = 32, is_password=True)
+# Security questions
+security_questions = [
+    "What was the name of your first pet?",
+    "What city were you born in?",
+    "What was your childhood nickname?",
+    "What is your favourite movie?"
+]
+# Security question dropdown
+security_dropdown1 = DropdownMenu(
+    shared.WIDTH/2 - 400*scale,
+    shared.HEIGHT/2 - 50*scale,
+    800*scale,
+    60*scale,
+    security_questions,
+    alpha = 255
+)
 security_answer_box1 = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (20 * scale), 800 * scale, 60 * scale, empty_text = '<ANSWER>', alpha = 130, max_length = 32, is_security_question=True)
+# Security question dropdown
+security_dropdown2 = DropdownMenu(
+    shared.WIDTH/2 - 400*scale,
+    shared.HEIGHT/2 + 90*scale,
+    800*scale,
+    60*scale,
+    security_questions,
+    alpha = 255
+)
 security_answer_box2 = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (160 * scale), 800 * scale, 60 * scale, empty_text = '<ANSWER>', alpha = 130, max_length = 32, is_security_question=True)
-login_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (210 * scale), (800 * scale), (60 * scale))
 register_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (290 * scale), (800 * scale), (60 * scale))
-createAccount_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (370 * scale), (800 * scale), (60 * scale))
 return_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (370 * scale), (800 * scale), (60 * scale))
-
-# Add new input boxes and buttons for password reset pages (newly added)
-forgot_password_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (290 * scale), (800 * scale), (60 * scale))
+# forget password page
 forgot_username_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (160 * scale), 800 * scale, 60 * scale, empty_text='<USERNAME>', alpha=130, max_length=16, is_username=True)
 proceed_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (290 * scale), (800 * scale), (60 * scale))
 return_to_login_button = pygame.Rect(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (370 * scale), (800 * scale), (60 * scale))
+# reset password page
 security_answer1_reset = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (160 * scale), 800 * scale, 60 * scale, empty_text='<ANSWER>', alpha=130, max_length=32, is_security_question=True)
 security_answer2_reset = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 - (40 * scale), 800 * scale, 60 * scale, empty_text='<ANSWER>', alpha=130, max_length=32, is_security_question=True)
 new_password_box = InputBox(shared.WIDTH / 2 - (400 * scale), shared.HEIGHT / 2 + (80 * scale), 800 * scale, 60 * scale, empty_text='<NEW PASSWORD>', alpha=130, max_length=32, is_password=True)
@@ -494,58 +565,44 @@ register_guidelines = [
     ("-Security questions' answers are case-sensitive", 26, (shared.HEIGHT/2 + 230 * scale), "left")
 ]
 
-guideline_surfaces = []
+register_guideline_surfaces = []
 for text, size_rel, y_rel, align in register_guidelines:
     font_size = int(round(size_rel * scale))
     guideline_font = pygame.font.Font(pygame.font.get_default_font(), font_size)
     text_surf = guideline_font.render(text, True, WHITE)
     x_pos = shared.WIDTH/2 - (400 * scale) if align == "left" else shared.WIDTH/2
-    guideline_surfaces.append((text_surf, (x_pos, y_rel)))
+    register_guideline_surfaces.append((text_surf, (x_pos, y_rel)))
 
-# Security questions
-security_questions = [
-    "What was the name of your first pet?",
-    "What city were you born in?",
-    "What was your childhood nickname?",
-    "What is your favourite movie?"
+# Pre-render guideline text surfaces for license key page
+license_key_guidelines = [
+    ("-License keys are formated as AAAA-BBBB-CCCC", 26, (shared.HEIGHT/2 - 100 * scale), "left"),
+    ("-Hyphens are needed", 26, (shared.HEIGHT/2 - 70 * scale), "left"),
+    ("-The license key will not be consumed if account registration", 26, (shared.HEIGHT/2 - 40 * scale), "left"),
+    ("  are not completed", 26, (shared.HEIGHT/2 - 10* scale), "left"),
 ]
 
-# Security question dropdown
-security_dropdown1 = DropdownMenu(
-    shared.WIDTH/2 - 400*scale,
-    shared.HEIGHT/2 - 50*scale,
-    800*scale,
-    60*scale,
-    security_questions,
-    alpha = 255
-)
-
-# Security question dropdown
-security_dropdown2 = DropdownMenu(
-    shared.WIDTH/2 - 400*scale,
-    shared.HEIGHT/2 + 90*scale,
-    800*scale,
-    60*scale,
-    security_questions,
-    alpha = 255
-)
+license_key_guidelines_surfaces = []
+for text, size_rel, y_rel, align in license_key_guidelines:
+    font_size = int(round(size_rel * scale))
+    guideline_font = pygame.font.Font(pygame.font.get_default_font(), font_size)
+    text_surf = guideline_font.render(text, True, WHITE)
+    x_pos = shared.WIDTH/2 - (400 * scale) if align == "left" else shared.WIDTH/2
+    license_key_guidelines_surfaces.append((text_surf, (x_pos, y_rel)))
 
 # Pre-render button text surfaces
 button_font_size = int(round(36 * scale))
 button_font = pygame.font.Font(pygame.font.get_default_font(), button_font_size)
 
-# Pre-render new button texts for password reset pages (newly added)
+login_text_surface = button_font.render("Login", True, WHITE)
 forgot_password_text = button_font.render("Forget password", True, WHITE)
+create_acc_text_surface = button_font.render("Create a new account", True, WHITE)
+continue_register_text_surface = button_font.render("Continue registration", True, WHITE)
 proceed_text = button_font.render("Proceed with password reset", True, WHITE)
 confirm_reset_text = button_font.render("Confirm & reset with new password", True, WHITE)
-
-# Error message size
-error_font_size = int(round(36 * scale))
-
-login_text_surface = button_font.render("Login", True, WHITE)
-create_acc_text_surface = button_font.render("Create a new account", True, WHITE)
 register_text_surface = button_font.render("Register", True, WHITE)
 return_text_surface = button_font.render("Return to login page", True, WHITE)
+# Error message size
+error_font_size = int(round(36 * scale))
 
 def loginSystem_main(mouse_pos, mouse_click):
     global prev_mouse_click, error_message
@@ -586,12 +643,13 @@ def loginSystem_main(mouse_pos, mouse_click):
             login_password_box.text = ""
             prev_mouse_click = (False, False, False)
             error_message = ""
+            return
 
     if createAccount_button.collidepoint(mouse_pos):
         pygame.draw.rect(shared.screen, HOVER_COLOR, createAccount_button) # Hover effect
         if previous_mouse_pressed and not current_mouse_pressed:
         # Check if mouse was released over a button
-            shared.game_state = "register"
+            shared.game_state = "license_key"
             login_username_box.text = ""
             login_password_box.text = ""
             prev_mouse_click = (False, False, False)
@@ -614,6 +672,59 @@ def loginSystem_main(mouse_pos, mouse_click):
     shared.screen.blit(create_acc_text_surface, create_acc_text_surface.get_rect(center=createAccount_button.center))
     prev_mouse_click = mouse_click
 
+def license_key_main(mouse_pos, mouse_click):
+    global prev_mouse_click, error_message
+    current_time = pygame.time.get_ticks()
+    current_mouse_pressed = mouse_click[0]
+    previous_mouse_pressed = prev_mouse_click[0]
+
+    shared.screen.blit(login_bg, (0, 0))
+    license_key_box.draw(shared.screen)
+    for surf, pos in license_key_guidelines_surfaces:
+        shared.screen.blit(surf, pos)
+    pygame.draw.rect(shared.screen, ORANGE, continue_register_button)
+    pygame.draw.rect(shared.screen, ORANGE, return_login_button)
+
+    # Draw error message
+    if error_message:
+        shared.text(shared.screen, error_message, error_color, error_font_size,
+                    (shared.WIDTH / 2, shared.HEIGHT / 2 + (270 * scale)), "center")
+
+    if continue_register_button.collidepoint(mouse_pos):
+        pygame.draw.rect(shared.screen, HOVER_COLOR, continue_register_button) # Hover effect
+        if previous_mouse_pressed and not current_mouse_pressed:
+        # Check if mouse was released over a button
+            validate_license_key(license_key_box.text)
+            if shared.game_state == "register":
+                license_key_box.text = ""
+                prev_mouse_click = (False, False, False)
+                error_message = ""
+                return  # Exit early to prevent further processing
+
+    if return_login_button.collidepoint(mouse_pos):
+        pygame.draw.rect(shared.screen, HOVER_COLOR, return_login_button)  # Hover effect
+        if previous_mouse_pressed and not current_mouse_pressed:
+        # Check if mouse was released over a button
+            shared.game_state = "login"
+            license_key_box.text = ""
+            prev_mouse_click = (False, False, False)
+            error_message = ""
+            return  # Exit early to prevent further processing
+
+    # Handle input box clicks on press
+    if current_mouse_pressed and not previous_mouse_pressed:
+        license_key_box.handle_mouse_click(mouse_pos)
+        error_message = ""
+
+    # Update input boxes
+    license_key_box.update(current_time)
+
+    # Button text (using pre-rendered surfaces)
+    shared.screen.blit(continue_register_text_surface, continue_register_text_surface.get_rect(center=continue_register_button.center))
+    shared.screen.blit(return_text_surface, return_text_surface.get_rect(center=return_login_button.center))
+
+    prev_mouse_click = mouse_click
+
 def registerSystem_main(mouse_pos, mouse_click):
     global prev_mouse_click, error_message
     current_time = pygame.time.get_ticks()
@@ -622,7 +733,7 @@ def registerSystem_main(mouse_pos, mouse_click):
 
     # Draw background & pre-rendered guidelines
     shared.screen.blit(login_bg, (0, 0))
-    for surf, pos in guideline_surfaces:
+    for surf, pos in register_guideline_surfaces:
         shared.screen.blit(surf, pos)
 
     # Draw page and input boxes
@@ -654,6 +765,11 @@ def registerSystem_main(mouse_pos, mouse_click):
             security_answer_box1.handle_mouse_click(mouse_pos)
             security_answer_box2.handle_mouse_click(mouse_pos)
 
+    if register_button.collidepoint(mouse_pos):
+        pygame.draw.rect(shared.screen, HOVER_COLOR, register_button)  # Hover effect
+    if return_button.collidepoint(mouse_pos):
+        pygame.draw.rect(shared.screen, HOVER_COLOR, return_button)  # Hover effect
+
     # Handle dropdown item selection on mouse release
     if not current_mouse_pressed and previous_mouse_pressed:
         if security_dropdown1.handle_release(mouse_pos) or security_dropdown2.handle_release(mouse_pos):
@@ -663,13 +779,11 @@ def registerSystem_main(mouse_pos, mouse_click):
             # Handle button interactions only if no dropdown is open
             if not security_dropdown1.is_open and not security_dropdown2.is_open:
                 if register_button.collidepoint(mouse_pos):
-                    pygame.draw.rect(shared.screen, HOVER_COLOR, register_button)  # Hover effect
                     if previous_mouse_pressed and not current_mouse_pressed:
                         # Check if mouse was released over a button
                         register_user(register_username_box.text, register_password_box.text, security_dropdown1.selected_question, security_answer_box1.text, security_dropdown2.selected_question, security_answer_box2.text)
                  
                 if return_button.collidepoint(mouse_pos):
-                    pygame.draw.rect(shared.screen, HOVER_COLOR, return_button)  # Hover effect
                     if previous_mouse_pressed and not current_mouse_pressed:
                         # Check if mouse was released over a button
                         shared.game_state = "login"
