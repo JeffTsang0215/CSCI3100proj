@@ -195,6 +195,7 @@ class Sys:
 
         self.myEmptyCounter = 0
         self.aiEmptyCounter = 0
+        self.waitGameLoop = 0
 
         #Load hero image
         priest = pygame.image.load(shared.path + "image/Heroes_Priest.png")
@@ -266,14 +267,14 @@ class Sys:
             if self.aiMaxMana < 10:
                 self.aiMaxMana += 1
             self.aiMana = self.aiMaxMana
-            #Creating AI system here:
-            self.ai.execute_best_move()
-            self.switchTurn()
+            
+            
         # ai to player
         else:
             self.isPlayerTurn = True
             self.giveCard(True)
             for card in self.cardSet["myCard"]:
+                if debug: print(":"+str(card.ext))
                 if ("debuff" in card.ext):
                     if ("freeze" in card.ext["debuff"]):
                         card.ext["debuff"].pop(card.ext["debuff"].index("freeze"))
@@ -296,7 +297,7 @@ class Sys:
                 if debug:
                     print("Printing all cards in aiHandCard:")
                     for card in self.cardSet["aiHandCard"]:
-                        print(card)
+                        print(str(card)+str(card.ext))
 
                 temp = self.cardSet["mySetCard"][self.myCardOrder.pop(0)]
                 if len(self.cardSet["myHandCard"]) <= 6:
@@ -354,6 +355,7 @@ class Sys:
             # drawing freeze debuff
             if("debuff" in card.ext):
                 if("freeze" in card.ext["debuff"]):
+                    if(debug): print("test")
                     my_surface = pygame.Surface((cardDim[0], cardDim[1]))
                     my_surface = my_surface.convert_alpha()
                     my_surface.fill((100, 100, 255, 64))
@@ -710,8 +712,9 @@ while running:
                             sys.clickedCard = i
                             break
 
-                if not (sys.checking or sys.placingCard or sys.curing):    # state variable
+                if not (sys.checking or sys.placingCard or sys.curing) and sys.isPlayerTurn:    # state variable
                     if click_circle(mouse_pos, [shared.WIDTH * 0.95, shared.HEIGHT / 2], shared.WIDTH / 24) or (shared.WIDTH * 0.94 <= mouse_pos[0] <= shared.WIDTH * 0.94 + 2 * shared.WIDTH / 24 and shared.HEIGHT / 2 - shared.WIDTH / 24 <= mouse_pos[1] <= shared.HEIGHT / 2 - shared.WIDTH / 24 + 2 * shared.WIDTH / 24):
+                        sys.waitGameLoop = 3
                         sys.switchTurn()
                 if not (sys.checking or sys.placingCard or sys.curing):    # state variable
                     if click_circle(mouse_pos, [2 * shared.WIDTH / 24, shared.HEIGHT / 2], shared.WIDTH / 24) or (0 <= mouse_pos[0] <= 2 * shared.WIDTH / 24 and shared.HEIGHT / 2 - shared.WIDTH / 24 <= mouse_pos[1] <= shared.HEIGHT / 2 - shared.WIDTH / 24 + 2 * shared.WIDTH / 24):
@@ -820,6 +823,14 @@ while running:
                 sys.clickTimer = 0
 
         shared.screen.fill((105, 77, 0))
+
+        #Creating AI system here:
+        if(sys.isPlayerTurn==False):
+            if (sys.waitGameLoop <= 0):
+                sys.ai.execute_best_move()
+                sys.switchTurn()
+            else:
+                sys.waitGameLoop -=1
 
         sys.draw()
 
