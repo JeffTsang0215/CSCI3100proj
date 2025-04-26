@@ -17,6 +17,8 @@ last_page = -1
 # Load background
 cardcollection_bg = pygame.image.load(shared.path + "image/cardcollection.png")
 cardcollection_bg = pygame.transform.scale(cardcollection_bg, (shared.WIDTH, shared.HEIGHT))
+gold_image = pygame.image.load(shared.path + "image/Gold.png").convert_alpha()
+gold_image = pygame.transform.scale(gold_image, (int(40 * scale1), int(40 * scale2)))
 
 custom_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(16 * scale2))
 current_view = "deck_list"  
@@ -558,9 +560,10 @@ def display_cards(mouse_pos, mouse_click, events):
         user_gold = result[0]
     else:
         user_gold = 0  # Default value if no gold amount is found
-    gold_pos = [685 * scale1, 617 * scale2]
+    gold_pos = [695 * scale1, 617 * scale2]
     # You can add this code to the relevant part of your game window display function
-    gold_text = f"Gold: {user_gold}"
+    shared.screen.blit(gold_image, (int(645 * scale1), int(595 * scale2)))
+    gold_text = f"{user_gold}"
     shared.draw_text_with_border(shared.screen, gold_text, custom_font, (255, 215, 0), (0, 0, 0),gold_pos, border_thickness=2, align="center")
     lock = False
     
