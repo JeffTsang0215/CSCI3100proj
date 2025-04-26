@@ -120,6 +120,7 @@ def draw_button(mouse_pos, mouse_click):
     pygame.draw.rect(shared.screen, color, card_rect)  # Draw the button (if not already drawn elsewhere)
 
     if card_hovered and mouse_click[0]:
+            shared.previous_state = "choosedeck"
             shared.game_state = "card_collection"
             shared.input_blocked_frames = 5
     

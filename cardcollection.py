@@ -87,6 +87,7 @@ pending_unlock_cost = 0
 not_enough_gold_timer = 0 
 
 
+
 card_objects = []
 
 def draw_deck_list(mouse_pos, mouse_click, events):
@@ -748,6 +749,7 @@ def display_cards(mouse_pos, mouse_click, events):
 def cardcollection_main(mouse_pos, mouse_click, events):
     global total_pages, current_view, test, selected_cost, current_page
     total_pages = (len(cardList.card) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE
+    print(shared.previous_state)
 
     shared.screen.blit(cardcollection_bg, (0, 0))  # Draw background
     shared.text(shared.screen, "My Decks", (30, 30, 30), int(9 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center", font=custom_font)
@@ -774,6 +776,12 @@ def cardcollection_main(mouse_pos, mouse_click, events):
                 if event.button == 1:  # Left mouse button click
                     if current_view == "deck_view":
                         current_view = "deck_list"  # Go to deck_list from deck_view
+                    elif shared.previous_state:
+                        shared.game_state = shared.previous_state
+                        selected_cost = None    
+                        current_page = 0 
+                        shared.input_blocked_frames = 5
+                        shared.previous_state = None
                     elif current_view == "deck_list":
                         shared.game_state = "menu"  # Go to menu from deck_list
                         selected_cost = None    

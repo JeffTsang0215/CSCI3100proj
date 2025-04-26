@@ -29,6 +29,7 @@ fps = 60
 
 # game_state = "playing" | "menu" | "login" | "lost" | "win"
 game_state = "login"
+previous_state = None
 # the user that is playing this game
 user_name = ""
 
