@@ -5,6 +5,7 @@ import cardList
 import decks
 from collections import Counter
 import sqlite3
+import time
 
 card_cache_by_page = {}
 scale1 = shared.WIDTH / 1080
@@ -85,6 +86,10 @@ show_confirmation_buy = False
 pending_card_unlock_cost = 0
 pending_unlock_cost = 0
 not_enough_gold_timer = 0 
+show_message_box = False
+message_text_line1 = ""
+message_text_line2 = ""
+message_box_start_time = 0
 
 
 
@@ -309,7 +314,7 @@ def handle_text_input(event):
             input_text += event.text  # Append typed character
 
 def draw_deck_view(mouse_pos, mouse_click, events):
-    global current_view, last_click_time, current_card_page
+    global current_view, last_click_time, current_card_page, show_message_box, message_text_line1, message_text_line2, message_box_start_time
 
     if current_view != "deck_view":
         return
@@ -425,22 +430,31 @@ def draw_deck_view(mouse_pos, mouse_click, events):
                     card_count = deck["cards"].count(card_obj.name)
                     is_legendary = card_obj.rarity.lower() == "legendary"
 
-                    if len(deck["cards"]) < 30:
-                        if is_legendary:
-                            if card_count < 1:
-                                deck["cards"].append(card_obj.name)
-                                print(f"Legendary card {card_obj.name} added.")
-                        else:
-                            if card_count < 2:
-                                deck["cards"].append(card_obj.name)
-                                print(f"Card {card_obj.name} added.")
-
+                    if len(deck["cards"]) >= 30:
+                        message_text_line1 = "You can only have"
+                        message_text_line2 = "30 cards in the deck."
+                        show_message_box = True
+                        message_box_start_time = time.time()
+                    elif is_legendary and card_count >= 1:
+                        message_text_line1 = "You can only have"
+                        message_text_line2 = "1 of the same legendary card in the deck."
+                        show_message_box = True
+                        message_box_start_time = time.time()
+                    elif not is_legendary and card_count >= 2:
+                        message_text_line1 = "You can only have"
+                        message_text_line2 = "2 of the same card in the deck."
+                        show_message_box = True
+                        message_box_start_time = time.time()
+                    else:
+                        # Valid: Add the card
+                        deck["cards"].append(card_obj.name)
+                        print(f"Card {card_obj.name} added.")
                         decks.save_decks()
 
                         # Update card data for redraw
                         card_counts = Counter(deck["cards"])
                         deck_cards_data = [
-                            (card_name, count, *current_card_dict.get(card_name, ("?", "?"))) 
+                            (card_name, count, *current_card_dict.get(card_name, ("?", "?")))
                             for card_name, count in card_counts.items()
                         ]
                         deck_cards_data.sort(key=lambda x: x[2] if isinstance(x[2], int) else float('inf'))
@@ -450,9 +464,38 @@ def draw_deck_view(mouse_pos, mouse_click, events):
                         start_idx = current_card_page * cards_per_page
                         end_idx = start_idx + cards_per_page
                         page_cards = unique_cards[start_idx:end_idx]
-                        break
 
                     card_click_cooldown = True
+                    break
+    
+    if show_message_box:
+        overlay = pygame.Surface((shared.WIDTH, shared.HEIGHT))
+        overlay.set_alpha(128)
+        overlay.fill((0, 0, 0))
+        shared.screen.blit(overlay, (0, 0))
+
+        # Draw message box
+        message_box_width = 350 * scale1
+        message_box_height = 200 * scale2
+        message_box_x = (shared.WIDTH - message_box_width) // 2
+        message_box_y = (shared.HEIGHT - message_box_height) // 2
+
+        pygame.draw.rect(shared.screen, (137, 84, 39), (message_box_x, message_box_y, message_box_width, message_box_height))
+        pygame.draw.rect(shared.screen, (0, 0, 0), (message_box_x, message_box_y, message_box_width, message_box_height), 2)
+
+        # First line
+        shared.draw_text_with_border(shared.screen, message_text_line1, custom_font, (255, 255, 255), (0, 0, 0),
+                                    [message_box_x + message_box_width // 2, message_box_y + message_box_height // 2 - 20 * scale2], align="center")
+
+        # Second line
+        shared.draw_text_with_border(shared.screen, message_text_line2, custom_font, (255, 255, 255), (0, 0, 0),
+                                    [message_box_x + message_box_width // 2, message_box_y + message_box_height // 2 + 20 * scale2], align="center")
+
+
+
+        # Check if 1 second passed
+        if time.time() - message_box_start_time >= 2.0:
+            show_message_box = False
 
     # Reset cooldowns when mouse is released
     for event in events:
@@ -749,7 +792,6 @@ def display_cards(mouse_pos, mouse_click, events):
 def cardcollection_main(mouse_pos, mouse_click, events):
     global total_pages, current_view, test, selected_cost, current_page
     total_pages = (len(cardList.card) + CARDS_PER_PAGE - 1) // CARDS_PER_PAGE
-    print(shared.previous_state)
 
     shared.screen.blit(cardcollection_bg, (0, 0))  # Draw background
     shared.text(shared.screen, "My Decks", (30, 30, 30), int(9 * scale1), [shared.WIDTH - 242 * scale1, 22 * scale2], "center", font=custom_font)
