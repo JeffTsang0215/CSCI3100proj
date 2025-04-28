@@ -7,9 +7,9 @@ import cardList
 bg = pygame.image.load(shared.path + "image/choosedeck.png")
 bg = pygame.transform.scale(bg, (shared.WIDTH, shared.HEIGHT))
 
+
 # Track selection
 selected_ai = "priest"
-
 #Scale
 scale2 = shared.HEIGHT / 675
 scale1 = shared.WIDTH / 1080
@@ -95,7 +95,7 @@ def draw_decks(mouse_pos, mouse_click):
             user_card = cardList.load_deck_from_names(decks.decks[i])
 
 def draw_button(mouse_pos, mouse_click):
-    global page, selected_ai, ai_card
+    global page, selected_ai, ai_card, selected_index, user_card
 
     #Back_button
     back_rect = pygame.Rect(0.808*shared.WIDTH,0.905*shared.HEIGHT,0.04*shared.WIDTH, 0.03*shared.HEIGHT)
@@ -174,7 +174,9 @@ def draw_button(mouse_pos, mouse_click):
 
     # Draw images
     shared.screen.blit(priest, priest_button)
+    shared.text(shared.screen, "Priest", WHITE ,int(16 * scale2),(priest_button.centerx, priest_button.bottom + 0.01*shared.HEIGHT), "center")
     shared.screen.blit(paladin, paladin_button)
+    shared.text(shared.screen, "Paladin", WHITE ,int(16 * scale2),(paladin_button.centerx, paladin_button.bottom + 0.01*shared.HEIGHT), "center")
 
     # Check for click with mouse_click[0] (left button)
     if mouse_click[0]:  # Left mouse button is held down
@@ -185,16 +187,37 @@ def draw_button(mouse_pos, mouse_click):
 
     # Draw border if selected
     if selected_ai == "priest":
-        pygame.draw.rect(shared.screen, BORDER_COLOR, priest_button.inflate(int(10*scale1), int(10*scale1)), int(4*scale1))
+        # Copy the priest_button
+        border_rect = priest_button.copy()
+        
+        # Expand width normally
+        border_rect.x -= int(5 * scale1)
+        border_rect.width += int(10 * scale1)
+        
+        # Expand top a little (normal)
+        border_rect.y -= int(5 * scale1)
+        border_rect.height += int(5 * scale1)  # small top increase
+
+        # Expand bottom more 
+        border_rect.height += int(25 * scale1)
+
+        pygame.draw.rect(shared.screen, BORDER_COLOR, border_rect, int(4 * scale1))
         ai_card = cardList.load_deck_from_names(decks.AI_deck_1[0])
 
     elif selected_ai == "paladin":
-        pygame.draw.rect(shared.screen, BORDER_COLOR, paladin_button.inflate(int(10*scale1), int(10*scale1)), int(4*scale1))
+        border_rect = paladin_button.copy()
+        border_rect.x -= int(5 * scale1)
+        border_rect.width += int(10 * scale1)
+        border_rect.y -= int(5 * scale1)
+        border_rect.height += int(5 * scale1) + int(25 * scale1)
+
+        pygame.draw.rect(shared.screen, BORDER_COLOR, border_rect, int(4 * scale1))
         ai_card = cardList.load_deck_from_names(decks.AI_deck_2[0])
+
 
     #Some text
     shared.text(shared.screen, "Choose Your Deck",WHITE, int(16 * scale2),(0.37*shared.WIDTH, 0.125*shared.HEIGHT), "center")
-    shared.text(shared.screen, "Choose Your Opponent",WHITE, int(16 * scale2),(0.73*shared.WIDTH, 0.14*shared.HEIGHT), "center")
+    shared.text(shared.screen, "Choose Your Opponent",WHITE, int(16 * scale2),(0.73*shared.WIDTH, 0.135*shared.HEIGHT), "center")
 
     #Start button
     circle_center = (0.73*shared.WIDTH, 0.824*shared.HEIGHT)
@@ -209,6 +232,9 @@ def draw_button(mouse_pos, mouse_click):
     pygame.draw.circle(shared.screen, start_colour,circle_center,circle_radius)
 
     if start_hovered and mouse_click[0]:
+        #check if player has a deck
+        if user_card == None:
+            user_card = cardList.load_deck_from_names(decks.decks[selected_index])
         shared.game_state = "playing"
 
     shared.text(shared.screen, "Play",BLACK,int(20 * scale2),circle_center, "center")

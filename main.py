@@ -6,6 +6,7 @@ import menu
 import userSystem
 import copy
 import choosedeck
+import setting
 from ai_system import AISystem
 
 debug = True
@@ -200,15 +201,15 @@ class Sys:
         #Load hero image
         priest = pygame.image.load(shared.path + "image/Heroes_Priest.png")
         paladin = pygame.image.load(shared.path + "image/Heroes_Paladin_Uther.png")
-        rogue =  pygame.image.load(shared.path + "image/rogue_hero.png")
+        hero_image =  setting.ai_images_main[setting.selected_ai]
 
         hero_size = (40*2.4*scale1, 45.3*2.4*scale1)
         self.priest = pygame.transform.scale(priest,hero_size)
         self.paladin = pygame.transform.scale(paladin,hero_size)
-        self.rogue = pygame.transform.scale(rogue,hero_size)
+        self.hero = pygame.transform.scale(hero_image,hero_size)
         self.priest_button = priest.get_rect(topleft = (0.455*shared.WIDTH, 0.13*shared.HEIGHT))
         self.paladin_button = paladin.get_rect(topleft = (0.455*shared.WIDTH, 0.13*shared.HEIGHT))
-        self.rogue_button = rogue.get_rect(topleft = (0.455*shared.WIDTH, 0.725*shared.HEIGHT))
+        self.hero_button = hero_image.get_rect(topleft = (0.455*shared.WIDTH, 0.725*shared.HEIGHT))
 
     def attack(self, attacker, target, isPlayerTurn = True):
         if isPlayerTurn:
@@ -382,7 +383,7 @@ class Sys:
 
             left += cardDim[0] + shared.WIDTH / 80
 
-        shared.screen.blit(self.rogue, self.rogue_button)
+        shared.screen.blit(self.hero, self.hero_button)
         pygame.draw.circle(shared.screen, (242, 89, 0), [0.54*shared.WIDTH, 0.88*shared.HEIGHT], shared.HEIGHT * 0.025)
         shared.text(shared.screen, str(self.myhp), (0, 0, 0), int(shared.WIDTH / 64), [0.54*shared.WIDTH, 0.88*shared.HEIGHT], "center")
 
@@ -682,7 +683,7 @@ while running:
    # handle_click = pygame.MOUSEBUTTONDOWN()
 
     #Use to track mouse position
-    #print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
+    print([round(100*mouse_pos[0]/shared.WIDTH), round(100*mouse_pos[1]/shared.HEIGHT)])
     #print(mouse_pos[0],mouse_pos[1])
     #print(shared.WIDTH,shared.HEIGHT)
     #color = shared.screen.get_at(mouse_pos)  # Get (R, G, B, A)
@@ -862,7 +863,7 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        shared.screen.fill((105, 77, 0))
+        setting.main(mouse_pos, mouse_click)
         ## Your code
 
         pygame.display.update()
