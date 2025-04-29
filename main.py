@@ -181,9 +181,9 @@ class Sys:
             # Card(1, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2})
         ]
         self.cardSet["aiHandCard"] = [
-            Card(4, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2}), 
-            Card(1, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2}), 
-            Card(1, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2})
+            #Card(4, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2}), 
+            #Card(1, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2}), 
+            #Card(1, 0, 0, "test", "Common", "test", pygame.image.load(shared.path + "image/cardBack.png"), {"type": "spell", "skill": "freeze ", "n": 2})
         ]
         self.cardSet["mySetCard"] = choosedeck.user_card or []
         self.cardSet["aiSetCard"] = choosedeck.ai_card or []
@@ -679,6 +679,7 @@ class Sys:
         #Give 3 cards to myself
         for _ in range(3):
             self.giveCard(True)
+            self.giveCard(False)
 
 sys = Sys()
 
@@ -939,7 +940,7 @@ while running:
                     (shared.WIDTH / 2, shared.HEIGHT / 2), "center")
 
         shared.text(shared.screen, "Back", (0, 0, 0), int(shared.WIDTH/30), [0.50*shared.WIDTH, 0.84*shared.HEIGHT], "center")
-
+        shared.update_user_gold(shared.user_name, 500)
         pygame.display.update()
         shared.clock.tick(shared.fps)
 
