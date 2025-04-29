@@ -588,6 +588,14 @@ class Sys:
                  self.pointing[1] - int(round(arrowSideLen * math.sin(-math.pi / 2 + math.pi / 6)))]
             ])
 
+        #Printing no. of cards left
+        aiCardCount_rect = pygame.Rect(0.815*shared.WIDTH,0.35*shared.HEIGHT,0.04*shared.WIDTH, 0.03*shared.HEIGHT)
+        myCardCount_rect = pygame.Rect(0.815*shared.WIDTH,0.62*shared.HEIGHT,0.04*shared.WIDTH, 0.03*shared.HEIGHT)
+        pygame.draw.rect(shared.screen, (206, 176, 149), aiCardCount_rect)
+        pygame.draw.rect(shared.screen, (206, 176, 149), myCardCount_rect)
+        shared.text(shared.screen, str(len(sys.aiCardOrder)) + "/30",(0,0,0),int(16 * scale2),aiCardCount_rect.center, "center")
+        shared.text(shared.screen, str(len(sys.myCardOrder)) + "/30",(0,0,0),int(16 * scale2),myCardCount_rect.center, "center")
+
     def checkingf(self):
         # state variable
         self.placingCard = False
