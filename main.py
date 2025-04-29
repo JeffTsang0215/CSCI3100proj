@@ -676,6 +676,9 @@ class Sys:
         random.shuffle(self.myCardOrder)
         self.aiCardOrder = list(range(len(self.cardSet["aiSetCard"])))
         random.shuffle(self.aiCardOrder)
+        #Give 3 cards to myself
+        for _ in range(3):
+            self.giveCard(True)
 
 sys = Sys()
 
