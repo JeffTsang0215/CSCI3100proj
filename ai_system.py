@@ -1,7 +1,7 @@
 import copy  # Needed for deep copying game state
 import itertools
 import random
-from shared import fps
+from shared import fps, ai_log
 
 class AISystem:
     def __init__(self, sys):
@@ -235,6 +235,11 @@ class AISystem:
         if best_move_sequence:
             print(f"Best move sequence selected: {best_move_sequence}")
             for move in best_move_sequence:
+                if(len(ai_log) < 6):
+                    ai_log.append(move)
+                else:
+                    ai_log.pop(0)
+                    ai_log.append(move)
                 if move[0] == "play_combo":
                     for card in move[1]:
                         if self.sys.aiMana >= card.cost:

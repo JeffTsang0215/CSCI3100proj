@@ -595,6 +595,15 @@ class Sys:
         shared.text(shared.screen, str(len(sys.aiCardOrder)) + "/30",(0,0,0),int(16 * scale2),aiCardCount_rect.center, "center")
         shared.text(shared.screen, str(len(sys.myCardOrder)) + "/30",(0,0,0),int(16 * scale2),myCardCount_rect.center, "center")
 
+        # Printing AI movement log
+        col = 255
+        ind = 0
+        shared.text(shared.screen, str("AI Attack Log"), (255, 255, 255), int(shared.HEIGHT/50), [shared.WIDTH/100, int(shared.HEIGHT*0.85)])
+        for i,event in enumerate(reversed(shared.ai_log)):
+            shared.text(shared.screen, str(event), (col, col, col), int(shared.HEIGHT/50), [shared.WIDTH/100, int(shared.HEIGHT*0.85 + shared.HEIGHT/50*(i+1))])
+            col -= 40
+
+
     def checkingf(self):
         # state variable
         self.placingCard = False

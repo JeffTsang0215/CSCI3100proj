@@ -10,6 +10,8 @@ HEIGHT = pygame.display.Info().current_h
 fullscreen = False
 DB_PATH = "database/database.db"
 
+ai_log = []
+
 if not(fullscreen):
     if WIDTH > HEIGHT:
         HEIGHT *= 3/4
