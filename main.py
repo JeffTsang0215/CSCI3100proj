@@ -243,8 +243,7 @@ class Sys:
         for i in reversed(temp):
             self.cardSet["aiCard"].pop(i)
         if self.aihp <= 0:
-            data['money'] += 100
-            shared.save_game_data(data)
+            shared.update_user_gold(shared.user_name, 500)
             shared.game_state = "win"
         if self.myhp <= 0:
             shared.game_state = "lost"
@@ -942,7 +941,7 @@ while running:
                     (shared.WIDTH / 2, shared.HEIGHT / 2), "center")
 
         shared.text(shared.screen, "Back", (0, 0, 0), int(shared.WIDTH/30), [0.50*shared.WIDTH, 0.84*shared.HEIGHT], "center")
-        shared.update_user_gold(shared.user_name, 500)
+        # shared.update_user_gold(shared.user_name, 500)
         pygame.display.update()
         shared.clock.tick(shared.fps)
 
