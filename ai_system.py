@@ -1,6 +1,7 @@
 import copy  # Needed for deep copying game state
 import itertools
 import random
+from shared import fps
 
 class AISystem:
     def __init__(self, sys):
@@ -219,6 +220,17 @@ class AISystem:
         self.sys.aihp = original_ai_hp
         self.sys.myhp = original_player_hp
         self.sys.aiCardOrder = original_aiCardOrder.copy()
+
+        # # Generate n empty move between each
+        # n = int(fps*0.5)
+        # best_move_sequence_wait = []
+        # for event in best_move_sequence:
+        #     for i in range(n):
+        #         best_move_sequence_wait.append(("wait",1))
+        #     best_move_sequence_wait.append(event)
+        # for i in range(n):
+        #         best_move_sequence_wait.append(("wait",1))
+
 
         if best_move_sequence:
             print(f"Best move sequence selected: {best_move_sequence}")

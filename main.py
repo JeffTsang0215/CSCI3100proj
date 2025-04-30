@@ -9,7 +9,7 @@ import choosedeck
 import setting
 from ai_system import AISystem
 
-debug = True
+debug = False
 data = shared.load_game_data()
 
 # pygame.init handled by shared.py
