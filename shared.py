@@ -1,8 +1,14 @@
-import pygame, os, math, random, json, sqlite3
+import pygame, os, sys, math, random, json, sqlite3
 
 pygame.init()
-path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
+# this is for running python main.py
+# path = os.path.dirname(os.path.abspath(__file__)) + '/'
+
+# this is for running the executable file
+path = os.path.dirname(os.path.realpath(sys.executable)) + '/'
+
+print("path: " + path)
 renewed = False
 input_blocked_frames = 0
 WIDTH = pygame.display.Info().current_w

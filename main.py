@@ -9,6 +9,8 @@ import choosedeck
 import setting
 from ai_system import AISystem
 
+print(shared.path)
+
 debug = False
 data = shared.load_game_data()
 
