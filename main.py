@@ -145,7 +145,10 @@ class Card:
             self.atk == other.atk and
             self.hp == other.hp and
             self.ext == other.ext and
-            self.maxhp == other.maxhp
+            self.maxhp == other.maxhp and
+            self.name == other.name and
+            self.rarity == other.rarity and
+            self.description == other.description
         )
 
 
