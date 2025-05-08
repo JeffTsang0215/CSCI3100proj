@@ -129,15 +129,17 @@ class AISystem:
 
         # Generate move combinations using a capped generator
         move_combinations = list(move_combo_generator(play_moves, attack_moves, self.MaxCombinations))
+        #print("The number of move combinations: " + str(len(move_combinations)))
 
         #Emergency moves for decoration
-        if not move_combinations:
+        if len(move_combinations) >= self.MaxCombinations:
             print("Too many move combinations or none found. Entering emergency mode.")
-            emergency_moves = [("attack", i, 99) for i in range(len(self.sys.cardSet["aiCard"]))]
+            emergency_moves = [("attack", ai_card.name, "hero") for ai_card in self.sys.cardSet["aiCard"]]
             if play_moves:
                 highest_mana_play = max(play_moves, key=lambda m: sum(card.cost for card in m[1]))
                 emergency_moves.append(highest_mana_play)
             move_combinations = [emergency_moves]
+            best_move_sequence = emergency_moves #for safety
 
         random.shuffle(move_combinations)
 
@@ -148,7 +150,12 @@ class AISystem:
             self.sys.myhp = original_player_hp
             self.sys.aiCardOrder = original_aiCardOrder.copy()
 
+            skip_sequence = False  # Flag to indicate if the current move_sequence should be skipped
+
             for move in move_sequence:
+                if skip_sequence:
+                    break  # Exit the inner loop if the sequence is invalid
+
                 if move[0] == "play_combo":
                     for card in move[1]:
                         if self.sys.aiMana >= card.cost:
@@ -183,7 +190,8 @@ class AISystem:
                     ai_index = self.get_card_index_by_name(self.sys.cardSet["aiCard"], move[1])
                     if ai_index == -1:
                         print(f"❌ AI card '{move[1]}' not found.")
-                        continue
+                        skip_sequence = True  # Mark sequence as invalid
+                        continue  # Skip to next move, but the flag will cause a break
 
                     if move[2] == "hero":
                         target_index = 99
@@ -191,14 +199,16 @@ class AISystem:
                         target_index = self.get_card_index_by_name(self.sys.cardSet["myCard"], move[2])
                         if target_index == -1:
                             print(f"❌ Player card '{move[2]}' not found.")
-                            continue
+                            skip_sequence = True  # Mark sequence as invalid
+                            continue  # Skip to next move, but the flag will cause a break
 
                     if not self.sys.cardSet["aiCard"][ai_index].attacked:
                         self.sys.attack(ai_index, target_index, False)
 
+            if skip_sequence:
+                continue  # Skip to the next move_sequence in move_combinations
 
-
-            self.sys.checkAlive()
+            self.sys.checkAliveAI()
 
             if len(self.sys.cardSet["aiCard"]) > 7:
                 new_score = -9999
@@ -230,7 +240,6 @@ class AISystem:
         #     best_move_sequence_wait.append(event)
         # for i in range(n):
         #         best_move_sequence_wait.append(("wait",1))
-
 
         if best_move_sequence:
             print(f"Best move sequence selected: {best_move_sequence}")

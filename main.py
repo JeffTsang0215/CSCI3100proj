@@ -252,6 +252,25 @@ class Sys:
             shared.game_state = "win"
         if self.myhp <= 0:
             shared.game_state = "lost"
+    
+    def checkAliveAI(self):
+        temp = []
+        for i in range(len(self.cardSet["myCard"])):
+            if self.cardSet["myCard"][i].hp <= 0:
+                temp.append(i)
+        for i in reversed(temp):
+            self.cardSet["myCard"].pop(i)
+        temp = []
+        for i in range(len(self.cardSet["aiCard"])):
+            if self.cardSet["aiCard"][i].hp <= 0:
+                temp.append(i)
+        for i in reversed(temp):
+            self.cardSet["aiCard"].pop(i)
+        # if self.aihp <= 0:
+        #     shared.update_user_gold(shared.user_name, 500)
+        #     shared.game_state = "win"
+        # if self.myhp <= 0:
+        #     shared.game_state = "lost"
 
     def switchTurn(self):
         self.draw()
