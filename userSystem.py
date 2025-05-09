@@ -23,7 +23,8 @@ ORANGE = (178, 86, 13)
 HOVER_COLOR = (141, 64, 4)
 
 # Fonts
-font = pygame.font.SysFont("Arial", int(round(32 * scale)))
+font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(round(32 * scale)))
+password_font = pygame.font.SysFont("Arial", int(round(32 * scale)))
 
 # Background of login page
 login_bg = pygame.image.load(shared.path + "image/loginBackground.png")
@@ -263,7 +264,10 @@ class InputBox:
             color = WHITE
 
         # Render text
-        txt_surface = font.render(displayed_text, True, color)
+        if self.is_password and not self.show_password and self.text != "":
+            txt_surface = password_font.render(displayed_text, True, color)
+        else:
+            txt_surface = font.render(displayed_text, True, color)
         screen.blit(txt_surface, (self.rect.x + 15, self.rect.y + 10))
 
         if self.is_password and self.eye_button:
@@ -559,16 +563,14 @@ register_guidelines = [
     ("-Password must contain 8-32 characters", 26, (shared.HEIGHT/2 - 250 * scale), "left"),
     ("-Password can include letters, numbers, and special characters", 26, (shared.HEIGHT/2 - 220 * scale), "left"),
     ("  (e.g. !, @, <, /, [, ...)", 26, (shared.HEIGHT/2 - 190 * scale), "left"),
-    ("-Password must include a number, uppercase, and lowercase", 26, (shared.HEIGHT/2 - 160 * scale), "left"),
-    ("  letter", 26, (shared.HEIGHT/2 - 130 * scale), "left"),
+    ("-Password must include a number, uppercase, and lowercase letter", 26, (shared.HEIGHT/2 - 160 * scale), "left"),
     ("Security questions for password recovery", 36, (shared.HEIGHT/2 - 90 * scale), "left"),
-    ("-Security questions' answers are case-sensitive", 26, (shared.HEIGHT/2 + 230 * scale), "left")
+    ("-Security questions' answers are case-sensitive", 26, (shared.HEIGHT/2 + 220 * scale), "left")
 ]
 
 register_guideline_surfaces = []
 for text, size_rel, y_rel, align in register_guidelines:
-    font_size = int(round(size_rel * scale))
-    guideline_font = pygame.font.Font(pygame.font.get_default_font(), font_size)
+    guideline_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(round(24 * scale * (size_rel/26))))
     text_surf = guideline_font.render(text, True, WHITE)
     x_pos = shared.WIDTH/2 - (400 * scale) if align == "left" else shared.WIDTH/2
     register_guideline_surfaces.append((text_surf, (x_pos, y_rel)))
@@ -577,21 +579,20 @@ for text, size_rel, y_rel, align in register_guidelines:
 license_key_guidelines = [
     ("-License keys are formated as AAAA-BBBB-CCCC", 26, (shared.HEIGHT/2 - 100 * scale), "left"),
     ("-Hyphens are needed", 26, (shared.HEIGHT/2 - 70 * scale), "left"),
-    ("-The license key will not be consumed if account registration", 26, (shared.HEIGHT/2 - 40 * scale), "left"),
-    ("  are not completed", 26, (shared.HEIGHT/2 - 10* scale), "left"),
+    ("-The license key will not be consumed if account registration are not", 26, (shared.HEIGHT/2 - 40 * scale), "left"),
+    ("  completed", 26, (shared.HEIGHT/2 - 10* scale), "left"),
 ]
 
 license_key_guidelines_surfaces = []
 for text, size_rel, y_rel, align in license_key_guidelines:
-    font_size = int(round(size_rel * scale))
-    guideline_font = pygame.font.Font(pygame.font.get_default_font(), font_size)
+    guideline_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(round(24 * scale)))
     text_surf = guideline_font.render(text, True, WHITE)
     x_pos = shared.WIDTH/2 - (400 * scale) if align == "left" else shared.WIDTH/2
     license_key_guidelines_surfaces.append((text_surf, (x_pos, y_rel)))
 
 # Pre-render button text surfaces
 button_font_size = int(round(36 * scale))
-button_font = pygame.font.Font(pygame.font.get_default_font(), button_font_size)
+button_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", button_font_size)
 
 login_text_surface = button_font.render("Login", True, WHITE)
 forgot_password_text = button_font.render("Forget password", True, WHITE)
@@ -875,16 +876,16 @@ def reset_password_main(mouse_pos, mouse_click):
     shared.screen.blit(login_bg, (0, 0))
 
     # Display Recovery questions
-    questions_font = pygame.font.Font(None, int(round(40 * scale)))
+    questions_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(round(32 * scale)))
     q1_text = questions_font.render(f"Recovery Q1: {shared.security_questions[0]}", True, WHITE)
     q2_text = questions_font.render(f"Recovery Q2: {shared.security_questions[1]}", True, WHITE)
     shared.screen.blit(q1_text, (shared.WIDTH/2 - 400*scale, shared.HEIGHT/2 - 200*scale))
     shared.screen.blit(q2_text, (shared.WIDTH/2 - 400*scale, shared.HEIGHT/2 - 80*scale))
 
     # Display New Password Instructions
-    new_password_instruction_title_font = pygame.font.Font(None, int(round(40 * scale)))
+    new_password_instruction_title_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(round(32 * scale)))
     new_password_instruction_title_text = new_password_instruction_title_font.render("Enter your new password here", True, WHITE)
-    new_password_instruction_detail_font = pygame.font.Font(None, int(round(32 * scale)))
+    new_password_instruction_detail_font = pygame.font.Font("fonts/belwe-bold-bt.ttf", int(round(26 * scale)))
     new_password_instruction_one_text = new_password_instruction_detail_font.render("-Password must contain 8-32 characters", True, WHITE)
     new_password_instruction_two_text = new_password_instruction_detail_font.render("-It can include letters, numbers, and special characters", True, WHITE)
     new_password_instruction_three_text = new_password_instruction_detail_font.render("-You must include a number, uppercase, and lowercase letter", True, WHITE)
