@@ -170,7 +170,7 @@ class InputBox:
 
             # Handle backspace
             if keys[pygame.K_BACKSPACE]:
-                if current_time - self.last_backspace_time > 150:
+                if (current_time - self.last_backspace_time > 150) and (self.cursor_position > 0):
                     self.text = self.text[:self.cursor_position-1] + self.text[self.cursor_position:]
                     self.cursor_position = max(0, self.cursor_position - 1)
                     self.last_backspace_time = current_time
